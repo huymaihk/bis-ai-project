@@ -136,3 +136,4 @@ with open(existing_cache_path, "w", encoding="utf-8") as f:
     json.dump(products, f, ensure_ascii=False, indent=2)
 
 print(f"\n🎉 HOÀN THÀNH: Thêm mới {new_count} sản phẩm! Tổng số sản phẩm trong cache hiện tại: {len(products)}")
+
