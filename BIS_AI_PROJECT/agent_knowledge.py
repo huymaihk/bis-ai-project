@@ -15,20 +15,21 @@ from typing import List, Dict, Optional
 class AgentKnowledge:
     def __init__(self, workspace_dir: str | Path | None = None):
         self.workspace_dir = Path(workspace_dir) if workspace_dir else Path(__file__).parent.resolve()
-        self.vault_dir = self.workspace_dir / "knowledge_vault"
+        self.gdrive_storage = self.workspace_dir / "Google_Drive_Storage"
+        self.gdrive_storage.mkdir(parents=True, exist_ok=True)
         
-        # Tạo cấu trúc thư mục con cho từng loại tài liệu
+        # Thư mục lưu trữ trực tiếp trên Google Drive phân loại rõ ràng
         self.subdirs = {
-            "catalogues": self.vault_dir / "catalogues",
-            "manuals": self.vault_dir / "manuals",
-            "certificates": self.vault_dir / "certificates",  # CO, CQ, COC
-            "standards": self.vault_dir / "standards",        # Sách tiêu chuẩn AATCC, ISO, ASTM
-            "media": self.vault_dir / "media"                 # Video hướng dẫn, ảnh quy chuẩn
+            "catalogues": self.gdrive_storage / "1_Catalogues",
+            "manuals": self.gdrive_storage / "2_Manuals_Standards",
+            "standards": self.gdrive_storage / "2_Manuals_Standards",
+            "certificates": self.gdrive_storage / "3_Certificates_CO_CQ",
+            "media": self.gdrive_storage / "7_Training_Videos"
         }
         for d in self.subdirs.values():
             d.mkdir(parents=True, exist_ok=True)
 
-        self.manifest_file = self.vault_dir / "knowledge_manifest.json"
+        self.manifest_file = self.gdrive_storage / "knowledge_manifest.json"
         self.manifest = self._load_manifest()
 
     def _load_manifest(self) -> List[dict]:

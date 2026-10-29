@@ -247,13 +247,49 @@ HUD_CSS = """
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(56, 189, 248, 0.15);
   }
 
+  /* Input, Textarea, Selectbox, Labels Form Chữ & Màu Sắc Chuẩn */
+  label,
+  label p,
+  div[data-testid="stWidgetLabel"] p,
+  .stTextInput label,
+  .stTextArea label,
+  .stSelectbox label {
+    color: #f1f5f9 !important;
+    font-weight: 600 !important;
+    font-size: 13.5px !important;
+    letter-spacing: 0.3px !important;
+    margin-bottom: 4px !important;
+  }
+
   .stTextInput > div > div > input,
   .stTextArea > div > div > textarea,
   .stSelectbox > div > div > select {
-    background-color: #0d1322 !important;
-    color: #f8fafc !important;
-    border: 1px solid #1e293b !important;
+    background-color: #0b1120 !important;
+    color: #ffffff !important;
+    border: 1.5px solid #334155 !important;
     border-radius: 8px !important;
+    font-size: 14px !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+  }
+
+  .stTextInput > div > div > input:focus,
+  .stTextArea > div > div > textarea:focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.4) !important;
+  }
+
+  /* Style cho Tabs Streamlit */
+  div[data-testid="stTabs"] button[role="tab"] {
+    color: #94a3b8 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    padding: 10px 16px !important;
+  }
+
+  div[data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
+    color: #38bdf8 !important;
+    border-bottom: 2px solid #38bdf8 !important;
+    font-weight: 700 !important;
   }
 
   /* Style cho TẤT CẢ nút bấm và nút Submit form */
@@ -287,7 +323,8 @@ HUD_CSS = """
 
   div[data-testid="stFormSubmitButton"] > button p,
   div[data-testid="stButton"] > button p,
-  .stButton > button p {
+  .stButton > button p,
+  button p {
     color: #ffffff !important;
     font-weight: 700 !important;
     font-size: 14px !important;
@@ -749,14 +786,14 @@ with tab_media:
         col_m1, col_m2 = st.columns([5, 7])
 
         with col_m1:
-            st.markdown("#### 1. Nguồn Ảnh Đầu Vào (Đặt tên theo SKU)")
-            st.caption(f"Quy tắc lưu trữ: `{clean_sku}_brand_1.jpg`, `{clean_sku}_user_1.jpg`")
+            st.markdown("#### 1. Nguồn Ảnh Đầu Vào (Lưu Trực Tiếp Trên Google Drive)")
+            st.info(f"📁 **Vị trí lưu trên Google Drive:** `Google_Drive_Storage/4_Product_Images/`\n\nQuy chuẩn lưu file: `{clean_sku}_brand_1.jpg`, `{clean_sku}_user_1.jpg`")
             
             # Tải ảnh thực tế từ người dùng
             uploaded_user_img = st.file_uploader(f"Tải lên ảnh thực tế cho mã {clean_sku}:", type=["jpg", "png", "jpeg"], key=f"up_{clean_sku}")
             if uploaded_user_img:
                 saved_path = media_agent.register_user_image(clean_sku, uploaded_user_img.getvalue(), uploaded_user_img.name)
-                st.success(f"✓ Đã lưu ảnh người dùng: {saved_path.name}")
+                st.success(f"✓ Đã lưu ảnh vào Google Drive: {saved_path.name}")
 
             # Chọn ảnh nền mockup
             st.markdown("#### 2. Chọn Ảnh Nền Ghép (Mockup Background)")
@@ -766,10 +803,10 @@ with tab_media:
             selected_bg_path = next(bg for bg in available_bgs if bg.name == selected_bg_name)
 
             # Tải thêm nền riêng nếu muốn
-            new_bg_file = st.file_uploader("Hoặc tải lên ảnh nền riêng của bạn (VD: Phòng lab thực tế):", type=["jpg", "png"], key="new_bg")
+            new_bg_file = st.file_uploader("Hoặc tải lên ảnh nền riêng (Lưu tại 5_Studio_Backgrounds):", type=["jpg", "png"], key="new_bg")
             if new_bg_file:
                 media_agent.register_background(new_bg_file.name, new_bg_file.getvalue())
-                st.success("✓ Đã lưu ảnh nền mới vào kho Mockup!")
+                st.success("✓ Đã lưu ảnh nền mới vào Google Drive (5_Studio_Backgrounds)!")
                 st.rerun()
 
             # Nút xử lý ghép ảnh
@@ -853,6 +890,7 @@ with tab_know:
 
         with col_k2:
             st.markdown("#### 📤 Nạp Tài Liệu / Chứng Nhận Mới Cho AI Học")
+            st.info("📁 **Vị trí lưu trên Google Drive:**\n- Sách/Manual: `Google_Drive_Storage/2_Manuals_Standards/`\n- Chứng chỉ CO/CQ: `Google_Drive_Storage/3_Certificates_CO_CQ/`\n- Video: `Google_Drive_Storage/7_Training_Videos/`")
             with st.form("add_doc_form"):
                 new_title = st.text_input("Tên tài liệu / Tiêu chuẩn:", placeholder="VD: Tiêu chuẩn thử nghiệm AATCC TM61")
                 new_cat = st.selectbox("Loại tài liệu:", ["standards", "manuals", "certificates", "catalogues", "media"])

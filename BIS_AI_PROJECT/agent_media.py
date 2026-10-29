@@ -17,17 +17,19 @@ from PIL import Image, ImageEnhance, ImageFilter, ImageOps, ImageDraw
 class AgentMedia:
     def __init__(self, workspace_dir: str | Path | None = None):
         self.workspace_dir = Path(workspace_dir) if workspace_dir else Path(__file__).parent.resolve()
-        self.media_vault = self.workspace_dir / "media_vault"
+        self.gdrive_storage = self.workspace_dir / "Google_Drive_Storage"
+        self.gdrive_storage.mkdir(parents=True, exist_ok=True)
         
-        self.brand_dir = self.media_vault / "raw_brand"
-        self.user_dir = self.media_vault / "user_uploads"
-        self.bg_dir = self.media_vault / "backgrounds"
-        self.final_dir = self.media_vault / "final_composites"
+        # Thư mục hình ảnh lưu trữ trực tiếp trên Google Drive
+        self.brand_dir = self.gdrive_storage / "4_Product_Images"
+        self.user_dir = self.gdrive_storage / "4_Product_Images"
+        self.bg_dir = self.gdrive_storage / "5_Studio_Backgrounds"
+        self.final_dir = self.gdrive_storage / "6_Final_Composites"
         
         for d in [self.brand_dir, self.user_dir, self.bg_dir, self.final_dir]:
             d.mkdir(parents=True, exist_ok=True)
 
-        self.manifest_path = self.media_vault / "image_review_manifest.json"
+        self.manifest_path = self.gdrive_storage / "image_review_manifest.json"
         self.manifest = self._load_manifest()
         self._ensure_sample_backgrounds()
 
