@@ -1,9 +1,10 @@
 {
   "version": "1.0",
-  "last_updated": "2026-10-29T06:52:14.352111Z",
+  "last_updated": "2026-10-29T12:43:46.470685Z",
   "field_corrections": {
     "unit": {
-      "cuon": "cuốn"
+      "cuon": "cuốn",
+      "cái": "bộ"
     }
   },
   "examples": [
@@ -14,6 +15,38 @@
       "ai_original": "cuon",
       "human_corrected": "cuốn",
       "context": "Chuyên gia chuẩn hóa dấu tiếng Việt"
+    },
+    {
+      "timestamp": "2026-10-29T12:09:00.342137Z",
+      "sku": "TEST_SKU",
+      "field": "unit",
+      "ai_original": "cái",
+      "human_corrected": "bộ",
+      "context": "Trang 99"
+    },
+    {
+      "timestamp": "2026-10-29T12:14:47.080284Z",
+      "sku": "TEST_SKU",
+      "field": "unit",
+      "ai_original": "cái",
+      "human_corrected": "bộ",
+      "context": "Trang 99"
+    },
+    {
+      "timestamp": "2026-10-29T12:18:55.326821Z",
+      "sku": "TEST_SKU",
+      "field": "unit",
+      "ai_original": "cái",
+      "human_corrected": "bộ",
+      "context": "Trang 99"
+    },
+    {
+      "timestamp": "2026-10-29T12:43:46.470667Z",
+      "sku": "TEST_SKU",
+      "field": "unit",
+      "ai_original": "cái",
+      "human_corrected": "bộ",
+      "context": "Trang 99"
     }
   ]
 }

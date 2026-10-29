@@ -1,0 +1,20 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches
+.pytest_cache/
+.env
+
+# Large local storage directories on PC
+Google_Drive_Storage/2_Manuals_Standards/*
+!Google_Drive_Storage/2_Manuals_Standards/.gitkeep
+Google_Drive_Storage/3_Certificates_CO_CQ/*
+!Google_Drive_Storage/3_Certificates_CO_CQ/.gitkeep
+Google_Drive_Storage/7_Training_Videos/*
+!Google_Drive_Storage/7_Training_Videos/.gitkeep
+
+# Temporary files
+*.tmp
+temp_*

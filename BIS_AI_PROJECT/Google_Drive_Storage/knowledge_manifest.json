@@ -1,0 +1,29 @@
+[
+  {
+    "id": "DOC-AATCC-2024",
+    "title": "AATCC Technical Manual 2024 (Official Standard)",
+    "category": "standards",
+    "filename": "AATCC_Technical_Manual_2024.pdf",
+    "scope": "Phương pháp thử nghiệm độ bền màu, co rút và tính chất cơ lý vải dệt.",
+    "verified": true,
+    "added_at": "2026-10-25 10:00:00"
+  },
+  {
+    "id": "DOC-COC-AATCC",
+    "title": "Chứng nhận Hợp chuẩn COC / CO Nhà phân phối BIS Textile",
+    "category": "certificates",
+    "filename": "AATCC_Authorized_Distributor_COC.pdf",
+    "scope": "Chứng thư đại lý phân phối chính thức ủy quyền tại Việt Nam.",
+    "verified": true,
+    "added_at": "2026-10-26 14:30:00"
+  },
+  {
+    "id": "DOC-CAT-SAMPLE",
+    "title": "Catalogue Thiết bị & Vật tư Dệt may BIS Textile Sample",
+    "category": "catalogues",
+    "filename": "catalogue_sample.pdf",
+    "scope": "Tổng hợp 17 sản phẩm thiết bị và sách tiêu chuẩn phòng thí nghiệm.",
+    "verified": true,
+    "added_at": "2026-10-28 09:15:00"
+  }
+]

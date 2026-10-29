@@ -122,4 +122,128 @@ class AgentKnowledge:
             "storage_path": str(self.gdrive_storage)
         }
 
+    def scan_and_sync_drive_files(self) -> Dict[str, List[str]]:
+        """
+        Auto-scan all Google Drive Storage subdirectories and root folder for files dropped directly by user.
+        Intelligently routes files dropped at root to appropriate folders:
+        - BIS_BACKGROUND.png / *background* / *bg* -> 5_Studio_Backgrounds
+        - *.pdf (catalogue) -> 1_Catalogues
+        - Standards / Manuals -> 2_Manuals_Standards
+        Auto-updates manifest and returns dict of detected files.
+        """
+        import shutil
+
+        detected = {
+            "catalogues": [],
+            "manuals": [],
+            "certificates": [],
+            "product_images": [],
+            "backgrounds": [],
+            "media": []
+        }
+        existing_filenames = {d.get("filename") for d in self.manifest}
+
+        # 0. Intelligent root scanning: If user dropped files directly into Google_Drive_Storage root
+        root_dir = self.gdrive_storage
+        if root_dir.exists():
+            for root_file in root_dir.iterdir():
+                if root_file.is_file() and root_file.name not in ["knowledge_manifest.json", "image_review_manifest.json"]:
+                    fname_lower = root_file.name.lower()
+                    # Check background images
+                    if any(kw in fname_lower for kw in ["background", "bg", "nen", "studio"]) and root_file.suffix.lower() in [".png", ".jpg", ".jpeg"]:
+                        target = self.gdrive_storage / "5_Studio_Backgrounds" / root_file.name
+                        shutil.copy2(root_file, target)
+                    # Check catalogue pdfs
+                    elif root_file.suffix.lower() == ".pdf":
+                        if any(kw in fname_lower for kw in ["manual", "huong_dan", "standard", "tieuchuan"]):
+                            target = self.subdirs["manuals"] / root_file.name
+                        elif any(kw in fname_lower for kw in ["cert", "co", "cq", "chungnhan"]):
+                            target = self.subdirs["certificates"] / root_file.name
+                        else:
+                            target = self.subdirs["catalogues"] / root_file.name
+                        shutil.copy2(root_file, target)
+                    elif root_file.suffix.lower() in [".jpg", ".png", ".jpeg"]:
+                        target = self.gdrive_storage / "4_Product_Images" / root_file.name
+                        shutil.copy2(root_file, target)
+
+        # 0.1 Cross-check 4_Product_Images for background files like BIS_BACKGROUND.png
+        img_dir = self.gdrive_storage / "4_Product_Images"
+        bg_dir = self.gdrive_storage / "5_Studio_Backgrounds"
+        bg_dir.mkdir(parents=True, exist_ok=True)
+        if img_dir.exists():
+            for p in list(img_dir.glob("*.jpg")) + list(img_dir.glob("*.png")) + list(img_dir.glob("*.jpeg")):
+                detected["product_images"].append(p.name)
+                # Auto-bridge to backgrounds if name indicates background
+                if any(kw in p.name.lower() for kw in ["background", "bg", "nen", "studio"]):
+                    bg_target = bg_dir / p.name
+                    if not bg_target.exists():
+                        shutil.copy2(p, bg_target)
+
+        # 1. Catalogues (1_Catalogues)
+        cat_dir = self.subdirs["catalogues"]
+        cat_dir.mkdir(parents=True, exist_ok=True)
+        for p in cat_dir.glob("*.pdf"):
+            detected["catalogues"].append(p.name)
+            if p.name not in existing_filenames:
+                size_mb = round(p.stat().st_size / (1024 * 1024), 2)
+                self.manifest.append({
+                    "id": f"DOC-CAT-{p.stem[:12]}",
+                    "title": f"Catalogue: {p.name}",
+                    "category": "catalogues",
+                    "filename": p.name,
+                    "scope": f"File Catalogue PDF phát hiện trực tiếp từ Google Drive ({size_mb} MB).",
+                    "verified": True,
+                    "added_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                })
+                existing_filenames.add(p.name)
+
+        # 2. Manuals & Standards (2_Manuals_Standards)
+        man_dir = self.subdirs["manuals"]
+        man_dir.mkdir(parents=True, exist_ok=True)
+        for p in list(man_dir.glob("*.pdf")) + list(man_dir.glob("*.docx")):
+            detected["manuals"].append(p.name)
+            if p.name not in existing_filenames:
+                self.manifest.append({
+                    "id": f"DOC-MAN-{p.stem[:12]}",
+                    "title": f"Tài liệu tiêu chuẩn: {p.name}",
+                    "category": "manuals",
+                    "filename": p.name,
+                    "scope": f"Sách tiêu chuẩn / Manual máy phát hiện trực tiếp từ Google Drive.",
+                    "verified": True,
+                    "added_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                })
+                existing_filenames.add(p.name)
+
+        # 3. Certificates CO/CQ (3_Certificates_CO_CQ)
+        cert_dir = self.subdirs["certificates"]
+        cert_dir.mkdir(parents=True, exist_ok=True)
+        for p in list(cert_dir.glob("*.pdf")) + list(cert_dir.glob("*.png")) + list(cert_dir.glob("*.jpg")):
+            detected["certificates"].append(p.name)
+            if p.name not in existing_filenames:
+                self.manifest.append({
+                    "id": f"DOC-CERT-{p.stem[:12]}",
+                    "title": f"Chứng nhận CO/CQ: {p.name}",
+                    "category": "certificates",
+                    "filename": p.name,
+                    "scope": f"Hồ sơ chứng nhận CO / CQ / COC thẩm định nguồn gốc.",
+                    "verified": True,
+                    "added_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                })
+                existing_filenames.add(p.name)
+
+        # 4. Studio Backgrounds (5_Studio_Backgrounds)
+        if bg_dir.exists():
+            for p in list(bg_dir.glob("*.jpg")) + list(bg_dir.glob("*.png")) + list(bg_dir.glob("*.jpeg")):
+                detected["backgrounds"].append(p.name)
+
+        # 5. Training Videos (7_Training_Videos)
+        vid_dir = self.subdirs["media"]
+        if vid_dir.exists():
+            for p in list(vid_dir.glob("*.mp4")) + list(vid_dir.glob("*.mov")) + list(vid_dir.glob("*.avi")):
+                detected["media"].append(p.name)
+
+        self._save_manifest(self.manifest)
+        return detected
+
+
 

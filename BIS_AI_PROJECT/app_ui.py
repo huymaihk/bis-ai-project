@@ -665,15 +665,21 @@ with col_top_left:
     """, unsafe_allow_html=True)
 
 with col_top_right:
-    col_logout1, col_logout2 = st.columns([2, 1])
-    with col_logout1:
+    col_sync, col_stat, col_logout = st.columns([2.5, 2, 1])
+    with col_sync:
+        if st.button("🔄 Quét G-Drive", key="btn_top_scan_gdrive", help="Tự động quét và cập nhật các file mới bỏ vào Google Drive"):
+            if knowledge_agent:
+                scan_res = knowledge_agent.scan_and_sync_drive_files()
+                st.toast(f"✓ Đã quét Google Drive! Tìm thấy {len(scan_res.get('catalogues', []))} catalogue, {len(scan_res.get('backgrounds', []))} ảnh nền.")
+            st.rerun()
+    with col_stat:
         st.markdown(f"""
-        <div style='padding-top: 14px; text-align: right; font-family: "JetBrains Mono", monospace; font-size: 12px; color: #94a3b8;'>
+        <div style='padding-top: 8px; text-align: right; font-family: "JetBrains Mono", monospace; font-size: 11px; color: #94a3b8;'>
           Đã duyệt: <span style='color: #10b981; font-weight: 700;'>{approved_count}</span> | Khóa: <span style='color: #f43f5e; font-weight: 700;'>{rejected_count}</span>
         </div>
         """, unsafe_allow_html=True)
-    with col_logout2:
-        if st.button("Đăng xuất", key="logout_btn"):
+    with col_logout:
+        if st.button("Thoát", key="logout_btn"):
             st.session_state.authenticated = False
             st.rerun()
 
@@ -808,43 +814,90 @@ with tab_lego:
 
 # ── TAB 2: PHÒNG KỸ THUẬT (BÀN DUYỆT 2 CỘT) ──────────────────────────────────
 with tab_tech:
-    with st.expander("📥 1. TẢI LÊN FILE CATALOGUE PDF MỚI & THIẾT LẬP BÓC TÁCH", expanded=(not bool(products))):
-        up_col1, up_col2 = st.columns([7, 5])
+    gdrive_cat_dir = PROJECT_DIR / "Google_Drive_Storage" / "1_Catalogues"
+    gdrive_cat_dir.mkdir(parents=True, exist_ok=True)
+    available_cats = list(gdrive_cat_dir.glob("*.pdf"))
+
+    with st.expander("📥 1. THIẾT LẬP FILE CATALOGUE PDF & QUÉT GOOGLE DRIVE", expanded=(not bool(products))):
+        c_sync_info, c_sync_btn = st.columns([8, 4])
+        with c_sync_info:
+            st.markdown("💡 **Cơ chế tự động:** Bạn có thể kéo thả trực tiếp file PDF Catalogue vào thư mục Google Drive `Google_Drive_Storage/1_Catalogues/` trên máy tính hoặc tải qua ô bên dưới.")
+        with c_sync_btn:
+            if st.button("🔄 Quét lại Google Drive", key="scan_gdrive_tab_tech", help="Quét nhanh các file Catalogue và Background vừa bỏ vào Google Drive"):
+                if knowledge_agent:
+                    knowledge_agent.scan_and_sync_drive_files()
+                st.rerun()
+
+        up_col1, up_col2 = st.columns([6, 6])
         with up_col1:
+            cat_options = [c.name for c in available_cats]
+            if not cat_options:
+                cat_options = ["(Chưa có file trong 1_Catalogues)"]
+            
+            selected_cat_name = st.selectbox(
+                "📂 Chọn file Catalogue có sẵn trong Google Drive:",
+                cat_options,
+                key="select_existing_catalog_pdf"
+            )
+
             uploaded_catalog = st.file_uploader(
-                "Kéo thả hoặc chọn file Catalogue (.pdf) cần phân tích:",
+                "Hoặc tải lên file Catalogue (.pdf) mới từ máy tính:",
                 type=["pdf"],
                 key="catalog_pdf_uploader"
             )
             if uploaded_catalog is not None:
-                gdrive_cat_dir = PROJECT_DIR / "Google_Drive_Storage" / "1_Catalogues"
-                gdrive_cat_dir.mkdir(parents=True, exist_ok=True)
                 save_path = gdrive_cat_dir / uploaded_catalog.name
                 with open(save_path, "wb") as f:
                     f.write(uploaded_catalog.getvalue())
-                with open(pdf_file, "wb") as f:
-                    f.write(uploaded_catalog.getvalue())
-                st.success(f"✓ Đã lưu file `{uploaded_catalog.name}` vào Google Drive Storage (1_Catalogues)!")
+                st.success(f"✓ Đã lưu file `{uploaded_catalog.name}` vào Google Drive (1_Catalogues)!")
+                if knowledge_agent:
+                    knowledge_agent.scan_and_sync_drive_files()
                 st.rerun()
 
         with up_col2:
-            if pdf_file.exists():
+            if selected_cat_name and selected_cat_name != "(Chưa có file trong 1_Catalogues)":
+                active_pdf = gdrive_cat_dir / selected_cat_name
+            elif available_cats:
+                active_pdf = available_cats[0]
+            elif pdf_file.exists():
+                active_pdf = pdf_file
+            else:
+                active_pdf = None
+
+            if active_pdf and active_pdf.exists():
                 try:
-                    doc = fitz.open(str(pdf_file))
+                    doc = fitz.open(str(active_pdf))
                     total_pages = len(doc)
                     doc.close()
+                    size_mb = round(active_pdf.stat().st_size / (1024 * 1024), 2)
                     st.markdown(f"""
                     <div style='background: #090e1a; border: 1px solid #1e293b; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
-                      <strong>File hiện tại:</strong> <code>{pdf_file.name}</code><br>
-                      <strong>Tổng số trang:</strong> <span style='color: #38bdf8; font-weight: 700;'>{total_pages} trang</span><br>
+                      <strong>File đang chọn:</strong> <code>{active_pdf.name}</code><br>
+                      <strong>Kích thước:</strong> <span style='color: #38bdf8; font-weight: 700;'>{size_mb} MB</span> | <strong>Số trang:</strong> <span style='color: #10b981; font-weight: 700;'>{total_pages} trang</span><br>
                       <strong>Vị trí lưu:</strong> <code>Google_Drive_Storage/1_Catalogues/</code>
                     </div>
                     """, unsafe_allow_html=True)
                 except Exception as e:
                     st.error(f"Lỗi đọc PDF: {e}")
 
-            if st.button("🚀 BẮT ĐẦU PHÂN TÍCH CATALOGUE BẰNG AI", type="primary", key="btn_run_extract_ui"):
-                st.info("Agent_Technical đang quét các trang PDF và thẩm tra 6 bước B1-B6...")
+            c_run1, c_run2 = st.columns([6, 6])
+            with c_run1:
+                scan_mode = st.radio("Chế độ phân tích AI:", ["1 trang đầu (Test nhanh)", "Toàn bộ tài liệu"], horizontal=True, key="scan_mode_radio")
+            with c_run2:
+                if st.button("🚀 BẮT ĐẦU PHÂN TÍCH CATALOGUE", type="primary", key="btn_run_extract_ui"):
+                    if not active_pdf or not active_pdf.exists():
+                        st.error("Vui lòng chọn hoặc tải lên file PDF Catalogue!")
+                    else:
+                        with st.spinner(f"Agent_Leader đang chỉ đạo Agent_Technical phân tích '{active_pdf.name}'..."):
+                            try:
+                                from agent_leader import AgentLeader
+                                leader = AgentLeader()
+                                max_p = 1 if "1 trang" in scan_mode else None
+                                summary = leader.run_autonomous_pipeline(str(active_pdf), max_pages=max_p, sync_to_sheets=False)
+                                st.success(f"✓ Hoàn thành phân tích! Trích xuất được {summary.get('total_extracted', 0)} sản phẩm.")
+                                st.rerun()
+                            except Exception as ex:
+                                st.error(f"Lỗi phân tích: {ex}")
 
     if not products:
         st.warning("Chưa có dữ liệu sản phẩm trong cache. Vui lòng bấm 'Khởi động trích xuất' bên dưới.")
@@ -1026,11 +1079,32 @@ with tab_media:
                 st.success(f"✓ Đã lưu ảnh vào Google Drive: {saved_path.name}")
 
             # Chọn ảnh nền mockup
-            st.markdown("#### 2. Chọn Ảnh Nền Ghép (Mockup Background)")
+            c_bg_head, c_bg_scan = st.columns([8, 4])
+            with c_bg_head:
+                st.markdown("#### 2. Chọn Ảnh Nền Ghép (Mockup Background)")
+            with c_bg_scan:
+                if st.button("🔄 Quét ảnh G-Drive", key="btn_scan_bg_drive", help="Cập nhật ngay ảnh BIS_BACKGROUND.png hoặc ảnh nền mới bỏ vào Google Drive"):
+                    if knowledge_agent:
+                        knowledge_agent.scan_and_sync_drive_files()
+                    st.rerun()
+
             available_bgs = media_agent.get_backgrounds()
             bg_names = [bg.name for bg in available_bgs]
-            selected_bg_name = st.selectbox("Chọn không gian nền:", bg_names)
-            selected_bg_path = next(bg for bg in available_bgs if bg.name == selected_bg_name)
+            
+            # Ưu tiên chọn BIS_BACKGROUND.png nếu có trong thư mục
+            default_bg_idx = 0
+            for idx, bname in enumerate(bg_names):
+                if "BIS_BACKGROUND" in bname:
+                    default_bg_idx = idx
+                    break
+
+            selected_bg_name = st.selectbox(
+                "Chọn không gian nền:", 
+                bg_names, 
+                index=default_bg_idx if bg_names else 0,
+                key="bg_select_box"
+            )
+            selected_bg_path = next((bg for bg in available_bgs if bg.name == selected_bg_name), available_bgs[0] if available_bgs else None)
 
             # Tải thêm nền riêng nếu muốn
             new_bg_file = st.file_uploader("Hoặc tải lên ảnh nền riêng (Lưu tại 5_Studio_Backgrounds):", type=["jpg", "png"], key="new_bg")
@@ -1092,10 +1166,18 @@ with tab_media:
                 st.info(f"Chưa có ảnh ghép thành phẩm cho mã {clean_sku}. Vui lòng bấm 'AI GHÉP NỀN & TĂNG ĐỘ CHÂN THỰC' ở cột bên trái.")
 
 
-# ── TAB 4: PHÒNG LƯU TRỮ TRI THỨC (KNOWLEDGE VAULT) ──────────────────────────
+# ── TAB 5: PHÒNG LƯU TRỮ TRI THỨC (KNOWLEDGE VAULT) ──────────────────────────
 with tab_know:
-    st.markdown("### 📚 Phòng Lưu Trữ Tri Thức & Tài Liệu Chuẩn (Agent_Knowledge)")
-    st.write("Kho lưu trữ sách tiêu chuẩn, catalogue, manual, chứng nhận COC, CO, CQ, hình ảnh và video đào tạo để toàn bộ AI Agents nạp tri thức học tập.")
+    c_kn_h1, c_kn_h2 = st.columns([8, 4])
+    with c_kn_h1:
+        st.markdown("### 📚 Phòng Lưu Trữ Tri Thức & Tài Liệu Chuẩn (Agent_Knowledge)")
+        st.write("Kho lưu trữ sách tiêu chuẩn, catalogue, manual, chứng nhận COC, CO, CQ, hình ảnh và video đào tạo để toàn bộ AI Agents nạp tri thức học tập.")
+    with c_kn_h2:
+        if st.button("🔄 Quét toàn bộ Google Drive", key="btn_scan_all_vault", help="Tự động đồng bộ các file Sách, Manual, CO/CQ, Catalogue mới bỏ vào Google Drive"):
+            if knowledge_agent:
+                scan_res = knowledge_agent.scan_and_sync_drive_files()
+                st.success(f"✓ Đã đồng bộ: {len(scan_res.get('catalogues', []))} catalogues, {len(scan_res.get('manuals', []))} manuals, {len(scan_res.get('certificates', []))} chứng nhận.")
+            st.rerun()
 
     if not knowledge_agent:
         st.warning("⚠️ Đang chờ đồng bộ file `agent_knowledge.py` trên GitHub. Hãy tải file lên để kích hoạt.")
