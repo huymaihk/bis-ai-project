@@ -1350,6 +1350,7 @@ with tab_tech:
                 # KHUNG XEM TRƯỚC DUY NHẤT (GỘP THÀNH 1 MỤC XEM TRƯỚC RỰC RỠ, NỀN TRẮNG CHUẨN WEBSITE)
                 st.markdown("---")
                 st.markdown("##### 📄 Bản Xem Trước Chuẩn Website Haravan / bistextile.com (Nền trắng sắc nét):")
+                live_preview_code = p.get("custom_html") or technical_agent.build_7_block_html(p)
                 import hashlib
                 preview_hash = hashlib.md5((str(live_preview_code) + str(p.get("status")) + str(p.get("updated_at", ""))).encode("utf-8")).hexdigest()[:8]
                 full_preview_html = f"""<!DOCTYPE html>
