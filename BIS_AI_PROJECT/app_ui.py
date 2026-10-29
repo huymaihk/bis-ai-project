@@ -1178,9 +1178,8 @@ with tab_tech:
             # ── GIAO DIỆN KIỂM DUYỆT & XEM TRƯỚC TRỰC QUAN (UNIFIED WORKSPACE) ───────
             st.markdown("#### 👁️ Bàn Kiểm Duyệt & Xem Trước Trực Quan Chuẩn Haravan")
 
-            tab_unified, tab_raw_html, tab_memory_quick = st.tabs([
-                "📑 Bàn Soát Lỗi & Bản Xem Trước Trực Quan",
-                "💻 Mã Nguồn HTML 7 Khối (Tùy Chỉnh Sâu)",
+            tab_unified, tab_memory_quick = st.tabs([
+                "📑 Bàn Soát Lỗi, Sửa Nội Dung / Mã HTML & Xem Trước Trực Quan",
                 "🧠 Bộ Nhớ AI Tự Học (Feedback Memory)"
             ])
 
@@ -1200,12 +1199,19 @@ with tab_tech:
             with tab_unified:
                 st.markdown("""
                 <div style='background: #0b1120; border: 1px solid #1e293b; border-left: 3px solid #10b981; padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #94a3b8; margin-bottom: 14px;'>
-                  🧠 <strong>Cơ chế tự học tức thì:</strong> Chỉnh sửa trực tiếp bất kỳ khối nào dưới đây (Khối 1 - 7). Nhấn <code>💾 LƯU THAY ĐỔI & AI TỰ HỌC</code> hoặc <code>✅ PHÊ DUYỆT ĐỂ ĐĂNG WEB</code>, hệ thống sẽ lưu ngay vào bộ nhớ đệm, tự động cập nhật bản xem trước bên dưới và ghi nhớ quy tắc vĩnh viễn vào <code>feedback_memory.json</code>!
+                  🧠 <strong>Cơ chế tự học tức thì:</strong> Bạn có thể sửa theo từng Khối thông tin hoặc sửa trực tiếp toàn bộ mã HTML 7 Khối ngay tại tab này. Nhấn <code>💾 LƯU THAY ĐỔI & AI TỰ HỌC</code> hoặc <code>✅ PHÊ DUYỆT</code>, hệ thống sẽ lưu tức thì, cập nhật ngay bản xem trước bên dưới và ghi nhớ vĩnh viễn vào <code>feedback_memory.json</code>!
                 </div>
                 """, unsafe_allow_html=True)
 
-                with st.form(key=f"edit_unified_form_{p.get('sku')}"):
-                    # HÀNG 1: Tiêu đề song ngữ
+                edit_mode = st.radio(
+                    "Chọn phương thức chỉnh sửa nội dung:",
+                    ["📝 Chỉnh sửa theo từng Khối (Khối 1 - 7)", "💻 Chỉnh sửa trực tiếp Mã HTML 7 Khối"],
+                    horizontal=True,
+                    key=f"edit_mode_toggle_{p.get('sku')}"
+                )
+
+                if edit_mode.startswith("📝"):
+                    # HÀNG 1: Tiêu đề song ngữ & Đơn vị tính
                     col_ef1, col_ef2 = st.columns(2)
                     with col_ef1:
                         edit_name_vi = st.text_input("1. Tên sản phẩm tiếng Việt (Khối 1):", value=p.get("product_name") or "", key=f"inp_vi_{p.get('sku')}")
@@ -1233,14 +1239,21 @@ with tab_tech:
                     with col_b7:
                         edit_doc_title = st.text_input("🔗 Tên liên kết / Tài liệu tra cứu (Khối 7):", value=default_doc_title, key=f"inp_doc_{p.get('sku')}")
 
-                    col_btn1, col_btn2 = st.columns(2)
-                    with col_btn1:
-                        save_corrections = st.form_submit_button("💾 LƯU THAY ĐỔI & AI TỰ HỌC", use_container_width=True)
-                    with col_btn2:
-                        approve_btn = st.form_submit_button("✅ PHÊ DUYỆT ĐỂ ĐĂNG WEB (APPROVE)", use_container_width=True)
+                else:
+                    st.caption("💻 Chỉnh sửa trực tiếp toàn bộ mã HTML 7 khối chuẩn Haravan (có thể chèn thêm link, bảng, style CSS):")
+                    current_html_val = p.get("custom_html") or technical_agent.build_7_block_html(p)
+                    custom_html_code = st.text_area("Mã HTML 7 Khối hoàn chỉnh:", value=current_html_val, height=300, key=f"raw_html_{p.get('sku')}")
 
-                    if save_corrections or approve_btn:
-                        learned_changes = []
+                col_btn1, col_btn2 = st.columns(2)
+                with col_btn1:
+                    save_corrections = st.button("💾 LƯU THAY ĐỔI & AI TỰ HỌC", key=f"btn_save_unified_{p.get('sku')}", type="primary", use_container_width=True)
+                with col_btn2:
+                    approve_btn = st.button("✅ PHÊ DUYỆT ĐỂ ĐĂNG WEB (APPROVE)", key=f"btn_approve_unified_{p.get('sku')}", use_container_width=True)
+
+                if save_corrections or approve_btn:
+                    learned_changes = []
+
+                    if edit_mode.startswith("📝"):
                         if edit_name_vi != p.get("product_name"):
                             learning_engine.record_correction(p.get("sku"), "product_name", p.get("product_name"), edit_name_vi, f"Trang {page_num}")
                             p["product_name"] = edit_name_vi
@@ -1263,54 +1276,81 @@ with tab_tech:
                             p["description"] = edit_desc
                             learned_changes.append("Mô tả kỹ thuật")
 
-                        # Cập nhật các khối 5, 6, 7 mới
                         hl_list = [line.strip().lstrip("-*• ") for line in edit_highlights.split("\n") if line.strip()]
                         p["highlights"] = hl_list
                         p["application_scope"] = edit_scope.strip()
                         p["related_doc_title"] = edit_doc_title.strip()
                         p["source_page"] = edit_page_str.strip()
 
-                        # Đặt trạng thái phê duyệt
                         if approve_btn:
                             p["status"] = "APPROVED"
                         else:
                             p["status"] = edit_status
 
+                        # Sinh lại HTML mới theo các trường vừa sửa và lưu vào p
                         p.pop("custom_html", None)
+                        p["custom_html"] = technical_agent.build_7_block_html(p)
 
-                        # Lưu vào bộ nhớ cục bộ và đĩa
-                        for item in products:
-                            if item.get("sku") == p.get("sku"):
-                                item.update(p)
-                                break
-
-                        with open(cache_file, "w", encoding="utf-8") as f:
-                            json.dump(products, f, ensure_ascii=False, indent=2)
-
-                        # Đồng bộ ngay vào repo git
-                        git_cache = Path("c:/Users/Dell/bis-ai-project/BIS_AI_PROJECT/extracted_products_cache.json")
-                        if git_cache.parent.exists():
-                            try:
-                                with open(git_cache, "w", encoding="utf-8") as f:
-                                    json.dump(products, f, ensure_ascii=False, indent=2)
-                            except Exception:
-                                pass
-
-                        st.session_state["cached_products"] = products
-                        operations_agent.update_product_status_in_sheet(p.get("sku"), p.get("status"), f"Chỉnh sửa bởi {st.session_state.username}")
+                    else:
+                        # Lưu từ chế độ sửa HTML trực tiếp
+                        p["custom_html"] = custom_html_code
+                        # Đồng bộ ngược vào dữ liệu cấu trúc nếu tìm thấy thẻ h1, h2
+                        import re
+                        m_h1 = re.search(r"<h1[^>]*>(.*?)</h1>", custom_html_code, re.IGNORECASE | re.DOTALL)
+                        if m_h1:
+                            clean_h1 = re.sub(r"<[^>]+>", "", m_h1.group(1)).strip()
+                            if clean_h1 and clean_h1 != p.get("product_name"):
+                                learning_engine.record_correction(p.get("sku"), "product_name", p.get("product_name"), clean_h1, f"Trang {page_num}")
+                                p["product_name"] = clean_h1
+                                learned_changes.append(f"Tên tiếng Việt ➔ '{clean_h1}'")
+                        m_h2 = re.search(r"<h2[^>]*>(.*?)</h2>", custom_html_code, re.IGNORECASE | re.DOTALL)
+                        if m_h2:
+                            clean_h2 = re.sub(r"<[^>]+>", "", m_h2.group(1)).strip()
+                            if clean_h2 and clean_h2 != p.get("product_name_en"):
+                                learning_engine.record_correction(p.get("sku"), "product_name_en", p.get("product_name_en"), clean_h2, f"Trang {page_num}")
+                                p["product_name_en"] = clean_h2
+                                learned_changes.append(f"Tên tiếng Anh ➔ '{clean_h2}'")
 
                         if approve_btn:
-                            st.toast(f"🎉 ĐÃ PHÊ DUYỆT SẢN PHẨM {p.get('sku')} ĐỂ ĐĂNG WEB!", icon="✅")
-                        elif learned_changes:
-                            st.toast(f"🧠 AI ĐÃ TỰ HỌC {len(learned_changes)} QUY TẮC MỚI!", icon="💾")
-                        else:
-                            st.toast("✓ Đã lưu thay đổi thành công!", icon="💾")
-                        st.rerun()
+                            p["status"] = "APPROVED"
 
-                # KHUNG XEM TRƯỚC DUY NHẤT (GỘP THÀNH 1 MỤC XEM TRƯỚC RỰC RỠ)
+                    # Đánh dấu thời điểm cập nhật
+                    p["updated_at"] = datetime.now().isoformat()
+
+                    # Cập nhật danh sách products
+                    for item in products:
+                        if item.get("sku") == p.get("sku"):
+                            item.update(p)
+                            break
+
+                    with open(cache_file, "w", encoding="utf-8") as f:
+                        json.dump(products, f, ensure_ascii=False, indent=2)
+
+                    git_cache = Path("c:/Users/Dell/bis-ai-project/BIS_AI_PROJECT/extracted_products_cache.json")
+                    if git_cache.parent.exists():
+                        try:
+                            with open(git_cache, "w", encoding="utf-8") as f:
+                                json.dump(products, f, ensure_ascii=False, indent=2)
+                        except Exception:
+                            pass
+
+                    st.session_state["cached_products"] = products
+                    operations_agent.update_product_status_in_sheet(p.get("sku"), p.get("status"), f"Chỉnh sửa bởi {st.session_state.username}")
+
+                    if approve_btn:
+                        st.toast(f"🎉 ĐÃ PHÊ DUYỆT SẢN PHẨM {p.get('sku')} ĐỂ ĐĂNG WEB!", icon="✅")
+                    elif learned_changes:
+                        st.toast(f"🧠 AI ĐÃ TỰ HỌC {len(learned_changes)} QUY TẮC MỚI!", icon="💾")
+                    else:
+                        st.toast("✓ ĐÃ LƯU THÀNH CÔNG & CẬP NHẬT BẢN XEM TRƯỚC!", icon="💾")
+
+                    time.sleep(0.15)
+                    st.rerun()
+
+                # KHUNG XEM TRƯỚC DUY NHẤT (GỘP THÀNH 1 MỤC XEM TRƯỚC RỰC RỠ, NỀN TRẮNG CHUẨN WEBSITE)
                 st.markdown("---")
                 st.markdown("##### 📄 Bản Xem Trước Chuẩn Website Haravan / bistextile.com (Nền trắng sắc nét):")
-                html_code = technical_agent.build_7_block_html(p)
+                live_preview_code = p.get("custom_html") or technical_agent.build_7_block_html(p)
                 full_preview_html = f"""<!DOCTYPE html>
 <html>
 <head>
@@ -1326,21 +1366,12 @@ with tab_tech:
   </style>
 </head>
 <body style="background-color: #ffffff !important; color: #1e293b !important;">
-  {html_code}
+  {live_preview_code}
 </body>
 </html>"""
-                components.html(full_preview_html, height=580, scrolling=True)
-
-            with tab_raw_html:
-                st.caption("Cho phép sửa trực tiếp mã HTML 7 khối chuẩn trước khi đẩy lên sàn Haravan:")
-                custom_html = st.text_area("Mã HTML 7 Khối hiện tại:", value=technical_agent.build_7_block_html(p), height=280, key=f"raw_html_{p.get('sku')}")
-                if st.button("💾 Lưu mã HTML tùy chỉnh", key=f"btn_save_raw_html_{p.get('sku')}"):
-                    p["custom_html"] = custom_html
-                    with open(cache_file, "w", encoding="utf-8") as f:
-                        json.dump(products, f, ensure_ascii=False, indent=2)
-                    st.session_state["cached_products"] = products
-                    st.success("✓ Đã lưu mã HTML tùy chỉnh cho sản phẩm này!")
-                    st.rerun()
+                import hashlib
+                preview_hash = hashlib.md5((full_preview_html + str(p.get("status")) + str(p.get("updated_at", ""))).encode("utf-8")).hexdigest()[:8]
+                components.html(full_preview_html, height=580, scrolling=True, key=f"preview_live_{p.get('sku')}_{preview_hash}")
 
             with tab_memory_quick:
                 st.markdown("##### 🧠 Các Quy Tắc AI Đã Tự Học Được (Learning Engine Rules):")
