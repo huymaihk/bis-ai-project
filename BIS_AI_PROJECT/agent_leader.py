@@ -17,23 +17,31 @@ import pymupdf
 
 from agent_technical import AgentTechnical
 from agent_operations import AgentOperations
+from agent_marketing import AgentMarketing
+from agent_knowledge import AgentKnowledge
+from agent_media import AgentMedia
 from learning_engine import LearningEngine
 
 class AgentLeader:
     def __init__(self, workspace_dir: str | Path | None = None):
         self.workspace_dir = Path(workspace_dir) if workspace_dir else Path(__file__).parent.resolve()
         
-        # Initialize Sub-Agents
+        # Initialize Departmental Sub-Agents
         self.technical_agent = AgentTechnical(self.workspace_dir)
         self.operations_agent = AgentOperations(self.workspace_dir)
+        self.marketing_agent = AgentMarketing(self.workspace_dir)
+        self.knowledge_agent = AgentKnowledge(self.workspace_dir)
+        self.media_agent = AgentMedia(self.workspace_dir)
         self.learning_engine = LearningEngine(self.workspace_dir)
 
         # Department Registry (Plug & Play architecture)
         self.departments = {
             "technical": self.technical_agent,
             "operations": self.operations_agent,
+            "marketing": self.marketing_agent,
+            "knowledge": self.knowledge_agent,
+            "media": self.media_agent,
             "sales": None,       # Ready to plug Agent_Sales
-            "marketing": None,   # Ready to plug Agent_Marketing
             "warehouse": None,   # Ready to plug Agent_Warehouse
         }
 
