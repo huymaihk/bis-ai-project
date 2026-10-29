@@ -170,3 +170,21 @@ class AgentMedia:
             return True
         return False
 
+    def process_product_image(self, sku: str, images: list, bg_path: Path = None) -> dict:
+        """Process and composite product images with default or selected background."""
+        if not images:
+            return {"sku": sku, "status": "NO_IMAGES", "composite_path": None}
+        
+        if bg_path is None or not Path(bg_path).exists():
+            bg_list = self.get_backgrounds()
+            bg_path = bg_list[0] if bg_list else (self.bg_dir / "modern_textile_lab.jpg")
+
+        first_img = Path(images[0])
+        final_path = self.composite_product_image(sku, first_img, Path(bg_path))
+        return {
+            "sku": sku,
+            "status": "PENDING_REVIEW",
+            "composite_path": str(final_path),
+            "background": str(bg_path)
+        }
+

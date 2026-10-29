@@ -106,3 +106,20 @@ class AgentKnowledge:
             lines.append(f"- [{doc['category'].upper()}] {doc['title']}: {doc['scope']}")
         return "\n".join(lines)
 
+    @property
+    def storage_root(self):
+        return self.gdrive_storage
+
+    def ensure_storage_structure(self):
+        for d in self.subdirs.values():
+            d.mkdir(parents=True, exist_ok=True)
+        return self.subdirs
+
+    def get_knowledge_summary(self) -> dict:
+        return {
+            "total_documents": len(self.manifest),
+            "categories": list(self.subdirs.keys()),
+            "storage_path": str(self.gdrive_storage)
+        }
+
+

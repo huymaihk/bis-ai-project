@@ -99,3 +99,11 @@ class LearningEngine:
                     record[field] = corrected
         return record
 
+    def get_context_rules_for_prompt(self, max_examples: int = 5) -> str:
+        """Alias for get_few_shot_prompt_text."""
+        return self.get_few_shot_prompt_text(max_examples)
+
+    def load_memory(self) -> dict:
+        """Return memory data dictionary."""
+        return self.memory_data
+

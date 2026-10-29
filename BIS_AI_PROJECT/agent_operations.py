@@ -49,42 +49,54 @@ class AgentOperations:
     def _get_sa_arg(self) -> str | None:
         return str(self.sa_path) if self.sa_path.exists() else None
 
-    def connect_sheets(self) -> Tuple[gspread.Spreadsheet, gspread.Worksheet]:
-        """Connect and initialize Google Sheets structure."""
-        return init_products_sheet(self._get_sa_arg())
+    def connect_sheets(self) -> Tuple[Optional[gspread.Spreadsheet], Optional[gspread.Worksheet]]:
+        """Connect and initialize Google Sheets structure with safe exception handling."""
+        try:
+            return init_products_sheet(self._get_sa_arg())
+        except Exception as e:
+            print(f"⚠️ [Agent_Operations] Google Sheets connection notice: {e}")
+            return None, None
 
     def load_products_from_sheet(self) -> List[dict]:
-        """Load all products from Google Sheets PRODUCTS tab."""
-        client = get_client(self._get_sa_arg())
-        ss = get_or_create_spreadsheet(client)
-        ws = ss.worksheet(SHEET_PRODUCTS)
-        return ws.get_all_records()
+        """Load all products from Google Sheets PRODUCTS tab with fallback."""
+        try:
+            client = get_client(self._get_sa_arg())
+            ss = get_or_create_spreadsheet(client)
+            ws = ss.worksheet(SHEET_PRODUCTS)
+            return ws.get_all_records()
+        except Exception as e:
+            print(f"⚠️ [Agent_Operations] Cannot fetch from Google Sheets: {e}")
+            return []
 
     def update_product_status_in_sheet(self, sku: str, new_status: str, notes: str = "", haravan_id: str = ""):
-        """Update a product's status, notes, or haravan_id in Google Sheets."""
-        client = get_client(self._get_sa_arg())
-        ss = get_or_create_spreadsheet(client)
-        ws = ss.worksheet(SHEET_PRODUCTS)
-        records = ws.get_all_records()
+        """Update a product's status, notes, or haravan_id in Google Sheets with fallback."""
+        try:
+            client = get_client(self._get_sa_arg())
+            ss = get_or_create_spreadsheet(client)
+            ws = ss.worksheet(SHEET_PRODUCTS)
+            records = ws.get_all_records()
 
-        status_col = PRODUCT_COLUMNS.index("status") + 1
-        notes_col = PRODUCT_COLUMNS.index("notes") + 1
-        hid_col = PRODUCT_COLUMNS.index("haravan_product_id") + 1
-        updated_at_col = PRODUCT_COLUMNS.index("updated_at") + 1
+            status_col = PRODUCT_COLUMNS.index("status") + 1
+            notes_col = PRODUCT_COLUMNS.index("notes") + 1
+            hid_col = PRODUCT_COLUMNS.index("haravan_product_id") + 1
+            updated_at_col = PRODUCT_COLUMNS.index("updated_at") + 1
 
-        now = datetime.utcnow().isoformat() + "Z"
+            now = datetime.utcnow().isoformat() + "Z"
 
-        for idx, r in enumerate(records, start=2):
-            if str(r.get("sku")).strip() == str(sku).strip():
-                ws.update_cell(idx, status_col, new_status)
-                ws.update_cell(idx, updated_at_col, now)
-                if notes:
-                    ws.update_cell(idx, notes_col, notes)
-                if haravan_id:
-                    ws.update_cell(idx, hid_col, str(haravan_id))
-                print(f"  ✓ [Agent_Operations] Updated Google Sheet row {idx} (SKU {sku}) -> {new_status}")
-                return True
-        return False
+            for idx, r in enumerate(records, start=2):
+                if str(r.get("sku")).strip() == str(sku).strip():
+                    ws.update_cell(idx, status_col, new_status)
+                    ws.update_cell(idx, updated_at_col, now)
+                    if notes:
+                        ws.update_cell(idx, notes_col, notes)
+                    if haravan_id:
+                        ws.update_cell(idx, hid_col, str(haravan_id))
+                    print(f"  ✓ [Agent_Operations] Updated Google Sheet row {idx} (SKU {sku}) -> {new_status}")
+                    return True
+            return False
+        except Exception as e:
+            print(f"⚠️ [Agent_Operations] Google Sheets update skipped ({e}). Local cache intact.")
+            return False
 
     # ── Haravan Guard & Synchronization ───────────────────────────────────────
     def _haravan_headers(self) -> dict:
