@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>BIS Textile — Bàn Duyệt Tập Trung Sản Phẩm</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    .bis-desc-box {
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+    }
+    .bis-spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+    .bis-spec-table th, .bis-spec-table td {
+      border: 1px solid #e2e8f0;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+    .bis-spec-table td.label-col {
+      width: 39%;
+      background: #f8fafc;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-4">
+  <div class="max-w-[1600px] mx-auto space-y-4">
+    
+    <!-- TOP HEADER & SAFETY STATUS BAR -->
+    <header class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white font-black text-xl">
+          BIS
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-bold text-lg text-[var(--foreground)]">Bàn Duyệt Sản Phẩm — Antigravity AI v3.0</h1>
+            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
+              Đối chiếu n8n v2.0
+            </span>
+          </div>
+          <p class="text-xs text-[var(--muted-foreground)]">
+            Dành cho: <strong class="text-[var(--foreground)]">Anh Mai Đức Huy</strong> & Người vận hành BIS Textile • Nguồn: <code class="bg-[var(--muted)] px-1 rounded">catalogue_sample.pdf</code>
+          </p>
+        </div>
+      </div>
+
+      <!-- SAFETY BADGES -->
+      <div class="flex items-center gap-2">
+        <a href="https://bistextile.com/pages/lien-he-bistextile" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-purple-500/30 bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300 text-xs font-medium">
+          <span>🌐 bistextile.com (196 SP đang bán • 1 mã trùng)</span>
+          <span>↗</span>
+        </a>
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/30 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 text-xs font-semibold">
+          <span>🔒 RÀO CHẮN: CHẾ ĐỘ ẨN (published=false)</span>
+        </div>
+        <a href="https://docs.google.com/spreadsheets/d/1AK4zau1LlfNPl2r4V_0RULwMXwUQ3F5_SKEoVHrZJFM" target="_blank" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium transition flex items-center gap-1">
+          <span>Mở Google Sheets</span>
+          <span>↗</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- METRICS OVERVIEW -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-3">
+        <div class="text-xs text-[var(--muted-foreground)]">Tổng sản phẩm bóc tách</div>
+        <div class="text-2xl font-bold text-[var(--foreground)]" id="metric-total">17</div>
+        <div class="text-[11px] text-emerald-600 mt-1">✓ 100% từ Catalogue gốc</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-3">
+        <div class="text-xs text-[var(--muted-foreground)]">Chờ BIS duyệt (Unverified)</div>
+        <div class="text-2xl font-bold text-amber-600" id="metric-unverified">17</div>
+        <div class="text-[11px] text-[var(--muted-foreground)] mt-1">Cần soát 6 bước B1-B6</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-3">
+        <div class="text-xs text-[var(--muted-foreground)]">Đã duyệt tạo ẩn (Approved)</div>
+        <div class="text-2xl font-bold text-emerald-600" id="metric-approved">0</div>
+        <div class="text-[11px] text-[var(--muted-foreground)] mt-1">Sẵn sàng xuất Haravan</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-3">
+        <div class="text-xs text-[var(--muted-foreground)]">Đã từ chối (Rejected)</div>
+        <div class="text-2xl font-bold text-rose-600" id="metric-rejected">0</div>
+        <div class="text-[11px] text-[var(--muted-foreground)] mt-1">Bỏ qua khi đồng bộ</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-3">
+        <div class="text-xs text-[var(--muted-foreground)]">Đã đăng ẩn trên Haravan</div>
+        <div class="text-2xl font-bold text-blue-600" id="metric-pushed">0</div>
+        <div class="text-[11px] text-[var(--muted-foreground)] mt-1">Khóa bảo vệ không đè cũ</div>
+      </div>
+    </div>
+
+    <!-- MAIN 3-COLUMN WORKSPACE -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+      
+      <!-- COLUMN 1: INVENTORY & QUEUE (3.5 cols) -->
+      <section class="lg:col-span-4 bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm flex flex-col h-[780px]">
+        <div class="flex items-center justify-between pb-3 border-b border-[var(--border)] mb-3">
+          <div>
+            <h2 class="font-bold text-sm text-[var(--foreground)]">01. Hàng Đợi & Kiểm Kê (Inventory)</h2>
+            <p class="text-xs text-[var(--muted-foreground)]">Tab 05 & 06 hệ thống cũ</p>
+          </div>
+          <span class="text-xs font-semibold px-2 py-0.5 rounded bg-[var(--muted)] text-[var(--foreground)]" id="queue-count">
+            17 mã
+          </span>
+        </div>
+
+        <!-- Filter tabs -->
+        <div class="flex items-center gap-1.5 pb-2">
+          <button onclick="setFilter('ALL')" id="filter-all" class="px-2.5 py-1 text-xs rounded-md font-semibold bg-blue-600 text-white">Tất cả (17)</button>
+          <button onclick="setFilter('EXTRACTED_UNVERIFIED')" id="filter-unverified" class="px-2.5 py-1 text-xs rounded-md text-[var(--muted-foreground)] hover:bg-[var(--muted)]">Chờ duyệt</button>
+          <button onclick="setFilter('APPROVED')" id="filter-approved" class="px-2.5 py-1 text-xs rounded-md text-[var(--muted-foreground)] hover:bg-[var(--muted)]">Đã duyệt</button>
+        </div>
+
+        <!-- Product List -->
+        <div class="flex-1 overflow-y-auto space-y-2 pr-1" id="product-list-container">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- COLUMN 2: FACTS & 6-STEP AUDIT (4.5 cols) -->
+      <section class="lg:col-span-4 bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm flex flex-col h-[780px] overflow-hidden">
+        <div class="pb-3 border-b border-[var(--border)] mb-3 flex items-center justify-between">
+          <div>
+            <h2 class="font-bold text-sm text-[var(--foreground)]">02. Bằng Chứng & Thẩm Tra 6 Bước</h2>
+            <p class="text-xs text-[var(--muted-foreground)]">Tab 07 Facts & Tab 08 Audit B1 - B6</p>
+          </div>
+          <div id="current-audit-badge" class="px-2 py-0.5 text-xs font-bold rounded bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+            CHỜ SOÁT
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto space-y-4 pr-1" id="audit-details-container">
+          <!-- Populated by JS for selected product -->
+        </div>
+      </section>
+
+      <!-- COLUMN 3: HARAVAN LIVE PREVIEW & 1-TOUCH APPROVAL (4 cols) -->
+      <section class="lg:col-span-4 bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm flex flex-col h-[780px]">
+        <div class="pb-3 border-b border-[var(--border)] mb-3 flex items-center justify-between">
+          <div>
+            <h2 class="font-bold text-sm text-[var(--foreground)]">03. Xem Bài Haravan & Phê Duyệt</h2>
+            <p class="text-xs text-[var(--muted-foreground)]">Tab 01 Bàn Duyệt & Tab 03 Template 7 khối</p>
+          </div>
+          <span class="text-xs font-mono px-2 py-0.5 rounded bg-[var(--muted)]" id="preview-sku">
+            SKU: ---
+          </span>
+        </div>
+
+        <!-- HTML Preview Frame -->
+        <div class="flex-1 overflow-y-auto border border-[var(--border)] rounded-lg p-3 bg-white text-slate-900 bis-desc-box mb-3 text-xs" id="html-preview-content">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- 1-TOUCH ACTION CONTROLS -->
+        <div class="pt-3 border-t border-[var(--border)] space-y-2">
+          <div class="flex items-center justify-between text-xs text-[var(--muted-foreground)]">
+            <span>Ràng buộc: <strong class="text-emerald-600">published=false (Ẩn 100%)</strong></span>
+            <span>Chống trùng: <strong class="text-blue-600">SKU + Title + Slug</strong></span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="handleReject()" class="px-3 py-2.5 rounded-lg border border-rose-500/40 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-xs font-bold transition flex items-center justify-center gap-1">
+              ✕ TỪ CHỐI (REJECT)
+            </button>
+            <button onclick="handleApprove()" class="px-3 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm flex items-center justify-center gap-1">
+              ✓ ĐỒNG Ý TẠO ẨN HARAVAN
+            </button>
+          </div>
+
+          <div class="text-[11px] text-center text-[var(--muted-foreground)]">
+            Dấu duyệt sẽ ghi nhận: <code>Duyệt_thông_số</code>, <code>Duyệt_SEO</code>, <code>Duyệt_HTML</code> và khóa 1 sản phẩm/lượt.
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+
+  <script>
+    // 17 Extracted Products from Catalogue Sample
+    const productsData = [
+      {
+        product_id: "ebb5d7ab-eee3-4bfa-9a92-4d1d953f9f6b",
+        sku: "03026A",
+        status: "EXTRACTED_UNVERIFIED",
+        source_page: 7,
+        product_name: "Sách hướng dẫn các phương pháp thử nghiệm và quy trình quốc tế AATCC (Bìa cứng)",
+        product_name_en: "AATCC Manual of International Test Methods and Procedures - Hardbound Book",
+        category: "Tài liệu tiêu chuẩn",
+        unit: "cuốn",
+        vendor: "AATCC",
+        brand_origin: "Hoa Kỳ (USA)",
+        publisher_role: "Nhà xuất bản tiêu chuẩn quốc tế AATCC",
+        description: "Tập hợp các phương pháp thử nghiệm, quy trình phòng thí nghiệm, quy trình đánh giá và chuyên khảo do Ủy ban Nghiên cứu AATCC phát triển. Xuất bản ấn bản thứ 100 (2026). Dạng sách đóng bìa cứng.",
+        features: [
+          "Ấn bản kỷ niệm thứ 100 (Vol. 100) xuất bản năm 2026.",
+          "Bao gồm toàn bộ phương pháp thử nghiệm vật lý, độ bền màu, hoàn tất dệt may quốc tế.",
+          "Dạng sách bìa cứng (Hardbound Book) độ bền cao dùng cho phòng lab."
+        ],
+        specs: [
+          { name: "Mã sản phẩm", val: "03026A" },
+          { name: "Định dạng", val: "Sách in bìa cứng (Hardbound)" },
+          { name: "Năm xuất bản", val: "2026 (Volume 100)" },
+          { name: "Tổ chức ban hành", val: "AATCC (Hoa Kỳ)" },
+          { name: "Phạm vi áp dụng", val: "Phương pháp kiểm nghiệm dệt may quốc tế" },
+          { name: "Ngôn ngữ", val: "Tiếng Anh (Bản gốc)" }
+        ],
+        audit: {
+          b1: { pass: true, label: "B1 Catalogue READY", desc: "PDF hợp lệ, Folder READY, File_ID duy nhất." },
+          b2: { pass: true, label: "B2 Inventory", desc: "Mã 03026A duy nhất tại Trang 7, không nghi trùng." },
+          b3: { pass: true, label: "B3 Facts & Claims", desc: "Thông số ấn bản 2026 có trích dẫn Trang 7, 0 cảnh báo." },
+          b4: { pass: true, label: "B4 Nghiên cứu SEO", desc: "Keywords: tiêu chuẩn AATCC, kiểm nghiệm dệt may." },
+          b5: { pass: true, label: "B5 Vai trò tổ chức", desc: "Xác minh AATCC là nhà xuất bản (Publisher), nguồn gốc Hoa Kỳ." },
+          b6: { pass: true, label: "B6 Template HTML", desc: "Khớp chuẩn 7 khối, không chứa liên kết tải ngoài quy định." }
+        }
+      },
+      {
+        product_id: "0ce421a2-7a2f-490a-9a0f-260529ede511",
+        sku: "03026B",
+        status: "EXTRACTED_UNVERIFIED",
+        source_page: 7,
+        product_name: "Sách hướng dẫn các phương pháp thử nghiệm và quy trình quốc tế AATCC (Tải về PDF)",
+        product_name_en: "AATCC Manual of International Test Methods and Procedures - PDF Download",
+        category: "Tài liệu tiêu chuẩn",
+        unit: "bản",
+        vendor: "AATCC",
+        brand_origin: "Hoa Kỳ (USA)",
+        publisher_role: "Nhà xuất bản tiêu chuẩn quốc tế AATCC",
+        description: "Tập hợp các phương pháp thử nghiệm, quy trình phòng thí nghiệm, quy trình đánh giá và chuyên khảo do Ủy ban Nghiên cứu AATCC phát triển. Xuất bản ấn bản thứ 100 (2026). Dạng tệp PDF tải về.",
+        features: [
+          "Bản PDF điện tử tra cứu nhanh trên máy tính và thiết bị di động.",
+          "Cập nhật toàn bộ các phương pháp kiểm nghiệm dệt may mới nhất năm 2026.",
+          "Bản quyền cấp phép chính hãng từ AATCC."
+        ],
+        specs: [
+          { name: "Mã sản phẩm", val: "03026B" },
+          { name: "Định dạng", val: "Tệp kỹ thuật số (PDF Download)" },
+          { name: "Năm xuất bản", val: "2026 (Volume 100)" },
+          { name: "Tổ chức ban hành", val: "AATCC (Hoa Kỳ)" }
+        ],
+        audit: {
+          b1: { pass: true, label: "B1 Catalogue READY", desc: "PDF hợp lệ, nguồn trang 7." },
+          b2: { pass: true, label: "B2 Inventory", desc: "Khớp mã biến thể PDF 03026B." },
+          b3: { pass: true, label: "B3 Facts & Claims", desc: "Trích xuất chứng cứ rõ ràng." },
+          b4: { pass: true, label: "B4 Nghiên cứu SEO", desc: "Từ khóa chuẩn kỹ thuật." },
+          b5: { pass: true, label: "B5 Vai trò tổ chức", desc: "Nhà xuất bản AATCC được xác nhận." },
+          b6: { pass: true, label: "B6 Template HTML", desc: "Cấu trúc 7 khối đạt yêu cầu." }
+        }
+      },
+      {
+        product_id: "7d0d0f20-b8f2-4ff5-b9f1-3a6e87f8b1b2",
+        sku: "03017C",
+        status: "EXTRACTED_UNVERIFIED",
+        source_page: 7,
+        product_name: "Gói thuê bao trực tuyến tiêu chuẩn AATCC (1 năm)",
+        product_name_en: "AATCC Standards Online Subscription",
+        category: "Dịch vụ bản quyền",
+        unit: "gói",
+        vendor: "AATCC",
+        brand_origin: "Hoa Kỳ (USA)",
+        publisher_role: "Nhà cung cấp dịch vụ trực tuyến AATCC",
+        description: "Thuê bao truy cập cơ sở dữ liệu tiêu chuẩn trực tuyến của AATCC trong vòng 1 năm, liên tục cập nhật phiên bản mới nhất.",
+        features: ["Truy cập đám mây 24/7", "Tự động cập nhật tiêu chuẩn sửa đổi", "Tìm kiếm từ khóa thông minh"],
+        specs: [
+          { name: "Mã sản phẩm", val: "03017C" },
+          { name: "Thời hạn thuê bao", val: "12 tháng (1 năm)" },
+          { name: "Hình thức cung cấp", val: "Tài khoản trực tuyến (Online Cloud Access)" }
+        ],
+        audit: {
+          b1: { pass: true, label: "B1 Catalogue READY", desc: "Nguồn trang 7 Catalogue." },
+          b2: { pass: true, label: "B2 Inventory", desc: "Định danh dịch vụ thuê bao độc lập." },
+          b3: { pass: true, label: "B3 Facts & Claims", desc: "Có chứng cứ thời hạn và dịch vụ." },
+          b4: { pass: true, label: "B4 Nghiên cứu SEO", desc: "Tối ưu tìm kiếm bản quyền AATCC." },
+          b5: { pass: true, label: "B5 Vai trò tổ chức", desc: "Tổ chức ban hành trực tiếp AATCC." },
+          b6: { pass: true, label: "B6 Template HTML", desc: "Đạt chuẩn hiển thị." }
+        }
+      },
+      {
+        product_id: "8c3199bc-3ea1-4cc8-89f4-4e7cb803a64f",
+        sku: "03000A",
+        status: "EXTRACTED_UNVERIFIED",
+        source_page: 8,
+        product_name: "Tài liệu bổ sung kỹ thuật AATCC",
+        product_name_en: "AATCC Technical Manual Supplement",
+        category: "Tài liệu kỹ thuật",
+        unit: "cuốn",
+        vendor: "AATCC",
+        brand_origin: "Hoa Kỳ (USA)",
+        publisher_role: "Nhà xuất bản AATCC",
+        description: "Tài liệu kỹ thuật chuyên sâu bổ sung hướng dẫn thực hành và quy trình vận hành phòng thí nghiệm dệt may.",
+        features: ["Bổ trợ cẩm nang AATCC", "Quy trình thử nghiệm mẫu phức tạp"],
+        specs: [{ name: "Mã sản phẩm", val: "03000A" }, { name: "Định dạng", val: "Sách in" }],
+        audit: {
+          b1: { pass: true, label: "B1 Catalogue READY", desc: "Trang 8 Catalogue." },
+          b2: { pass: true, label: "B2 Inventory", desc: "Record hợp lệ." },
+          b3: { pass: true, label: "B3 Facts & Claims", desc: "Chứng cứ tài liệu rõ ràng." },
+          b4: { pass: true, label: "B4 Nghiên cứu SEO", desc: "Đạt chuẩn SEO." },
+          b5: { pass: true, label: "B5 Vai trò tổ chức", desc: "Xác minh nhà xuất bản." },
+          b6: { pass: true, label: "B6 Template HTML", desc: "Đạt chuẩn." }
+        }
+      },
+      {
+        product_id: "9b3200bc-4ea1-4cc8-89f4-4e7cb803a650",
+        sku: "03001A",
+        status: "EXTRACTED_UNVERIFIED",
+        source_page: 8,
+        product_name: "Tài liệu bổ sung kỹ thuật quản lý màu AATCC",
+        product_name_en: "AATCC Color Management Supplement",
+        category: "Tài liệu kỹ thuật",
+        unit: "cuốn",
+        vendor: "AATCC",
+        brand_origin: "Hoa Kỳ (USA)",
+        publisher_role: "Nhà xuất bản AATCC",
+        description: "Tài liệu chuẩn hóa về nguyên lý đo màu, kiểm soát sai lệch màu delta E và đánh giá độ bền màu quang học trong dệt may.",
+        features: ["Nguyên lý đo màu quang phổ", "Kiểm soát độ bền màu giặt và ánh sáng"],
+        specs: [{ name: "Mã SKU", val: "03001A" }, { name: "Chủ đề", val: "Quản lý màu sắc dệt may" }],
+        audit: {
+          b1: { pass: true, label: "B1 Catalogue READY", desc: "Trang 8 Catalogue." },
+          b2: { pass: true, label: "B2 Inventory", desc: "Mã 03001A duy nhất." },
+          b3: { pass: true, label: "B3 Facts & Claims", desc: "Có chứng cứ phân loại màu." },
+          b4: { pass: true, label: "B4 Nghiên cứu SEO", desc: "SEO màu sắc dệt may." },
+          b5: { pass: true, label: "B5 Vai trò tổ chức", desc: "Nhà xuất bản AATCC." },
+          b6: { pass: true, label: "B6 Template HTML", desc: "Đạt chuẩn 7 khối." }
+        }
+      },
+      {
+        product_id: "1a3200bc-5ea1-4cc8-89f4-4e7cb803a651",
+        sku: "03003A",
+        status: "EXTRACTED_UNVERIFIED",
+        source_page: 8,
+        product_name: "Tài liệu bổ sung nhận diện xơ sợi dệt may",
+        product_name_en: "AATCC Fiber Identification Supplement",
+        category: "Tài liệu kỹ thuật",
+        unit: "cuốn",
+        vendor: "AATCC",
+        brand_origin: "Hoa Kỳ (USA)",
+        publisher_role: "Nhà xuất bản AATCC",
+        description: "Phương pháp kính hiển vi và phân tích hóa học định tính xơ tự nhiên (Cotton, Wool, Silk) và xơ tổng hợp (Polyester, Nylon).",
+        features: ["Ảnh chụp vi cấu trúc xơ", "Bảng thử nghiệm độ hòa tan hóa chất"],
+        specs: [{ name: "Mã SKU", val: "03003A" }, { name: "Lĩnh vực", val: "Phân tích xơ sợi (Fiber ID)" }],
+        audit: {
+          b1: { pass: true, label: "B1 Catalogue READY", desc: "Trang 8 Catalogue." },
+          b2: { pass: true, label: "B2 Inventory", desc: "Mã 03003A hợp lệ." },
+          b3: { pass: true, label: "B3 Facts & Claims", desc: "Phương pháp định tính có nguồn." },
+          b4: { pass: true, label: "B4 Nghiên cứu SEO", desc: "SEO nhận diện sợi dệt." },
+          b5: { pass: true, label: "B5 Vai trò tổ chức", desc: "AATCC Hoa Kỳ." },
+          b6: { pass: true, label: "B6 Template HTML", desc: "Đạt chuẩn 7 khối." }
+        }
+      },
+      {
+        product_id: "2b3200bc-6ea1-4cc8-89f4-4e7cb803a652",
+        sku: "09615A",
+        status: "EXTRACTED_UNVERIFIED",
+        source_page: 8,
+        product_name: "Sách Nhuộm và Phối màu dệt may",
+        product_name_en: "Textile Dyeing and Coloration Handbook",
+        category: "Sách chuyên ngành",
+        unit: "cuốn",
+        vendor: "AATCC",
+        brand_origin: "Hoa Kỳ (USA)",
+        publisher_role: "Nhà xuất bản AATCC",
+        description: "Cẩm nang chuyên sâu về công nghệ nhuộm gián đoạn, nhuộm liên tục, hóa chất trợ nhuộm và phối màu công nghiệp.",
+        features: ["Công nghệ thuốc nhuộm hoạt tính, phân tán, hoàn nguyên", "Xử lý nước thải nhuộm"],
+        specs: [{ name: "Mã SKU", val: "09615A" }, { name: "Chủ đề", val: "Kỹ thuật nhuộm dệt may" }],
+        audit: {
+          b1: { pass: true, label: "B1 Catalogue READY", desc: "Trang 8 Catalogue." },
+          b2: { pass: true, label: "B2 Inventory", desc: "Mã SKU hợp lệ." },
+          b3: { pass: true, label: "B3 Facts & Claims", desc: "Có trích dẫn nội dung." },
+          b4: { pass: true, label: "B4 Nghiên cứu SEO", desc: "SEO nhuộm vải dệt." },
+          b5: { pass: true, label: "B5 Vai trò tổ chức", desc: "Nhà xuất bản AATCC." },
+          b6: { pass: true, label: "B6 Template HTML", desc: "Đạt chuẩn 7 khối." }
+        }
+      },
+      {
+        product_id: "3c3200bc-7ea1-4cc8-89f4-4e7cb803a653",
+        sku: "08606A",
+        status: "EXTRACTED_UNVERIFIED",
+        source_page: 9,
+        product_name: "Màu sắc: Từ ý tưởng đến người tiêu dùng",
+        product_name_en: "Color: From Concept to Consumer",
+        category: "Sách chuyên ngành",
+        unit: "cuốn",
+        vendor: "AATCC",
+        brand_origin: "Hoa Kỳ (USA)",
+        publisher_role: "Nhà xuất bản AATCC",
+        description: "Quy trình phát triển và kiểm soát màu sắc xuyên suốt chuỗi cung ứng dệt may thời trang từ thiết kế đến thành phẩm.",
+        features: ["Quản lý màu theo chuỗi cung ứng", "Giao tiếp màu sắc số (Digital Color)"],
+        specs: [{ name: "Mã SKU", val: "08606A" }, { name: "Trang nguồn", val: "Trang 9" }],
+        audit: {
+          b1: { pass: true, label: "B1 Catalogue READY", desc: "Trang 9 Catalogue." },
+          b2: { pass: true, label: "B2 Inventory", desc: "Khớp SKU 08606A." },
+          b3: { pass: true, label: "B3 Facts & Claims", desc: "Có chứng cứ trang 9." },
+          b4: { pass: true, label: "B4 Nghiên cứu SEO", desc: "SEO chuỗi cung ứng màu." },
+          b5: { pass: true, label: "B5 Vai trò tổ chức", desc: "AATCC Publisher." },
+          b6: { pass: true, label: "B6 Template HTML", desc: "Đạt chuẩn 7 khối." }
+        }
+      },
+      {
+        product_id: "4d3200bc-8ea1-4cc8-89f4-4e7cb803a654",
+        sku: "09616A",
+        status: "REJECTED",
+        duplicate_url: "https://bistextile.com/products/sach-textile-coloration-for-the-retail-supply-chain-09616a",
+        source_page: 9,
+        product_name: "Nhuộm màu dệt may cho chuỗi cung ứng [ĐÃ CÓ TRÊN BISTEXTILE.COM]",
+        product_name_en: "Textile Coloration for the Supply Chain",
+        category: "Sách chuyên ngành",
+        unit: "cuốn",
+        vendor: "AATCC",
+        brand_origin: "Hoa Kỳ (USA)",
+        publisher_role: "Nhà xuất bản AATCC",
+        description: "Tài liệu đào tạo thực tiễn cho các nhà máy gia công hàng dệt xuất khẩu đáp ứng yêu cầu màu sắc khắt khe từ các nhãn hàng quốc tế.",
+        features: ["Chuẩn kiểm lab-dip", "Giảm thiểu tỷ lệ lỗi lệch màu lô"],
+        specs: [{ name: "Mã SKU", val: "09616A" }, { name: "Trạng thái Web", val: "Đã có sẵn trên bistextile.com (Link xem bên dưới)" }],
+        audit: {
+          b1: { pass: true, label: "B1 Catalogue READY", desc: "Trang 9 Catalogue." },
+          b2: { pass: false, label: "B2 Inventory & Chống Trùng", desc: "CẢNH BÁO: Đã tồn tại trên website bistextile.com với handle /products/sach-textile-coloration-for-the-retail-supply-chain-09616a. ĐÃ KHÓA TỰ ĐỘNG để không đè cũ." },
+          b3: { pass: true, label: "B3 Facts & Claims", desc: "Thông số chuẩn hóa." },
+          b4: { pass: true, label: "B4 Nghiên cứu SEO", desc: "SEO nhuộm xuất khẩu." },
+          b5: { pass: true, label: "B5 Vai trò tổ chức", desc: "AATCC USA." },
+          b6: { pass: true, label: "B6 Template HTML", desc: "Đạt chuẩn." }
+        }
+      },
+      {
+        product_id: "5e3200bc-9ea1-4cc8-89f4-4e7cb803a655",
+        sku: "03004A",
+        status: "EXTRACTED_UNVERIFIED",
+        source_page: 9,
+        product_name: "Sổ tay hướng dẫn về màu sắc (Bìa mềm)",
+        product_name_en: "AATCC Color Guidebook - Softcover",
+        category: "Sổ tay hướng dẫn",
+        unit: "cuốn",
+        vendor: "AATCC",
+        brand_origin: "Hoa Kỳ (USA)",
+        publisher_role: "Nhà xuất bản AATCC",
+        description: "Cẩm nang bỏ túi thuận tiện mang theo kiểm tra tại xưởng nhuộm và phòng KCS kiểm tra ngoại quan.",
+        features: ["Bìa mềm tiện lợi", "Bảng tra cứu nhanh dung sai màu"],
+        specs: [{ name: "Mã SKU", val: "03004A" }, { name: "Hình thức", val: "Bìa mềm" }],
+        audit: {
+          b1: { pass: true, label: "B1 Catalogue READY", desc: "Trang 9 Catalogue." },
+          b2: { pass: true, label: "B2 Inventory", desc: "Đúng biến thể bìa mềm." },
+          b3: { pass: true, label: "B3 Facts & Claims", desc: "Chứng cứ rõ ràng." },
+          b4: { pass: true, label: "B4 Nghiên cứu SEO", desc: "SEO sổ tay đo màu." },
+          b5: { pass: true, label: "B5 Vai trò tổ chức", desc: "AATCC Hoa Kỳ." },
+          b6: { pass: true, label: "B6 Template HTML", desc: "Đạt chuẩn." }
+        }
+      },
+      {
+        product_id: "6f3200bc-0ea1-4cc8-89f4-4e7cb803a656",
+        sku: "03004B",
+        status: "EXTRACTED_UNVERIFIED",
+        source_page: 9,
+        product_name: "Sổ tay hướng dẫn về màu sắc (Bản PDF điện tử)",
+        product_name_en: "AATCC Color Guidebook - PDF Download",
+        category: "Sổ tay hướng dẫn",
+        unit: "bản",
+        vendor: "AATCC",
+        brand_origin: "Hoa Kỳ (USA)",
+        publisher_role: "Nhà xuất bản AATCC",
+        description: "Bản PDF tải về trực tiếp phục vụ đào tạo nội bộ kỹ sư dệt may và nhân viên kiểm hóa.",
+        features: ["Tra cứu PDF điện tử", "Tìm kiếm nhanh phương pháp"],
+        specs: [{ name: "Mã SKU", val: "03004B" }, { name: "Định dạng", val: "PDF Digital" }],
+        audit: {
+          b1: { pass: true, label: "B1 Catalogue READY", desc: "Trang 9 Catalogue." },
+          b2: { pass: true, label: "B2 Inventory", desc: "Biến thể số hóa 03004B." },
+          b3: { pass: true, label: "B3 Facts & Claims", desc: "Có nguồn trang 9." },
+          b4: { pass: true, label: "B4 Nghiên cứu SEO", desc: "SEO tài liệu số." },
+          b5: { pass: true, label: "B5 Vai trò tổ chức", desc: "AATCC USA." },
+          b6: { pass: true, label: "B6 Template HTML", desc: "Đạt chuẩn." }
+        }
+      },
+      {
+        product_id: "7a3200bc-1ea1-4cc8-89f4-4e7cb803a657",
+        sku: "08400A",
+        status: "EXTRACTED_UNVERIFIED",
+        source_page: 9,
+        product_name: "Thị giác màu sắc & Công nghệ ứng dụng",
+        product_name_en: "Color Vision and Technology",
+        category: "Sách chuyên ngành",
+        unit: "cuốn",
+        vendor: "AATCC",
+        brand_origin: "Hoa Kỳ (USA)",
+        publisher_role: "Nhà xuất bản AATCC",
+        description: "Tổng hợp cơ sở khoa học về thị giác người quan sát, nguồn sáng chuẩn D65/TL84/A và kiểm tra khiếm khuyết thị giác màu Farnsworth-Munsell.",
+        features: ["Khoa học thị giác màu", "Thử nghiệm bài test Farnsworth-Munsell"],
+        specs: [{ name: "Mã SKU", val: "08400A" }, { name: "Chuyên đề", val: "Thị giác màu sắc & Đo lường" }],
+        audit: {
+          b1: { pass: true, label: "B1 Catalogue READY", desc: "Trang 9 Catalogue." },
+          b2: { pass: true, label: "B2 Inventory", desc: "Định danh hợp lệ." },
+          b3: { pass: true, label: "B3 Facts & Claims", desc: "Có chứng cứ khoa học." },
+          b4: { pass: true, label: "B4 Nghiên cứu SEO", desc: "SEO thị giác màu sắc." },
+          b5: { pass: true, label: "B5 Vai trò tổ chức", desc: "AATCC Publisher." },
+          b6: { pass: true, label: "B6 Template HTML", desc: "Đạt chuẩn." }
+        }
+      },
+      {
+        product_id: "8b3200bc-2ea1-4cc8-89f4-4e7cb803a658",
+        sku: "08506A",
+        status: "EXTRACTED_UNVERIFIED",
+        source_page: 10,
+        product_name: "Phương pháp phân tích dùng trong dệt may",
+        product_name_en: "Analytical Methods for a Textile Laboratory",
+        category: "Tài liệu kỹ thuật",
+        unit: "cuốn",
+        vendor: "AATCC",
+        brand_origin: "Hoa Kỳ (USA)",
+        publisher_role: "Nhà xuất bản AATCC",
+        description: "Quy trình phân tích hàm lượng formaldehyde tự do, độ pH dung dịch chiết, kim loại nặng và hóa chất hạn chế theo tiêu chuẩn RSL.",
+        features: ["Kiểm nghiệm an toàn hóa chất sinh thái", "Phương pháp sắc ký và quang phổ"],
+        specs: [{ name: "Mã SKU", val: "08506A" }, { name: "Trang nguồn", val: "Trang 10" }],
+        audit: {
+          b1: { pass: true, label: "B1 Catalogue READY", desc: "Trang 10 Catalogue." },
+          b2: { pass: true, label: "B2 Inventory", desc: "Mã 08506A duy nhất." },
+          b3: { pass: true, label: "B3 Facts & Claims", desc: "Thông số an toàn hóa chất." },
+          b4: { pass: true, label: "B4 Nghiên cứu SEO", desc: "SEO phân tích hóa dệt." },
+          b5: { pass: true, label: "B5 Vai trò tổ chức", desc: "AATCC Hoa Kỳ." },
+          b6: { pass: true, label: "B6 Template HTML", desc: "Đạt chuẩn." }
+        }
+      },
+      {
+        product_id: "9c3200bc-3ea1-4cc8-89f4-4e7cb803a659",
+        sku: "09907A",
+        status: "EXTRACTED_UNVERIFIED",
+        source_page: 10,
+        product_name: "Lựa chọn phòng thử nghiệm dệt may (Bìa mềm)",
+        product_name_en: "Selection of Textile Testing Laboratories - Softcover",
+        category: "Tài liệu quản lý",
+        unit: "cuốn",
+        vendor: "AATCC",
+        brand_origin: "Hoa Kỳ (USA)",
+        publisher_role: "Nhà xuất bản AATCC",
+        description: "Bộ tiêu chí và hướng dẫn đánh giá năng lực phòng thử nghiệm dệt may đạt chứng nhận ISO/IEC 17025.",
+        features: ["Đánh giá phòng thử nghiệm ISO 17025", "Quản lý mẫu và sai số đo lường"],
+        specs: [{ name: "Mã SKU", val: "09907A" }, { name: "Hình thức", val: "Sách in bìa mềm" }],
+        audit: {
+          b1: { pass: true, label: "B1 Catalogue READY", desc: "Trang 10 Catalogue." },
+          b2: { pass: true, label: "B2 Inventory", desc: "Mã 09907A hợp lệ." },
+          b3: { pass: true, label: "B3 Facts & Claims", desc: "Có nguồn ISO 17025." },
+          b4: { pass: true, label: "B4 Nghiên cứu SEO", desc: "SEO phòng lab dệt may." },
+          b5: { pass: true, label: "B5 Vai trò tổ chức", desc: "AATCC USA." },
+          b6: { pass: true, label: "B6 Template HTML", desc: "Đạt chuẩn." }
+        }
+      },
+      {
+        product_id: "0d3200bc-4ea1-4cc8-89f4-4e7cb803a660",
+        sku: "09907B",
+        status: "EXTRACTED_UNVERIFIED",
+        source_page: 10,
+        product_name: "Lựa chọn phòng thử nghiệm dệt may (Bản PDF điện tử)",
+        product_name_en: "Selection of Textile Testing Laboratories - PDF",
+        category: "Tài liệu quản lý",
+        unit: "bản",
+        vendor: "AATCC",
+        brand_origin: "Hoa Kỳ (USA)",
+        publisher_role: "Nhà xuất bản AATCC",
+        description: "Bản điện tử PDF thuận tiện chia sẻ trong ban quản trị chất lượng QA/QC doanh nghiệp dệt may.",
+        features: ["PDF điện tử bản quyền", "Biểu mẫu chấm điểm năng lực lab"],
+        specs: [{ name: "Mã SKU", val: "09907B" }, { name: "Định dạng", val: "PDF Digital" }],
+        audit: {
+          b1: { pass: true, label: "B1 Catalogue READY", desc: "Trang 10 Catalogue." },
+          b2: { pass: true, label: "B2 Inventory", desc: "Mã 09907B bản số." },
+          b3: { pass: true, label: "B3 Facts & Claims", desc: "Chứng cứ quản lý lab." },
+          b4: { pass: true, label: "B4 Nghiên cứu SEO", desc: "SEO chứng nhận lab." },
+          b5: { pass: true, label: "B5 Vai trò tổ chức", desc: "AATCC Publisher." },
+          b6: { pass: true, label: "B6 Template HTML", desc: "Đạt chuẩn." }
+        }
+      },
+      {
+        product_id: "1e3200bc-5ea1-4cc8-89f4-4e7cb803a661",
+        sku: "08336A",
+        status: "EXTRACTED_UNVERIFIED",
+        source_page: 10,
+        product_name: "Cẩm nang cơ bản về nhuộm dệt may",
+        product_name_en: "Dyeing Basics: A Primer",
+        category: "Sách đào tạo",
+        unit: "cuốn",
+        vendor: "AATCC",
+        brand_origin: "Hoa Kỳ (USA)",
+        publisher_role: "Nhà xuất bản AATCC",
+        description: "Giáo trình nhập môn căn bản cho kỹ thuật viên phòng thí nghiệm và sinh viên ngành công nghệ dệt may hóa nhuộm.",
+        features: ["Dễ hiểu, minh họa trực quan", "Các phép đo căn bản trong xưởng"],
+        specs: [{ name: "Mã SKU", val: "08336A" }, { name: "Cấp độ", val: "Nhập môn / Cơ bản (Primer)" }],
+        audit: {
+          b1: { pass: true, label: "B1 Catalogue READY", desc: "Trang 10 Catalogue." },
+          b2: { pass: true, label: "B2 Inventory", desc: "Mã 08336A duy nhất." },
+          b3: { pass: true, label: "B3 Facts & Claims", desc: "Nội dung đào tạo có nguồn." },
+          b4: { pass: true, label: "B4 Nghiên cứu SEO", desc: "SEO học nhuộm dệt." },
+          b5: { pass: true, label: "B5 Vai trò tổ chức", desc: "AATCC USA." },
+          b6: { pass: true, label: "B6 Template HTML", desc: "Đạt chuẩn." }
+        }
+      },
+      {
+        product_id: "2f3200bc-6ea1-4cc8-89f4-4e7cb803a662",
+        sku: "09506A",
+        status: "EXTRACTED_UNVERIFIED",
+        source_page: 10,
+        product_name: "Sổ tay kỹ thuật xử lý ướt hàng dệt may",
+        product_name_en: "Wet Processing Handbook",
+        category: "Sổ tay kỹ thuật",
+        unit: "cuốn",
+        vendor: "AATCC",
+        brand_origin: "Hoa Kỳ (USA)",
+        publisher_role: "Nhà xuất bản AATCC",
+        description: "Toàn bộ quy trình tiền xử lý, nấu giặt, tẩy trắng, nhuộm màu và hoàn tất chống nhăn, chống cháy, kháng khuẩn.",
+        features: ["Xử lý ướt từ sơ chế đến hoàn tất", "Công thức phụ gia trợ chất"],
+        specs: [{ name: "Mã SKU", val: "09506A" }, { name: "Lĩnh vực", val: "Xử lý ướt dệt may (Wet Processing)" }],
+        audit: {
+          b1: { pass: true, label: "B1 Catalogue READY", desc: "Trang 10 Catalogue." },
+          b2: { pass: true, label: "B2 Inventory", desc: "Mã 09506A duy nhất." },
+          b3: { pass: true, label: "B3 Facts & Claims", desc: "Đầy đủ quy trình." },
+          b4: { pass: true, label: "B4 Nghiên cứu SEO", desc: "SEO hoàn tất dệt may." },
+          b5: { pass: true, label: "B5 Vai trò tổ chức", desc: "AATCC Publisher." },
+          b6: { pass: true, label: "B6 Template HTML", desc: "Đạt chuẩn." }
+        }
+      }
+    ];
+
+    let currentFilter = 'ALL';
+    let selectedSku = productsData[0].sku;
+
+    function renderMetrics() {
+      const total = productsData.length;
+      const unverified = productsData.filter(p => p.status === 'EXTRACTED_UNVERIFIED').length;
+      const approved = productsData.filter(p => p.status === 'APPROVED').length;
+      const rejected = productsData.filter(p => p.status === 'REJECTED').length;
+      const pushed = productsData.filter(p => p.status === 'PUSHED_TO_HARAVAN').length;
+
+      document.getElementById('metric-total').textContent = total;
+      document.getElementById('metric-unverified').textContent = unverified;
+      document.getElementById('metric-approved').textContent = approved;
+      document.getElementById('metric-rejected').textContent = rejected;
+      document.getElementById('metric-pushed').textContent = pushed;
+    }
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('#filter-all, #filter-unverified, #filter-approved').forEach(btn => {
+        btn.className = 'px-2.5 py-1 text-xs rounded-md text-[var(--muted-foreground)] hover:bg-[var(--muted)]';
+      });
+      if (filter === 'ALL') document.getElementById('filter-all').className = 'px-2.5 py-1 text-xs rounded-md font-semibold bg-blue-600 text-white';
+      if (filter === 'EXTRACTED_UNVERIFIED') document.getElementById('filter-unverified').className = 'px-2.5 py-1 text-xs rounded-md font-semibold bg-amber-600 text-white';
+      if (filter === 'APPROVED') document.getElementById('filter-approved').className = 'px-2.5 py-1 text-xs rounded-md font-semibold bg-emerald-600 text-white';
+      renderList();
+    }
+
+    function selectProduct(sku) {
+      selectedSku = sku;
+      renderList();
+      renderAuditDetails();
+      renderPreview();
+    }
+
+    function renderList() {
+      const container = document.getElementById('product-list-container');
+      const filtered = productsData.filter(p => {
+        if (currentFilter === 'ALL') return true;
+        return p.status === currentFilter;
+      });
+
+      document.getElementById('queue-count').textContent = `${filtered.length} mã`;
+
+      container.innerHTML = filtered.map(p => {
+        const isSelected = p.sku === selectedSku;
+        let badgeColor = 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300';
+        let badgeText = 'Chờ duyệt';
+        if (p.status === 'APPROVED') {
+          badgeColor = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300';
+          badgeText = 'Đã duyệt ẩn';
+        } else if (p.status === 'REJECTED') {
+          badgeColor = 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300';
+          badgeText = 'Từ chối';
+        }
+
+        return `
+          <div onclick="selectProduct('${p.sku}')" class="p-3 rounded-lg border transition cursor-pointer ${
+            isSelected
+              ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/20 shadow-sm'
+              : 'border-[var(--border)] hover:bg-[var(--muted)]/50'
+          }">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="font-mono font-bold text-xs text-[var(--foreground)]">${p.sku}</span>
+              <span class="px-2 py-0.5 text-[11px] font-semibold rounded ${badgeColor}">${badgeText}</span>
+            </div>
+            <div class="font-medium text-xs text-[var(--foreground)] line-clamp-2 mb-1.5">${p.product_name}</div>
+            <div class="flex items-center justify-between text-[11px] text-[var(--muted-foreground)]">
+              <span>Trang ${p.source_page}</span>
+              <span>${p.category}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAuditDetails() {
+      const p = productsData.find(item => item.sku === selectedSku);
+      if (!p) return;
+
+      const container = document.getElementById('audit-details-container');
+      const audit = p.audit;
+
+      document.getElementById('current-audit-badge').textContent = p.status === 'APPROVED' ? 'ĐÃ DUYỆT PASS' : 'CHỜ SOÁT 6 BƯỚC';
+      document.getElementById('current-audit-badge').className = p.status === 'APPROVED'
+        ? 'px-2 py-0.5 text-xs font-bold rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
+        : 'px-2 py-0.5 text-xs font-bold rounded bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300';
+
+      const auditSteps = [audit.b1, audit.b2, audit.b3, audit.b4, audit.b5, audit.b6];
+
+      container.innerHTML = `
+        <!-- Product Quick Header -->
+        <div class="p-3 rounded-lg bg-[var(--muted)]/40 border border-[var(--border)]">
+          <div class="text-[11px] text-[var(--muted-foreground)]">Định danh xuyên suốt (Inventory_Record_ID)</div>
+          <div class="font-mono text-xs font-semibold text-[var(--foreground)] truncate">${p.product_id}</div>
+          <div class="mt-2 text-xs"><strong>Tên Anh:</strong> ${p.product_name_en}</div>
+        </div>
+
+        <!-- 6-STEP AUDIT CHECKLIST -->
+        <div class="space-y-2">
+          <div class="text-xs font-bold text-[var(--foreground)] flex items-center justify-between">
+            <span>MA TRẬN KIỂM TRA SÁU BƯỚC (B1 - B6)</span>
+            <span class="text-emerald-600 font-semibold text-[11px]">6/6 Tiêu chí Hợp Lệ</span>
+          </div>
+          ${auditSteps.map((s, idx) => `
+            <div class="p-2.5 rounded-lg border border-[var(--border)] bg-[var(--card)] flex items-start gap-2.5">
+              <span class="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
+                ✓
+              </span>
+              <div class="flex-1">
+                <div class="text-xs font-bold text-[var(--foreground)]">${s.label}</div>
+                <div class="text-[11px] text-[var(--muted-foreground)] mt-0.5">${s.desc}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- FACTS & SOURCE CLAIMS -->
+        <div class="space-y-2 pt-2 border-t border-[var(--border)]">
+          <div class="text-xs font-bold text-[var(--foreground)]">HỒ SƠ THÔNG SỐ CÓ CHỨNG CỨ (FACTS)</div>
+          <div class="bg-[var(--muted)]/30 rounded-lg p-3 text-xs space-y-2">
+            <div><strong class="text-[var(--foreground)]">Thương hiệu:</strong> ${p.vendor} (Chứng cứ: Trang bìa & Trang ${p.source_page})</div>
+            <div><strong class="text-[var(--foreground)]">Vai trò tổ chức (B5):</strong> ${p.publisher_role}</div>
+            <div><strong class="text-[var(--foreground)]">Quốc gia thành lập:</strong> ${p.brand_origin} (Hoa Kỳ - Trụ sở Research Triangle Park, NC)</div>
+            <div><strong class="text-[var(--foreground)]">Xuất xứ sản phẩm:</strong> <span class="italic text-[var(--muted-foreground)]">Không tự suy diễn theo trụ sở</span></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function getRelatedProductsList(current) {
+      if (current.sku === '03026A') {
+        return [
+          { title: "Sách hướng dẫn phương pháp thử nghiệm AATCC (Bản PDF tải về 03026B)", url: "https://bistextile.com/search?q=03026B" },
+          { title: "Sách nhuộm màu hàng dệt may cho chuỗi cung ứng bán lẻ AATCC 09616A", url: "https://bistextile.com/products/sach-textile-coloration-for-the-retail-supply-chain-09616a" },
+          { title: "Tài liệu bổ sung kỹ thuật AATCC (03000A)", url: "https://bistextile.com/search?q=03000A" }
+        ];
+      }
+      if (current.sku === '03026B') {
+        return [
+          { title: "Sách hướng dẫn phương pháp thử nghiệm AATCC (Bản in bìa cứng 03026A)", url: "https://bistextile.com/search?q=03026A" },
+          { title: "Gói thuê bao trực tuyến tiêu chuẩn AATCC (03017C)", url: "https://bistextile.com/search?q=03017C" },
+          { title: "Sách nhuộm màu hàng dệt may cho chuỗi cung ứng bán lẻ AATCC 09616A", url: "https://bistextile.com/products/sach-textile-coloration-for-the-retail-supply-chain-09616a" }
+        ];
+      }
+      if (current.sku === '09616A') {
+        return [
+          { title: "Sách nhuộm màu hàng dệt may cho chuỗi cung ứng bán lẻ AATCC 09616A (Đang bán)", url: "https://bistextile.com/products/sach-textile-coloration-for-the-retail-supply-chain-09616a" },
+          { title: "Sách Nhuộm và Phối màu dệt may (09615A)", url: "https://bistextile.com/search?q=09615A" },
+          { title: "Sổ tay hướng dẫn về màu sắc (03004A)", url: "https://bistextile.com/search?q=03004A" }
+        ];
+      }
+      // Tự động tìm 2 sản phẩm liên quan trong catalogue + 1 sản phẩm đang bán trên bistextile.com
+      const rels = productsData.filter(item => item.sku !== current.sku).slice(0, 2).map(item => ({
+        title: `${item.product_name} (${item.sku})`,
+        url: `https://bistextile.com/search?q=${item.sku}`
+      }));
+      rels.push({
+        title: "Sách nhuộm màu hàng dệt may cho chuỗi cung ứng bán lẻ AATCC 09616A",
+        url: "https://bistextile.com/products/sach-textile-coloration-for-the-retail-supply-chain-09616a"
+      });
+      return rels;
+    }
+
+    function renderPreview() {
+      const p = productsData.find(item => item.sku === selectedSku);
+      if (!p) return;
+
+      document.getElementById('preview-sku').textContent = `SKU: ${p.sku}`;
+      const container = document.getElementById('html-preview-content');
+
+      // EXACT 7-BLOCK TEMPLATE FROM LEGACY N8N SPEC
+      container.innerHTML = `
+        <div class="bis-product-description space-y-3">
+          
+          <!-- KHỐI 1: Tên sản phẩm tiếng Việt in đậm, cỡ 18px -->
+          <h1 style="font-size: 18px; font-weight: bold; color: #1e293b; margin-bottom: 4px;">
+            ${p.product_name}
+          </h1>
+
+          <!-- KHỐI 2: Tên sản phẩm tiếng Anh in đậm, cỡ 16px -->
+          <h2 style="font-size: 16px; font-weight: bold; color: #475569; margin-top: 0; margin-bottom: 8px;">
+            ${p.product_name_en}
+          </h2>
+
+          <!-- KHỐI 3: Thương hiệu, quốc gia thành lập, vai trò -->
+          <div style="font-size: 13px; color: #334155; line-height: 1.5; padding: 6px 10px; background: #f1f5f9; border-radius: 6px;">
+            <strong>Hãng ban hành:</strong> ${p.vendor} &bull; 
+            <strong>Quốc gia:</strong> ${p.brand_origin} &bull; 
+            <strong>Vai trò:</strong> ${p.publisher_role}
+          </div>
+
+          <!-- KHỐI 4: Giới thiệu sản phẩm -->
+          <div style="margin-top: 10px;">
+            <p style="font-size: 13px; color: #1e293b; text-align: justify;">
+              ${p.description}
+            </p>
+          </div>
+
+          <!-- KHỐI 5: Đặc điểm nổi bật (bullet points) -->
+          <div style="margin-top: 12px;">
+            <div style="font-weight: bold; font-size: 14px; margin-bottom: 6px; color: #0f172a;">
+              Đặc điểm nổi bật:
+            </div>
+            <ul style="padding-left: 20px; margin: 0; list-style-type: disc; color: #334155; font-size: 13px;">
+              ${p.features.map(f => `<li style="margin-bottom: 4px;">${f}</li>`).join('')}
+            </ul>
+          </div>
+
+          <!-- KHỐI 6: Thông số kỹ thuật chính (Bảng 2 cột, nhãn ~39%) -->
+          <div style="margin-top: 14px;">
+            <div style="font-weight: bold; font-size: 14px; margin-bottom: 6px; color: #0f172a;">
+              Thông số kỹ thuật chính:
+            </div>
+            <table class="bis-spec-table">
+              <tbody>
+                ${p.specs.map(s => `
+                  <tr>
+                    <td class="label-col">${s.name}</td>
+                    <td>${s.val}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- KHỐI 7: Sản phẩm liên quan / Cùng phép thử (Hiển thị tên sản phẩm, nhấp mở trang thật) -->
+          <div style="margin-top: 18px; padding-top: 12px; border-top: 1px dashed #cbd5e1;">
+            <div style="font-weight: bold; font-size: 13px; color: #0f172a; margin-bottom: 8px; display: flex; items-center; justify-content: space-between;">
+              <span>Tài liệu & Tiêu chuẩn liên quan:</span>
+              <span style="font-size: 11px; font-weight: normal; color: #64748b;">(Nhấn vào tên để xem trang sản phẩm)</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              ${getRelatedProductsList(p).map(rel => `
+                <a href="${rel.url}" target="_blank" rel="noopener noreferrer" 
+                   style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 500; transition: background 0.15s, border-color 0.15s;"
+                   onmouseover="this.style.background='#e0f2fe'; this.style.borderColor='#7dd3fc';"
+                   onmouseout="this.style.background='#f0f9ff'; this.style.borderColor='#bae6fd';">
+                  <span style="display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span style="font-size: 13px;">🔗</span>
+                    <span style="font-weight: 600; color: #0c4a6e;">${rel.title}</span>
+                  </span>
+                  <span style="font-size: 11px; color: #0284c7; background: #ffffff; padding: 2px 6px; border-radius: 4px; border: 1px solid #e0f2fe; shrink-0; margin-left: 8px;">
+                    Mở trang ↗
+                  </span>
+                </a>
+              `).join('')}
+            </div>
+          </div>
+
+        </div>
+      `;
+    }
+
+    function handleApprove() {
+      const p = productsData.find(item => item.sku === selectedSku);
+      if (!p) return;
+      p.status = 'APPROVED';
+      renderMetrics();
+      renderList();
+      renderAuditDetails();
+      alert(`✅ ĐÃ DUYỆT THÀNH CÔNG SKU: ${p.sku}\nTrạng thái chuyển thành: APPROVED (Sẵn sàng đẩy ẩn published=false khi kích hoạt Haravan)`);
+    }
+
+    function handleReject() {
+      const p = productsData.find(item => item.sku === selectedSku);
+      if (!p) return;
+      p.status = 'REJECTED';
+      renderMetrics();
+      renderList();
+      renderAuditDetails();
+      alert(`✕ ĐÃ TỪ CHỐI SKU: ${p.sku}\nSản phẩm này sẽ bị bỏ qua khi đồng bộ.`);
+    }
+
+    // Initialize
+    renderMetrics();
+    renderList();
+    renderAuditDetails();
+    renderPreview();
+  </script>
+</body>
+</html>

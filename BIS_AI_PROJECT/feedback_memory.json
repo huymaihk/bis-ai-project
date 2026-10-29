@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-10-29T06:52:14.352111Z",
+  "field_corrections": {
+    "unit": {
+      "cuon": "cuốn"
+    }
+  },
+  "examples": [
+    {
+      "timestamp": "2026-10-29T06:52:14.352105Z",
+      "sku": "03026A",
+      "field": "unit",
+      "ai_original": "cuon",
+      "human_corrected": "cuốn",
+      "context": "Chuyên gia chuẩn hóa dấu tiếng Việt"
+    }
+  ]
+}
