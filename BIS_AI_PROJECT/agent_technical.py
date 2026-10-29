@@ -243,6 +243,9 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
 
     def build_7_block_html(self, record: dict) -> str:
         """Generate standard BIS 7-block product description HTML with high contrast & pristine styling."""
+        if record.get("custom_html"):
+            return record["custom_html"]
+
         title_vi = record.get("product_name") or ""
         title_en = record.get("product_name_en") or ""
         sku = record.get("sku") or ""
