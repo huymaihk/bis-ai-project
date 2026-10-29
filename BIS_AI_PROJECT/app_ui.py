@@ -1175,54 +1175,63 @@ with tab_tech:
             </div>
             """, unsafe_allow_html=True)
 
-            # GIAO DIỆN XEM TRƯỚC VÀ CHỈNH SỬA TRỰC TIẾP
-            st.markdown("#### 👁️ Xem Trước & Chỉnh Sửa Trực Tiếp Giao Diện Bài Đăng")
+            # ── GIAO DIỆN KIỂM DUYỆT & XEM TRƯỚC TRỰC QUAN (UNIFIED WORKSPACE) ───────
+            st.markdown("#### 👁️ Bàn Kiểm Duyệt & Xem Trước Trực Quan Chuẩn Haravan")
 
-            tab_editor, tab_preview, tab_raw_html, tab_memory = st.tabs([
-                "✏️ Chỉnh Sửa Trực Tiếp & AI Tự Học",
-                "📄 Bản Xem Trước Chuẩn Haravan (Live Preview)",
-                "💻 Sửa Trực Tiếp Mã HTML 7 Khối",
+            tab_unified, tab_raw_html, tab_memory_quick = st.tabs([
+                "📑 Bàn Soát Lỗi & Bản Xem Trước Trực Quan",
+                "💻 Mã Nguồn HTML 7 Khối (Tùy Chỉnh Sâu)",
                 "🧠 Bộ Nhớ AI Tự Học (Feedback Memory)"
             ])
 
-            html_code = technical_agent.build_7_block_html(p)
-            full_preview_html = f"""<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <style>
-    html, body {{
-      background-color: #ffffff !important;
-      color: #1e293b !important;
-      margin: 0;
-      padding: 16px;
-      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-    }}
-  </style>
-</head>
-<body style="background-color: #ffffff !important; color: #1e293b !important;">
-  {html_code}
-</body>
-</html>"""
+            # Chuẩn bị dữ liệu hiển thị mặc định cho các khối 4, 5, 6, 7
+            default_hl = p.get("highlights")
+            if default_hl:
+                if isinstance(default_hl, list):
+                    default_hl_str = "\n".join(default_hl)
+                else:
+                    default_hl_str = str(default_hl)
+            else:
+                default_hl_str = "Tiêu chuẩn thử nghiệm chính hãng được chuẩn hóa áp dụng toàn cầu trong ngành dệt may.\nĐầy đủ tài liệu hướng dẫn và quy trình thực hành phòng lab QA/QC.\nCung cấp chính ngạch bởi BIS Textile kèm hỗ trợ kỹ thuật chuyên sâu."
 
-            with tab_editor:
+            default_scope = p.get("application_scope") or "Phương pháp kiểm nghiệm dệt may quốc tế"
+            default_doc_title = p.get("related_doc_title") or f"Tra cứu sản phẩm mã {p.get('sku')} trên cổng BIS Textile"
+
+            with tab_unified:
                 st.markdown("""
                 <div style='background: #0b1120; border: 1px solid #1e293b; border-left: 3px solid #10b981; padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #94a3b8; margin-bottom: 14px;'>
-                  🧠 <strong>Cơ chế tự học tức thì:</strong> Bạn có thể sửa trực tiếp thông tin từng khối dưới đây. Nhấn <code>💾 LƯU THAY ĐỔI & AI TỰ HỌC</code>, hệ thống sẽ tự động cập nhật bản xem trước và ghi nhớ quy tắc vĩnh viễn vào <code>feedback_memory.json</code>!
+                  🧠 <strong>Cơ chế tự học tức thì:</strong> Chỉnh sửa trực tiếp bất kỳ khối nào dưới đây (Khối 1 - 7). Nhấn <code>💾 LƯU THAY ĐỔI & AI TỰ HỌC</code> hoặc <code>✅ PHÊ DUYỆT ĐỂ ĐĂNG WEB</code>, hệ thống sẽ lưu ngay vào bộ nhớ đệm, tự động cập nhật bản xem trước bên dưới và ghi nhớ quy tắc vĩnh viễn vào <code>feedback_memory.json</code>!
                 </div>
                 """, unsafe_allow_html=True)
-                with st.form(key=f"edit_inplace_form_{p.get('sku')}"):
+
+                with st.form(key=f"edit_unified_form_{p.get('sku')}"):
+                    # HÀNG 1: Tiêu đề song ngữ
                     col_ef1, col_ef2 = st.columns(2)
                     with col_ef1:
-                        edit_name_vi = st.text_input("1. Tên sản phẩm tiếng Việt (Khối 1):", value=p.get("product_name") or "")
-                        edit_unit = st.text_input("5. Đơn vị tính (Khối 6):", value=p.get("unit") or "cuốn")
-                        edit_vendor = st.text_input("3. Hãng sản xuất / Tổ chức (Khối 3):", value=p.get("brand") or p.get("brand_evidence") or "AATCC (Hoa Kỳ)")
+                        edit_name_vi = st.text_input("1. Tên sản phẩm tiếng Việt (Khối 1):", value=p.get("product_name") or "", key=f"inp_vi_{p.get('sku')}")
+                        edit_vendor = st.text_input("3. Hãng sản xuất / Tổ chức (Khối 3):", value=p.get("brand") or p.get("brand_evidence") or "AATCC (Hoa Kỳ)", key=f"inp_vendor_{p.get('sku')}")
+                        edit_unit = st.text_input("5. Đơn vị tính (Khối 6):", value=p.get("unit") or "cuốn", key=f"inp_unit_{p.get('sku')}")
                     with col_ef2:
-                        edit_name_en = st.text_input("2. Tên sản phẩm tiếng Anh (Khối 2):", value=p.get("product_name_en") or "")
-                        edit_status = st.selectbox("Trạng thái phê duyệt:", ["EXTRACTED_UNVERIFIED", "APPROVED", "REJECTED"], index=["EXTRACTED_UNVERIFIED", "APPROVED", "REJECTED"].index(p.get("status", "EXTRACTED_UNVERIFIED")))
-                        edit_page_str = st.text_input("Trang nguồn trong Catalogue:", value=str(p.get("source_page") or page_num))
+                        edit_name_en = st.text_input("2. Tên sản phẩm tiếng Anh (Khối 2):", value=p.get("product_name_en") or "", key=f"inp_en_{p.get('sku')}")
+                        cur_status = p.get("status", "EXTRACTED_UNVERIFIED")
+                        status_options = ["EXTRACTED_UNVERIFIED", "APPROVED", "REJECTED"]
+                        status_idx = status_options.index(cur_status) if cur_status in status_options else 0
+                        edit_status = st.selectbox("Trạng thái phê duyệt:", status_options, index=status_idx, key=f"inp_status_{p.get('sku')}")
+                        edit_page_str = st.text_input("Trang nguồn trong Catalogue:", value=str(p.get("source_page") or page_num), key=f"inp_page_{p.get('sku')}")
 
-                    edit_desc = st.text_area("4. Giới thiệu & Mô tả kỹ thuật (Khối 4 & 5):", value=p.get("description") or "", height=100)
+                    # HÀNG 2: Giới thiệu (Khối 4) & Đặc điểm nổi bật (Khối 5)
+                    col_b4, col_b5 = st.columns(2)
+                    with col_b4:
+                        edit_desc = st.text_area("4. Giới thiệu sản phẩm (Khối 4):", value=p.get("description") or "", height=110, key=f"inp_desc_{p.get('sku')}")
+                    with col_b5:
+                        edit_highlights = st.text_area("✨ 5. Đặc điểm nổi bật (Khối 5 - Mỗi dòng 1 gạch đầu dòng):", value=default_hl_str, height=110, key=f"inp_hl_{p.get('sku')}")
+
+                    # HÀNG 3: Phạm vi áp dụng & Tiêu chuẩn tra cứu (Khối 6 & 7)
+                    col_b6, col_b7 = st.columns(2)
+                    with col_b6:
+                        edit_scope = st.text_input("⚙️ Phạm vi áp dụng & Tiêu chuẩn thử nghiệm (Khối 6):", value=default_scope, key=f"inp_scope_{p.get('sku')}")
+                    with col_b7:
+                        edit_doc_title = st.text_input("🔗 Tên liên kết / Tài liệu tra cứu (Khối 7):", value=default_doc_title, key=f"inp_doc_{p.get('sku')}")
 
                     col_btn1, col_btn2 = st.columns(2)
                     with col_btn1:
@@ -1254,30 +1263,72 @@ with tab_tech:
                             p["description"] = edit_desc
                             learned_changes.append("Mô tả kỹ thuật")
 
-                        p["source_page"] = edit_page_str
-                        p.pop("custom_html", None)
+                        # Cập nhật các khối 5, 6, 7 mới
+                        hl_list = [line.strip().lstrip("-*• ") for line in edit_highlights.split("\n") if line.strip()]
+                        p["highlights"] = hl_list
+                        p["application_scope"] = edit_scope.strip()
+                        p["related_doc_title"] = edit_doc_title.strip()
+                        p["source_page"] = edit_page_str.strip()
+
+                        # Đặt trạng thái phê duyệt
                         if approve_btn:
                             p["status"] = "APPROVED"
                         else:
                             p["status"] = edit_status
 
-                        operations_agent.update_product_status_in_sheet(p.get("sku"), p.get("status"), f"Đã học chỉnh sửa từ {st.session_state.username}")
+                        p.pop("custom_html", None)
+
+                        # Lưu vào bộ nhớ cục bộ và đĩa
+                        for item in products:
+                            if item.get("sku") == p.get("sku"):
+                                item.update(p)
+                                break
+
                         with open(cache_file, "w", encoding="utf-8") as f:
                             json.dump(products, f, ensure_ascii=False, indent=2)
-                        st.session_state["cached_products"] = products
 
-                        if learned_changes:
-                            st.success(f"🧠 AI đã tự học {len(learned_changes)} quy tắc mới: " + ", ".join(learned_changes))
+                        # Đồng bộ ngay vào repo git
+                        git_cache = Path("c:/Users/Dell/bis-ai-project/BIS_AI_PROJECT/extracted_products_cache.json")
+                        if git_cache.parent.exists():
+                            try:
+                                with open(git_cache, "w", encoding="utf-8") as f:
+                                    json.dump(products, f, ensure_ascii=False, indent=2)
+                            except Exception:
+                                pass
+
+                        st.session_state["cached_products"] = products
+                        operations_agent.update_product_status_in_sheet(p.get("sku"), p.get("status"), f"Chỉnh sửa bởi {st.session_state.username}")
+
+                        if approve_btn:
+                            st.toast(f"🎉 ĐÃ PHÊ DUYỆT SẢN PHẨM {p.get('sku')} ĐỂ ĐĂNG WEB!", icon="✅")
+                        elif learned_changes:
+                            st.toast(f"🧠 AI ĐÃ TỰ HỌC {len(learned_changes)} QUY TẮC MỚI!", icon="💾")
                         else:
-                            st.success("✓ Đã lưu thông tin sản phẩm thành công!")
+                            st.toast("✓ Đã lưu thay đổi thành công!", icon="💾")
                         st.rerun()
 
+                # KHUNG XEM TRƯỚC DUY NHẤT (GỘP THÀNH 1 MỤC XEM TRƯỚC RỰC RỠ)
                 st.markdown("---")
-                st.markdown("##### 📄 Bản Xem Trước Trực Quan Sau Khi Sửa (Live Preview):")
-                components.html(full_preview_html, height=520, scrolling=True)
-
-            with tab_preview:
-                st.caption("Khung xem trước chuẩn giao diện Website Haravan / bistextile.com với độ tương phản cao, nền trắng chữ đen sắc nét:")
+                st.markdown("##### 📄 Bản Xem Trước Chuẩn Website Haravan / bistextile.com (Nền trắng sắc nét):")
+                html_code = technical_agent.build_7_block_html(p)
+                full_preview_html = f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    html, body {{
+      background-color: #ffffff !important;
+      color: #1e293b !important;
+      margin: 0;
+      padding: 16px;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    }}
+  </style>
+</head>
+<body style="background-color: #ffffff !important; color: #1e293b !important;">
+  {html_code}
+</body>
+</html>"""
                 components.html(full_preview_html, height=580, scrolling=True)
 
             with tab_raw_html:
@@ -1291,15 +1342,20 @@ with tab_tech:
                     st.success("✓ Đã lưu mã HTML tùy chỉnh cho sản phẩm này!")
                     st.rerun()
 
-            with tab_memory:
+            with tab_memory_quick:
                 st.markdown("##### 🧠 Các Quy Tắc AI Đã Tự Học Được (Learning Engine Rules):")
                 try:
                     with open(PROJECT_DIR / "feedback_memory.json", "r", encoding="utf-8") as f_mem:
                         mem_data = json.load(f_mem)
                     examples = mem_data.get("examples", [])
+                    custom_rules = mem_data.get("custom_rules", [])
+                    if custom_rules:
+                        st.markdown("**Quy tắc kinh doanh chuyên môn:**")
+                        for r in custom_rules:
+                            st.markdown(f"- 📌 *{r}*")
                     if examples:
-                        st.write(f"Tổng số bài học ghi nhận: **{len(examples)}** bài học:")
-                        for idx, ex in enumerate(reversed(examples[-10:])):
+                        st.markdown(f"**Bài học thực hành ({len(examples)} bài học đã ghi nhận):**")
+                        for idx, ex in enumerate(reversed(examples[-8:])):
                             st.markdown(f"- **{ex.get('sku')}** | Trường `{ex.get('field')}`: `{ex.get('ai_original')}` ➔ `<span style='color: #10b981; font-weight: 700;'>{ex.get('human_corrected')}</span>` *({ex.get('timestamp')[:19]})*", unsafe_allow_html=True)
                     else:
                         st.info("Chưa có quy tắc tự học nào được ghi nhận.")
@@ -1416,11 +1472,26 @@ with tab_media:
             else:
                 st.info("⚠️ Chưa có ảnh đầu vào. Hãy bấm **'Tìm ảnh hãng trên Web'**, **'Trích xuất từ Catalogue'** hoặc tải ảnh thủ công.")
 
-            # Tải ảnh thực tế từ người dùng
-            uploaded_user_img = st.file_uploader(f"Hoặc tải lên ảnh thủ công cho mã {clean_sku}:", type=["jpg", "png", "jpeg"], key=f"up_{clean_sku}")
+            # Hỗ trợ quy trình Canva Pro
+            st.markdown("""
+            <div style='background: linear-gradient(135deg, #090e1a 0%, #1e1b4b 100%); border: 1.5px solid #818cf8; border-radius: 8px; padding: 12px; margin-top: 10px; margin-bottom: 12px;'>
+              <div style='display: flex; justify-content: space-between; align-items: center;'>
+                <div>
+                  <span style='font-size: 15px;'>🎨</span> <strong style='color: #c7d2fe;'>Tách Nền Đỉnh Cao Với Canva Pro</strong>
+                  <div style='font-size: 11.5px; color: #cbd5e1; margin-top: 4px;'>
+                    Bạn có tài khoản Canva Pro: Dùng tính năng <em>Magic Studio (Tách nền 1-click)</em> trên Canva để có ảnh vật thể trong suốt hoàn hảo, tải về dạng PNG rồi nạp trực tiếp qua ô bên dưới.
+                  </div>
+                </div>
+                <a href='https://www.canva.com' target='_blank' style='background: #6366f1; color: white; padding: 7px 14px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 700; white-space: nowrap;'>Mở Canva.com ↗</a>
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Tải ảnh thực tế từ người dùng (Hỗ trợ ảnh trong suốt từ Canva Pro)
+            uploaded_user_img = st.file_uploader(f"Tải lên ảnh sản phẩm (chấp nhận file JPG, PNG hoặc ảnh đã tách nền từ Canva Pro) cho mã {clean_sku}:", type=["jpg", "png", "jpeg"], key=f"up_{clean_sku}")
             if uploaded_user_img:
                 saved_path = media_agent.register_user_image(clean_sku, uploaded_user_img.getvalue(), uploaded_user_img.name)
-                st.success(f"✓ Đã lưu ảnh vào Google Drive: {saved_path.name}")
+                st.toast(f"✓ Đã lưu ảnh vào Google Drive: {saved_path.name}", icon="📁")
                 st.rerun()
 
             # Chọn ảnh nền mockup
@@ -1521,7 +1592,7 @@ with tab_know:
         if st.button("🔄 Quét toàn bộ Google Drive", key="btn_scan_all_vault", help="Tự động đồng bộ các file Sách, Manual, CO/CQ, Catalogue mới bỏ vào Google Drive"):
             if knowledge_agent:
                 scan_res = knowledge_agent.scan_and_sync_drive_files()
-                st.success(f"✓ Đã đồng bộ: {len(scan_res.get('catalogues', []))} catalogues, {len(scan_res.get('manuals', []))} manuals, {len(scan_res.get('certificates', []))} chứng nhận.")
+                st.toast(f"✓ Đã quét & đồng bộ: {len(scan_res.get('manuals', []))} tài liệu, {len(scan_res.get('catalogues', []))} catalogue!", icon="📚")
             st.rerun()
 
     if not knowledge_agent:
@@ -1529,21 +1600,42 @@ with tab_know:
     else:
         col_k1, col_k2 = st.columns([7, 5])
         with col_k1:
-            st.markdown("#### 📂 Danh Mục Tài Liệu Tiêu Chuẩn Hiện Có")
-            docs = knowledge_agent.manifest
-            for d in docs:
-                st.markdown(f"""
-                <div style='background: #0d1322; border: 1px solid #1e293b; border-left: 3px solid #38bdf8; border-radius: 8px; padding: 12px; margin-bottom: 10px;'>
-                  <div style='display: flex; justify-content: space-between; align-items: center;'>
-                    <strong style='color: #f8fafc; font-size: 13px;'>{d.get('title')}</strong>
-                    <span class='node-badge badge-loaded'>{d.get('category').upper()}</span>
-                  </div>
-                  <div style='font-size: 11.5px; color: #94a3b8; margin-top: 4px;'>{d.get('scope')}</div>
-                  <div style='font-size: 10px; color: #64748b; margin-top: 6px; font-family: "JetBrains Mono", monospace;'>
-                    File: {d.get('filename')} &bull; Thẩm định: ✓ Đã xác nhận &bull; Ngày nạp: {d.get('added_at')}
-                  </div>
-                </div>
-                """, unsafe_allow_html=True)
+            # Luôn đọc danh sách mới nhất từ manifest file
+            all_docs = knowledge_agent._load_manifest()
+            st.markdown(f"#### 📂 Danh Mục Tài Liệu Tiêu Chuẩn Hiện Có ({len(all_docs)} tài liệu đã đồng bộ)")
+
+            # Bộ lọc và tìm kiếm thông minh
+            c_kf1, c_kf2 = st.columns([5, 7])
+            with c_kf1:
+                cat_filter = st.selectbox("Lọc phân loại:", ["Tất cả", "standards", "manuals", "catalogues", "certificates"], key="sb_cat_filter")
+            with c_kf2:
+                search_kw = st.text_input("🔍 Tìm kiếm theo tên hoặc hãng:", "", placeholder="VD: AATCC, Taber, VeriVide, Boxun...", key="inp_doc_kw")
+
+            filtered_docs = all_docs
+            if cat_filter != "Tất cả":
+                filtered_docs = [d for d in filtered_docs if d.get("category") == cat_filter]
+            if search_kw.strip():
+                kw_low = search_kw.strip().lower()
+                filtered_docs = [d for d in filtered_docs if kw_low in str(d.get("title", "")).lower() or kw_low in str(d.get("filename", "")).lower()]
+
+            st.caption(f"Đang hiển thị {len(filtered_docs)} / {len(all_docs)} tài liệu:")
+
+            # Hộp cuộn danh sách tài liệu
+            doc_container = st.container(height=480)
+            with doc_container:
+                for d in filtered_docs:
+                    st.markdown(f"""
+                    <div style='background: #0d1322; border: 1px solid #1e293b; border-left: 3px solid #38bdf8; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px;'>
+                      <div style='display: flex; justify-content: space-between; align-items: center;'>
+                        <strong style='color: #f8fafc; font-size: 13px;'>{d.get('title')}</strong>
+                        <span class='node-badge badge-loaded'>{d.get('category', 'doc').upper()}</span>
+                      </div>
+                      <div style='font-size: 11.5px; color: #94a3b8; margin-top: 4px;'>{d.get('scope')}</div>
+                      <div style='font-size: 10px; color: #64748b; margin-top: 6px; font-family: "JetBrains Mono", monospace;'>
+                        File: {d.get('filename')} &bull; Thẩm định: ✓ Đã nạp AI &bull; {d.get('added_at', '')}
+                      </div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
         with col_k2:
             st.markdown("#### 📤 Nạp Tài Liệu / Chứng Nhận Mới Cho AI Học")
@@ -1564,20 +1656,46 @@ with tab_know:
                         "type": "KNOW",
                         "text": f"Đã nạp tài liệu '{new_title}' vào Knowledge Vault."
                     })
-                    st.success(f"✓ Đã nạp thành công '{new_title}' vào kho tri thức của AI!")
+                    st.toast(f"✓ Đã nạp thành công '{new_title}' vào kho tri thức của AI!", icon="📚")
                     st.rerun()
 
 
 # ── TAB 5: PHÒNG VẬN HÀNH & HARAVAN GUARD ────────────────────────────────────
 with tab_ops:
     st.markdown("### 🛡️ Phòng Vận Hành & Cổng An Toàn Haravan Guard")
+
+    # Giới thiệu chi tiết giải thích rõ ràng cơ chế
+    st.markdown("""
+    <div style='background: #090e1a; border: 1.5px solid #0284c7; border-radius: 10px; padding: 16px; margin-bottom: 18px;'>
+      <h4 style='color: #38bdf8; margin: 0 0 8px 0;'>📌 Giải Thích Cơ Chế: "Thực Thi Đồng Bộ An Toàn Lên Haravan" Là Gì?</h4>
+      <p style='font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 0;'>
+        Hệ thống thương mại điện tử <strong>bistextile.com</strong> chạy trên nền tảng Haravan và đang có hàng nghìn sản phẩm kinh doanh thực tế. 
+        Khi AI tự động bóc tách và đẩy sản phẩm mới lên sàn, <strong>Haravan Guard</strong> hoạt động như một <em>"Rào chắn an toàn 3 lớp"</em> để bảo vệ dữ liệu công ty:
+      </p>
+      <div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 12px;'>
+        <div style='background: #0d1322; border: 1px solid #1e293b; border-left: 3px solid #f43f5e; padding: 10px; border-radius: 6px;'>
+          <strong style='color: #f43f5e;'>1. Rào chắn thời gian (2026-10-20):</strong><br>
+          <span style='font-size: 11.5px; color: #94a3b8;'>Tuyệt đối KHÔNG BAO GIỜ chỉnh sửa, xóa hay ghi đè bất kỳ sản phẩm nào đã có từ trước ngày 20/10/2026 trên website bistextile.com.</span>
+        </div>
+        <div style='background: #0d1322; border: 1px solid #1e293b; border-left: 3px solid #10b981; padding: 10px; border-radius: 6px;'>
+          <strong style='color: #10b981;'>2. Cổng phê duyệt (Human-in-the-loop):</strong><br>
+          <span style='font-size: 11.5px; color: #94a3b8;'>Chỉ những sản phẩm nào bạn đã bấm <code>✅ PHÊ DUYỆT (APPROVED)</code> tại Bàn Kỹ thuật mới được đưa vào danh sách đẩy lên sàn.</span>
+        </div>
+        <div style='background: #0d1322; border: 1px solid #1e293b; border-left: 3px solid #38bdf8; padding: 10px; border-radius: 6px;'>
+          <strong style='color: #38bdf8;'>3. Đẩy ở chế độ Ẩn / Nháp (Draft):</strong><br>
+          <span style='font-size: 11.5px; color: #94a3b8;'>Mọi sản phẩm tạo mới luôn mang cờ <code>published: false</code>. Sản phẩm sẽ nằm ở mục Nháp trong trang Quản trị Haravan để nhân sự duyệt lần cuối trước khi mở bán công khai.</span>
+        </div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
     col_h1, col_h2, col_h3 = st.columns(3)
     with col_h1:
-        st.info("🔒 **Rào chắn 2026-10-20:** Tuyệt đối KHÔNG sửa, KHÔNG ghi đè bất kỳ sản phẩm nào tạo trước ngày 20/10/2026 trên sàn Haravan.")
+        st.info(f"🔒 **Rào chắn 2026-10-20:** Đang bật (Bảo vệ 100% dữ liệu gốc).")
     with col_h2:
-        st.warning("👁️ **Đẩy ở chế độ Ẩn:** Mọi sản phẩm khi đẩy lên Haravan luôn mang cờ `published: false` để kiểm duyệt nội bộ trước khi mở bán.")
+        st.warning("👁️ **Trạng thái xuất bản:** Luôn ẩn (`published: false`).")
     with col_h3:
-        st.success(f"✅ **Sản phẩm sẵn sàng:** Có {approved_count} sản phẩm đã được APPROVE để đồng bộ.")
+        st.success(f"✅ **Sản phẩm sẵn sàng:** Có {approved_count} sản phẩm đã APPROVED.")
 
     st.markdown("---")
     st.markdown("#### Thực thi đồng bộ an toàn lên Haravan:")
@@ -1590,23 +1708,62 @@ with tab_ops:
                     "type": "SYNC",
                     "text": f"Đồng bộ thành công {len(sync_res)} sản phẩm lên sàn Haravan."
                 })
-                st.success(f"✓ Đã hoàn tất đồng bộ {len(sync_res)} sản phẩm lên Haravan ở chế độ ẩn!")
+                st.toast(f"✓ Đã hoàn tất đồng bộ {len(sync_res)} sản phẩm lên Haravan ở chế độ ẩn!", icon="🚀")
                 st.json(sync_res)
             else:
-                st.info("Hiện không có sản phẩm nào ở trạng thái APPROVED cần đồng bộ.")
+                st.info("Hiện không có sản phẩm nào ở trạng thái APPROVED cần đồng bộ. Hãy phê duyệt sản phẩm tại Bàn Kỹ thuật trước.")
 
 
 # ── TAB 6: BỘ NHỚ TỰ HỌC (FEW-SHOT CONTINUOUS FEEDBACK) ────────────────────────
 with tab_learn:
-    st.markdown("### 🧠 Bộ Nhớ Tự Học (Few-Shot Continuous Feedback)")
-    st.write("Mỗi khi bạn sửa thông số ở Bàn duyệt Kỹ thuật, hệ thống sẽ lưu cặp giá trị `{Giá trị cũ AI nhận diện ➔ Giá trị mới do chuyên gia sửa}` và tự động chèn vào Prompt của Gemini cho các lần đọc catalogue tiếp theo.")
+    st.markdown("### 🧠 Bộ Nhớ Tự Học & Quản Trị Quy Tắc (Learning Engine Dashboard)")
+    st.write("Trung tâm tri thức của AI: Lưu trữ các quy tắc chuẩn hóa chuyên môn và toàn bộ lịch sử sửa lỗi của bạn để Gemini tự động học tập, không bao giờ lặp lại sai sót.")
     
-    mem_file = PROJECT_DIR / "feedback_memory.json"
-    if mem_file.exists():
-        try:
-            mem_data = json.load(open(mem_file, encoding="utf-8"))
-            st.json(mem_data)
-        except Exception as e:
-            st.error(f"Lỗi đọc bộ nhớ: {e}")
-    else:
-        st.info("Chưa có bản ghi hiệu chỉnh nào. Hãy thực hiện chỉnh sửa tại Bàn duyệt để huấn luyện AI.")
+    mem_data = learning_engine.load_memory()
+    custom_rules = mem_data.get("custom_rules", [])
+    examples = mem_data.get("examples", [])
+
+    c_lm1, c_lm2 = st.columns([6, 6])
+    with c_lm1:
+        st.markdown("#### 📌 1. Quy Tắc Kinh Doanh Chuyên Môn (Business Rules)")
+        st.caption("Các luật chuẩn hóa bắt buộc AI phải tuân thủ trong toàn bộ quá trình đọc catalogue:")
+        if custom_rules:
+            for idx, r in enumerate(custom_rules):
+                col_r_txt, col_r_del = st.columns([10, 2])
+                with col_r_txt:
+                    st.markdown(f"**{idx+1}.** {r}")
+                with col_r_del:
+                    if st.button("🗑️", key=f"del_rule_{idx}", help="Xóa quy tắc này"):
+                        learning_engine.delete_custom_rule(idx)
+                        st.toast("Đã xóa quy tắc thành công!", icon="🗑️")
+                        st.rerun()
+        else:
+            st.info("Chưa có quy tắc nào.")
+
+        with st.form("add_rule_form"):
+            new_rule_input = st.text_input("Thêm quy tắc chuẩn hóa mới cho AI:", placeholder="VD: Tất cả sách hướng dẫn của AATCC phải có đơn vị tính là 'cuốn'...")
+            if st.form_submit_button("➕ THÊM QUY TẮC MỚI", use_container_width=True):
+                if new_rule_input.strip():
+                    learning_engine.add_custom_rule(new_rule_input.strip())
+                    st.toast("✓ Đã nạp quy tắc mới vào bộ nhớ AI!", icon="🧠")
+                    st.rerun()
+
+    with c_lm2:
+        st.markdown(f"#### 🎓 2. Lịch Sử Bài Học Thực Tế ({len(examples)} bài học)")
+        st.caption("Từng lần bạn sửa trên giao diện, AI tự động ghi nhận cặp giá trị {AI nhận diện sai ➔ Bạn sửa đúng}:")
+        
+        ex_container = st.container(height=340)
+        with ex_container:
+            if examples:
+                for idx, ex in enumerate(reversed(examples[-15:])):
+                    real_idx = len(examples) - 1 - idx
+                    col_ex_info, col_ex_del = st.columns([10, 2])
+                    with col_ex_info:
+                        st.markdown(f"**Mã {ex.get('sku')}** | Trường `{ex.get('field')}`<br>`{ex.get('ai_original')}` ➔ <span style='color: #10b981; font-weight: 700;'>{ex.get('human_corrected')}</span> <span style='color: #64748b; font-size: 10px;'>({ex.get('timestamp')[:19]})</span>", unsafe_allow_html=True)
+                    with col_ex_del:
+                        if st.button("❌", key=f"del_ex_{real_idx}", help="Xóa bài học này"):
+                            learning_engine.delete_example(real_idx)
+                            st.toast("Đã xóa bài học!", icon="🗑️")
+                            st.rerun()
+            else:
+                st.info("Chưa có bản ghi hiệu chỉnh nào. Hãy sửa thông tin sản phẩm tại Bàn Kỹ thuật để huấn luyện AI.")

@@ -179,10 +179,11 @@ class AgentKnowledge:
                     if not bg_target.exists():
                         shutil.copy2(p, bg_target)
 
-        # 1. Catalogues (1_Catalogues)
+        # 1. Catalogues (1_Catalogues) - Quét đệ quy toàn bộ thư mục con
         cat_dir = self.subdirs["catalogues"]
         cat_dir.mkdir(parents=True, exist_ok=True)
-        for p in cat_dir.glob("*.pdf"):
+        for p in cat_dir.rglob("*.pdf"):
+            if not p.is_file(): continue
             detected["catalogues"].append(p.name)
             if p.name not in existing_filenames:
                 size_mb = round(p.stat().st_size / (1024 * 1024), 2)
@@ -197,27 +198,30 @@ class AgentKnowledge:
                 })
                 existing_filenames.add(p.name)
 
-        # 2. Manuals & Standards (2_Manuals_Standards)
+        # 2. Manuals & Standards (2_Manuals_Standards) - Quét đệ quy toàn bộ thư mục con
         man_dir = self.subdirs["manuals"]
         man_dir.mkdir(parents=True, exist_ok=True)
-        for p in list(man_dir.glob("*.pdf")) + list(man_dir.glob("*.docx")):
+        for p in list(man_dir.rglob("*.pdf")) + list(man_dir.rglob("*.docx")):
+            if not p.is_file(): continue
             detected["manuals"].append(p.name)
             if p.name not in existing_filenames:
+                brand_tag = f"[{p.parent.name}] " if p.parent != man_dir else ""
                 self.manifest.append({
                     "id": f"DOC-MAN-{p.stem[:12]}",
-                    "title": f"Tài liệu tiêu chuẩn: {p.name}",
-                    "category": "manuals",
+                    "title": f"{brand_tag}Tài liệu tiêu chuẩn: {p.name}",
+                    "category": "standards" if any(k in p.name.lower() for k in ["iso", "aatcc", "astm", "din", "g035", "lp1"]) else "manuals",
                     "filename": p.name,
-                    "scope": f"Sách tiêu chuẩn / Manual máy phát hiện trực tiếp từ Google Drive.",
+                    "scope": f"Tài liệu / Tiêu chuẩn / Manual máy từ thư mục {p.parent.name}.",
                     "verified": True,
                     "added_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 })
                 existing_filenames.add(p.name)
 
-        # 3. Certificates CO/CQ (3_Certificates_CO_CQ)
+        # 3. Certificates CO/CQ (3_Certificates_CO_CQ) - Quét đệ quy toàn bộ thư mục con
         cert_dir = self.subdirs["certificates"]
         cert_dir.mkdir(parents=True, exist_ok=True)
-        for p in list(cert_dir.glob("*.pdf")) + list(cert_dir.glob("*.png")) + list(cert_dir.glob("*.jpg")):
+        for p in list(cert_dir.rglob("*.pdf")) + list(cert_dir.rglob("*.png")) + list(cert_dir.rglob("*.jpg")):
+            if not p.is_file(): continue
             detected["certificates"].append(p.name)
             if p.name not in existing_filenames:
                 self.manifest.append({
@@ -233,14 +237,14 @@ class AgentKnowledge:
 
         # 4. Studio Backgrounds (5_Studio_Backgrounds)
         if bg_dir.exists():
-            for p in list(bg_dir.glob("*.jpg")) + list(bg_dir.glob("*.png")) + list(bg_dir.glob("*.jpeg")):
-                detected["backgrounds"].append(p.name)
+            for p in list(bg_dir.rglob("*.jpg")) + list(bg_dir.rglob("*.png")) + list(bg_dir.rglob("*.jpeg")):
+                if p.is_file(): detected["backgrounds"].append(p.name)
 
         # 5. Training Videos (7_Training_Videos)
         vid_dir = self.subdirs["media"]
         if vid_dir.exists():
-            for p in list(vid_dir.glob("*.mp4")) + list(vid_dir.glob("*.mov")) + list(vid_dir.glob("*.avi")):
-                detected["media"].append(p.name)
+            for p in list(vid_dir.rglob("*.mp4")) + list(vid_dir.rglob("*.mov")) + list(vid_dir.rglob("*.avi")):
+                if p.is_file(): detected["media"].append(p.name)
 
         self._save_manifest(self.manifest)
         return detected

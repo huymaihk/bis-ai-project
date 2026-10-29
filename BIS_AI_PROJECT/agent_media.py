@@ -69,27 +69,56 @@ class AgentMedia:
             img.save(studio_bg, quality=95)
 
     def extract_image_from_pdf(self, sku: str, pdf_path: str | Path, page_num: int) -> Optional[Path]:
-        """Extract high-res equipment photo directly from the PDF catalogue page."""
+        """Extract highest-res equipment photo directly from the PDF catalogue page with smart fallbacks."""
         import pymupdf
         clean_sku = sku.strip().replace(" ", "_")
         target_path = self.brand_dir / f"{clean_sku}_brand_1.jpg"
         if not os.path.exists(str(pdf_path)):
-            return None
-        doc = pymupdf.open(str(pdf_path))
-        if 1 <= page_num <= len(doc):
-            page = doc[page_num - 1]
-            img_list = page.get_images(full=True)
-            for img_info in img_list:
-                xref = img_info[0]
-                base_img = doc.extract_image(xref)
-                img_bytes = base_img["image"]
-                # Must be a substantial product photo (>6KB, >120px)
-                if len(img_bytes) > 6000 and base_img["width"] >= 120 and base_img["height"] >= 120:
+            # Thử tìm file catalogue trong các thư mục mặc định
+            possible_paths = [
+                self.workspace_dir / "catalogue_sample.pdf",
+                self.gdrive_storage / "1_Catalogues" / "catalogue_sample.pdf",
+                self.workspace_dir.parent / "catalogue_sample.pdf",
+            ]
+            for p in possible_paths:
+                if p.exists():
+                    pdf_path = p
+                    break
+            else:
+                return None
+
+        try:
+            doc = pymupdf.open(str(pdf_path))
+            if 1 <= page_num <= len(doc):
+                page = doc[page_num - 1]
+                img_list = page.get_images(full=True)
+                
+                candidates = []
+                for img_info in img_list:
+                    xref = img_info[0]
+                    base_img = doc.extract_image(xref)
+                    img_bytes = base_img["image"]
+                    w, h = base_img["width"], base_img["height"]
+                    if len(img_bytes) >= 2000 and w >= 60 and h >= 60:
+                        candidates.append((len(img_bytes), img_bytes))
+
+                # Lấy ảnh có dung lượng lớn nhất (ảnh nét nhất)
+                if candidates:
+                    candidates.sort(key=lambda x: x[0], reverse=True)
                     with open(target_path, "wb") as f:
-                        f.write(img_bytes)
+                        f.write(candidates[0][1])
                     doc.close()
                     return target_path
-        doc.close()
+
+                # Fallback: Nếu là tài liệu vector, xuất ảnh chụp trang PDF
+                pix = page.get_pixmap(matrix=pymupdf.Matrix(1.8, 1.8))
+                pix.save(str(target_path))
+                doc.close()
+                return target_path
+
+            doc.close()
+        except Exception as e:
+            print(f"Error extracting image from PDF: {e}")
         return None
 
     def fetch_brand_image_from_web(self, sku: str, brand_name: str, title: str) -> Optional[Path]:

@@ -25,5 +25,1877 @@
     "scope": "Tổng hợp 17 sản phẩm thiết bị và sách tiêu chuẩn phòng thí nghiệm.",
     "verified": true,
     "added_at": "2026-10-28 09:15:00"
+  },
+  {
+    "id": "DOC-CAT-Catalogue 02",
+    "title": "Catalogue: Catalogue 02.pdf",
+    "category": "catalogues",
+    "filename": "Catalogue 02.pdf",
+    "scope": "File Catalogue PDF phát hiện trực tiếp từ Google Drive (0.44 MB).",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-KMS-M6+Washe",
+    "title": "Tài liệu tiêu chuẩn: KMS-M6+Washer+Catalogue.pdf",
+    "category": "manuals",
+    "filename": "KMS-M6+Washer+Catalogue.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 2_Manuals_Standards.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-ZH-OHS-408C恒",
+    "title": "Tài liệu tiêu chuẩn: ZH-OHS-408C恒温恒湿箱技术规格书.pdf",
+    "category": "manuals",
+    "filename": "ZH-OHS-408C恒温恒湿箱技术规格书.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 2_Manuals_Standards.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Type-SeriesA",
+    "title": "Tài liệu tiêu chuẩn: Type-SeriesAqua-Boy.pdf",
+    "category": "manuals",
+    "filename": "Type-SeriesAqua-Boy.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 2_Manuals_Standards.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-KMS-M6D+Drye",
+    "title": "Tài liệu tiêu chuẩn: KMS-M6D+Dryer+Catalogue.pdf",
+    "category": "manuals",
+    "filename": "KMS-M6D+Dryer+Catalogue.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 2_Manuals_Standards.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-TH-800-A Ope",
+    "title": "Tài liệu tiêu chuẩn: TH-800-A Operation and Maintenance Manul.pdf",
+    "category": "manuals",
+    "filename": "TH-800-A Operation and Maintenance Manul.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 2_Manuals_Standards.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Introtech KM",
+    "title": "Tài liệu tiêu chuẩn: Introtech KMS-M6 Installaton & Operation Manual-CN.pdf",
+    "category": "manuals",
+    "filename": "Introtech KMS-M6 Installaton & Operation Manual-CN.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 2_Manuals_Standards.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-máy nước cất",
+    "title": "Tài liệu tiêu chuẩn: máy nước cất.pdf",
+    "category": "manuals",
+    "filename": "máy nước cất.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 2_Manuals_Standards.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-AATCC LP1-VN",
+    "title": "Tài liệu tiêu chuẩn: AATCC LP1-VN.pdf",
+    "category": "standards",
+    "filename": "AATCC LP1-VN.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 2_Manuals_Standards.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-AATCC_Catalo",
+    "title": "Tài liệu tiêu chuẩn: AATCC_Catalog__2024.pdf",
+    "category": "standards",
+    "filename": "AATCC_Catalog__2024.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 2_Manuals_Standards.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-AATCC_Qualit",
+    "title": "Tài liệu tiêu chuẩn: AATCC_Quality-Control-Catalog__2025_Final_Digital.pdf",
+    "category": "standards",
+    "filename": "AATCC_Quality-Control-Catalog__2025_Final_Digital.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 2_Manuals_Standards.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-aatcc-qualit",
+    "title": "Tài liệu tiêu chuẩn: aatcc-quality-control-catalog-2023-digital-final_compress.pdf",
+    "category": "standards",
+    "filename": "aatcc-quality-control-catalog-2023-digital-final_compress.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 2_Manuals_Standards.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-catalog-en",
+    "title": "Tài liệu tiêu chuẩn: catalog-en.pdf",
+    "category": "manuals",
+    "filename": "catalog-en.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 2_Manuals_Standards.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-ISO-105-E04-",
+    "title": "Tài liệu tiêu chuẩn: ISO-105-E04-2013.pdf",
+    "category": "standards",
+    "filename": "ISO-105-E04-2013.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 2_Manuals_Standards.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Manual AATCC",
+    "title": "Tài liệu tiêu chuẩn: Manual AATCC 2024.pdf",
+    "category": "standards",
+    "filename": "Manual AATCC 2024.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 2_Manuals_Standards.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-NIKE G035 - ",
+    "title": "Tài liệu tiêu chuẩn: NIKE G035 - Washability, Feel and Look R7.pdf",
+    "category": "standards",
+    "filename": "NIKE G035 - Washability, Feel and Look R7.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 2_Manuals_Standards.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-1692939218_f",
+    "title": "[03_Boxun] Tài liệu tiêu chuẩn: 1692939218_fAoNHtnade.pdf",
+    "category": "manuals",
+    "filename": "1692939218_fAoNHtnade.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 03_Boxun.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-530-Boxun Ge",
+    "title": "[03_Boxun] Tài liệu tiêu chuẩn: 530-Boxun Gesamtkatalog.pdf",
+    "category": "manuals",
+    "filename": "530-Boxun Gesamtkatalog.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 03_Boxun.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-202507141006",
+    "title": "[03_Boxun] Tài liệu tiêu chuẩn: 20250714100612.pdf",
+    "category": "manuals",
+    "filename": "20250714100612.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 03_Boxun.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-eXact-Spec",
+    "title": "[11_Xrite] Tài liệu tiêu chuẩn: eXact-Spec.pdf",
+    "category": "manuals",
+    "filename": "eXact-Spec.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 11_Xrite.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-GT-C12A Hydr",
+    "title": "[13_GESTER] Tài liệu tiêu chuẩn: GT-C12A Hydraulic Bursting Strength Tester.pdf",
+    "category": "manuals",
+    "filename": "GT-C12A Hydraulic Bursting Strength Tester.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 13_GESTER.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-GT-C50 Manua",
+    "title": "[13_GESTER] Tài liệu tiêu chuẩn: GT-C50 Manual.pdf",
+    "category": "manuals",
+    "filename": "GT-C50 Manual.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 13_GESTER.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-GT-C121 Manu",
+    "title": "[13_GESTER] Tài liệu tiêu chuẩn: GT-C121 Manual.pdf",
+    "category": "manuals",
+    "filename": "GT-C121 Manual.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 13_GESTER.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-safguard_pms",
+    "title": "[08_SafGuard] Tài liệu tiêu chuẩn: safguard_pmst_guide.pdf",
+    "category": "manuals",
+    "filename": "safguard_pmst_guide.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 08_SafGuard.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-SafGuard use",
+    "title": "[08_SafGuard] Tài liệu tiêu chuẩn: SafGuard user manual.pdf",
+    "category": "manuals",
+    "filename": "SafGuard user manual.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 08_SafGuard.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Orbitor mode",
+    "title": "[12_jamesheal] Tài liệu tiêu chuẩn: Orbitor model 1616-manual.pdf",
+    "category": "manuals",
+    "filename": "Orbitor model 1616-manual.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 12_jamesheal.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Miele operat",
+    "title": "[12_jamesheal] Tài liệu tiêu chuẩn: Miele operation manual.pdf",
+    "category": "manuals",
+    "filename": "Miele operation manual.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 12_jamesheal.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-1555-Elmatea",
+    "title": "[12_jamesheal] Tài liệu tiêu chuẩn: 1555-Elmatear.pdf",
+    "category": "manuals",
+    "filename": "1555-Elmatear.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 12_jamesheal.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Martindale -",
+    "title": "[12_jamesheal] Tài liệu tiêu chuẩn: Martindale - the 1600 Series - manual.pdf",
+    "category": "manuals",
+    "filename": "Martindale - the 1600 Series - manual.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 12_jamesheal.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Brochure-Mar",
+    "title": "[12_jamesheal] Tài liệu tiêu chuẩn: Brochure-Martindale_Product_Range-251230_0.pdf",
+    "category": "manuals",
+    "filename": "Brochure-Martindale_Product_Range-251230_0.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 12_jamesheal.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Martindale-S",
+    "title": "[12_jamesheal] Tài liệu tiêu chuẩn: Martindale-Sales-Tool-Kit-Update-3.pdf",
+    "category": "manuals",
+    "filename": "Martindale-Sales-Tool-Kit-Update-3.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 12_jamesheal.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Orbitor-Sale",
+    "title": "[12_jamesheal] Tài liệu tiêu chuẩn: Orbitor-Sales-Tool-Kit-August-2016.pdf",
+    "category": "manuals",
+    "filename": "Orbitor-Sales-Tool-Kit-August-2016.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 12_jamesheal.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Specificatio",
+    "title": "[16_Sailham] Tài liệu tiêu chuẩn: Specification sheet-Constant temperature humidity test chamber_Sailham.pdf",
+    "category": "manuals",
+    "filename": "Specification sheet-Constant temperature humidity test chamber_Sailham.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 16_Sailham.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-m6d",
+    "title": "[14_Labtex] Tài liệu tiêu chuẩn: m6d.pdf",
+    "category": "manuals",
+    "filename": "m6d.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 14_Labtex.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-m6",
+    "title": "[14_Labtex] Tài liệu tiêu chuẩn: m6.pdf",
+    "category": "manuals",
+    "filename": "m6.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 14_Labtex.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Insta-828-Ma",
+    "title": "[07_Insta] Tài liệu tiêu chuẩn: Insta-828-Manual (1).pdf",
+    "category": "manuals",
+    "filename": "Insta-828-Manual (1).pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 07_Insta.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-CC120(LED)-C",
+    "title": "[10_Tilo.net] Tài liệu tiêu chuẩn: CC120(LED)-C-N.pdf",
+    "category": "manuals",
+    "filename": "CC120(LED)-C-N.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 10_Tilo.net.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-CC120(LED)-A",
+    "title": "[10_Tilo.net] Tài liệu tiêu chuẩn: CC120(LED)-A-N.pdf",
+    "category": "manuals",
+    "filename": "CC120(LED)-A-N.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 10_Tilo.net.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Instructions",
+    "title": "[04_DLAB] Tài liệu tiêu chuẩn: Instructions for the use of the magnetic host computer software-20240912.pdf",
+    "category": "manuals",
+    "filename": "Instructions for the use of the magnetic host computer software-20240912.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 04_DLAB.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Bottle-Top D",
+    "title": "[04_DLAB] Tài liệu tiêu chuẩn: Bottle-Top Dispenser Chemical Compatibility sheet-EN-2024.7.2.pdf",
+    "category": "manuals",
+    "filename": "Bottle-Top Dispenser Chemical Compatibility sheet-EN-2024.7.2.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 04_DLAB.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Guide for se",
+    "title": "[04_DLAB] Tài liệu tiêu chuẩn: Guide for selection of  Stirrers -EN.pdf",
+    "category": "manuals",
+    "filename": "Guide for selection of  Stirrers -EN.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 04_DLAB.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-DLAB   Elect",
+    "title": "[04_DLAB] Tài liệu tiêu chuẩn: DLAB   Electronic Pipette Calibration Software operating Instructions.pdf",
+    "category": "manuals",
+    "filename": "DLAB   Electronic Pipette Calibration Software operating Instructions.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 04_DLAB.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Guide for se",
+    "title": "[04_DLAB] Tài liệu tiêu chuẩn: Guide for selection of magnetic stirrer bars-EN.pdf",
+    "category": "manuals",
+    "filename": "Guide for selection of magnetic stirrer bars-EN.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 04_DLAB.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Catalog-EN-0",
+    "title": "[04_DLAB] Tài liệu tiêu chuẩn: Catalog-EN-01.25HD.pdf",
+    "category": "manuals",
+    "filename": "Catalog-EN-01.25HD.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 04_DLAB.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-63 RF6088D-l",
+    "title": "[06_Refond] Tài liệu tiêu chuẩn: 63 RF6088D-leaflet-LaboDry.pdf",
+    "category": "manuals",
+    "filename": "63 RF6088D-leaflet-LaboDry.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 06_Refond.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-RF3176 Crock",
+    "title": "[06_Refond] Tài liệu tiêu chuẩn: RF3176 Crockmeter_IM_Eng_V1.21.pdf",
+    "category": "manuals",
+    "filename": "RF3176 Crockmeter_IM_Eng_V1.21.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 06_Refond.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Notice - 202",
+    "title": "[06_Refond] Tài liệu tiêu chuẩn: Notice - 20250613 Update news for LaboWash and LaboDry.pdf",
+    "category": "manuals",
+    "filename": "Notice - 20250613 Update news for LaboWash and LaboDry.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 06_Refond.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-RF306AN_IM_E",
+    "title": "[06_Refond] Tài liệu tiêu chuẩn: RF306AN_IM_Eng_V1.0.pdf",
+    "category": "manuals",
+    "filename": "RF306AN_IM_Eng_V1.0.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 06_Refond.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-62 RF6088W-l",
+    "title": "[06_Refond] Tài liệu tiêu chuẩn: 62 RF6088W-leaflet-LaboWash - V2.0.pdf",
+    "category": "manuals",
+    "filename": "62 RF6088W-leaflet-LaboWash - V2.0.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 06_Refond.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Maintenance-",
+    "title": "[05_Electrolux] Tài liệu tiêu chuẩn: Maintenance-Manual-Wascator-FOM-71-CLS.pdf",
+    "category": "manuals",
+    "filename": "Maintenance-Manual-Wascator-FOM-71-CLS.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 05_Electrolux.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-PDS_FOM71CLS",
+    "title": "[05_Electrolux] Tài liệu tiêu chuẩn: PDS_FOM71CLS_438918101_EN, US.pdf",
+    "category": "manuals",
+    "filename": "PDS_FOM71CLS_438918101_EN, US.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 05_Electrolux.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-EPR_leaflet_",
+    "title": "[05_Electrolux] Tài liệu tiêu chuẩn: EPR_leaflet_Laboratory Testing_20250408_ENG_LR-single pages.pdf",
+    "category": "manuals",
+    "filename": "EPR_leaflet_Laboratory Testing_20250408_ENG_LR-single pages.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 05_Electrolux.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-OM_FOM71CLS_",
+    "title": "[05_Electrolux] Tài liệu tiêu chuẩn: OM_FOM71CLS_438909401_EN, US.pdf",
+    "category": "manuals",
+    "filename": "OM_FOM71CLS_438909401_EN, US.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 05_Electrolux.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-IN_438905451",
+    "title": "[05_Electrolux] Tài liệu tiêu chuẩn: IN_438905451_WascatorFOM71CLS_EN.pdf",
+    "category": "manuals",
+    "filename": "IN_438905451_WascatorFOM71CLS_EN.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 05_Electrolux.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-W3105H servi",
+    "title": "[05_Electrolux] Tài liệu tiêu chuẩn: W3105H service manual.pdf",
+    "category": "manuals",
+    "filename": "W3105H service manual.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 05_Electrolux.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-OM_TD6-6LAB_",
+    "title": "[05_Electrolux] Tài liệu tiêu chuẩn: OM_TD6-6LAB_438921540_EN.pdf",
+    "category": "manuals",
+    "filename": "OM_TD6-6LAB_438921540_EN.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 05_Electrolux.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-IN_TD6-6LAB_",
+    "title": "[05_Electrolux] Tài liệu tiêu chuẩn: IN_TD6-6LAB_438917600_EN.pdf",
+    "category": "manuals",
+    "filename": "IN_TD6-6LAB_438917600_EN.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 05_Electrolux.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-manual displ",
+    "title": "[05_Electrolux] Tài liệu tiêu chuẩn: manual display.pdf",
+    "category": "manuals",
+    "filename": "manual display.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 05_Electrolux.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Wascator Đầu",
+    "title": "[05_Electrolux] Tài liệu tiêu chuẩn: Wascator Đầu máy_1.pdf",
+    "category": "manuals",
+    "filename": "Wascator Đầu máy_1.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 05_Electrolux.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Wascator Đầu",
+    "title": "[05_Electrolux] Tài liệu tiêu chuẩn: Wascator Đầu máy_1 (1).pdf",
+    "category": "manuals",
+    "filename": "Wascator Đầu máy_1 (1).pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 05_Electrolux.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-VeriVide Cal",
+    "title": "[01_VeriVide (1)] Tài liệu tiêu chuẩn: VeriVide Calibration VS1 Datasheet.pdf",
+    "category": "manuals",
+    "filename": "VeriVide Calibration VS1 Datasheet.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 01_VeriVide (1).",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-AATCC_Accele",
+    "title": "[09_SDLATLAS] Tài liệu tiêu chuẩn: AATCC_Accelerotor_M249.pdf",
+    "category": "standards",
+    "filename": "AATCC_Accelerotor_M249.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 09_SDLATLAS.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Vortex M6 To",
+    "title": "[09_SDLATLAS] Tài liệu tiêu chuẩn: Vortex M6 Touch Screen Manual V1.1.pdf",
+    "category": "manuals",
+    "filename": "Vortex M6 Touch Screen Manual V1.1.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 09_SDLATLAS.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-SDL Atlas M2",
+    "title": "[09_SDLATLAS] Tài liệu tiêu chuẩn: SDL Atlas M227-ENG.pdf",
+    "category": "manuals",
+    "filename": "SDL Atlas M227-ENG.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 09_SDLATLAS.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Martindale_E",
+    "title": "[09_SDLATLAS] Tài liệu tiêu chuẩn: Martindale_ENG_NEW_lowres.pdf",
+    "category": "manuals",
+    "filename": "Martindale_ENG_NEW_lowres.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 09_SDLATLAS.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-MODEL C",
+    "title": "[09_SDLATLAS] Tài liệu tiêu chuẩn: MODEL C.pdf",
+    "category": "manuals",
+    "filename": "MODEL C.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 09_SDLATLAS.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-SDL_Vortex_M",
+    "title": "[09_SDLATLAS] Tài liệu tiêu chuẩn: SDL_Vortex_M6_M6D.pdf",
+    "category": "manuals",
+    "filename": "SDL_Vortex_M6_M6D.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 09_SDLATLAS.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Mullen_Teste",
+    "title": "[09_SDLATLAS] Tài liệu tiêu chuẩn: Mullen_Testers_Brochure.pdf",
+    "category": "manuals",
+    "filename": "Mullen_Testers_Brochure.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 09_SDLATLAS.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-RemoteAccess",
+    "title": "[09_SDLATLAS] Tài liệu tiêu chuẩn: RemoteAccess IM V1.5rev.pdf",
+    "category": "manuals",
+    "filename": "RemoteAccess IM V1.5rev.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 09_SDLATLAS.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Vortex M6 To",
+    "title": "[09_SDLATLAS] Tài liệu tiêu chuẩn: Vortex M6 Touch Screen Manual V1.3 (2.012124).pdf",
+    "category": "manuals",
+    "filename": "Vortex M6 Touch Screen Manual V1.3 (2.012124).pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 09_SDLATLAS.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-2015-SDL-CAT",
+    "title": "[09_SDLATLAS] Tài liệu tiêu chuẩn: 2015-SDL-CATALOG-Lo-Res-SINGLEPAGES 020416 (1).pdf",
+    "category": "manuals",
+    "filename": "2015-SDL-CATALOG-Lo-Res-SINGLEPAGES 020416 (1).pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 09_SDLATLAS.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Operation an",
+    "title": "[18_ASLI] Tài liệu tiêu chuẩn: Operation and Maintenance Manual of Temperature ( Humidity) Test Chamber.pdf",
+    "category": "manuals",
+    "filename": "Operation and Maintenance Manual of Temperature ( Humidity) Test Chamber.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 18_ASLI.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Quick Operat",
+    "title": "[18_ASLI] Tài liệu tiêu chuẩn: Quick Operation Instruction of Controller Software.pdf",
+    "category": "manuals",
+    "filename": "Quick Operation Instruction of Controller Software.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 18_ASLI.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Temperature ",
+    "title": "[18_ASLI] Tài liệu tiêu chuẩn: Temperature ( Humidity ) Control System Software Manual.pdf",
+    "category": "manuals",
+    "filename": "Temperature ( Humidity ) Control System Software Manual.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 18_ASLI.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Taber 150-T ",
+    "title": "[19_Taber] Tài liệu tiêu chuẩn: Taber 150-T Stiffness Tester Data Sheet_v2.pdf",
+    "category": "manuals",
+    "filename": "Taber 150-T Stiffness Tester Data Sheet_v2.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 19_Taber.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Taber - Reci",
+    "title": "[19_Taber] Tài liệu tiêu chuẩn: Taber - Reciprocating Abraser 5900.pdf",
+    "category": "manuals",
+    "filename": "Taber - Reciprocating Abraser 5900.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 19_Taber.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Taber 350 Wh",
+    "title": "[19_Taber] Tài liệu tiêu chuẩn: Taber 350 Wheel Refacer Data Sheet_v5.pdf",
+    "category": "manuals",
+    "filename": "Taber 350 Wheel Refacer Data Sheet_v5.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 19_Taber.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Taber - Mult",
+    "title": "[19_Taber] Tài liệu tiêu chuẩn: Taber - Multifinger Scratch 710 v2.pdf",
+    "category": "manuals",
+    "filename": "Taber - Multifinger Scratch 710 v2.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 19_Taber.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Taber 5770 L",
+    "title": "[19_Taber] Tài liệu tiêu chuẩn: Taber 5770 Linear Abraser Data Sheet_v2_2.pdf",
+    "category": "manuals",
+    "filename": "Taber 5770 Linear Abraser Data Sheet_v2_2.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 19_Taber.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-1700-1750 Ab",
+    "title": "[19_Taber] Tài liệu tiêu chuẩn: 1700-1750 Abraser Manual v1-0 (135505).pdf",
+    "category": "manuals",
+    "filename": "1700-1750 Abraser Manual v1-0 (135505).pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 19_Taber.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Taber - Shea",
+    "title": "[19_Taber] Tài liệu tiêu chuẩn: Taber - Shear Scratch 550-551 v2.pdf",
+    "category": "manuals",
+    "filename": "Taber - Shear Scratch 550-551 v2.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 19_Taber.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Taber 1700 A",
+    "title": "[19_Taber] Tài liệu tiêu chuẩn: Taber 1700 Abraser Data Sheet_v8 (1).pdf",
+    "category": "manuals",
+    "filename": "Taber 1700 Abraser Data Sheet_v8 (1).pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 19_Taber.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-350 Wheel Re",
+    "title": "[19_Taber] Tài liệu tiêu chuẩn: 350 Wheel Refacer Manual v1-0 (135994).pdf",
+    "category": "manuals",
+    "filename": "350 Wheel Refacer Manual v1-0 (135994).pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 19_Taber.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Accessory Op",
+    "title": "[19_Taber] Tài liệu tiêu chuẩn: Accessory Options.pdf",
+    "category": "manuals",
+    "filename": "Accessory Options.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 19_Taber.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Máy hút bụi",
+    "title": "[19_Taber] Tài liệu tiêu chuẩn: Máy hút bụi.pdf",
+    "category": "manuals",
+    "filename": "Máy hút bụi.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 19_Taber.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Taber 1750 -",
+    "title": "[19_Taber] Tài liệu tiêu chuẩn: Taber 1750 - Huong dan Su dung (full Tieng Viet).pdf",
+    "category": "manuals",
+    "filename": "Taber 1750 - Huong dan Su dung (full Tieng Viet).pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 19_Taber.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-DS_Memmert_U",
+    "title": "[17_Memmert] Tài liệu tiêu chuẩn: DS_Memmert_Universal-oven_UN55_EN.pdf",
+    "category": "manuals",
+    "filename": "DS_Memmert_Universal-oven_UN55_EN.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 17_Memmert.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-TU AM - AM L",
+    "title": "[17_Memmert] Tài liệu tiêu chuẩn: TU AM - AM LANH- TU SAY  MEMMERT.pdf",
+    "category": "manuals",
+    "filename": "TU AM - AM LANH- TU SAY  MEMMERT.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 17_Memmert.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-MANUAL UI",
+    "title": "[17_Memmert] Tài liệu tiêu chuẩn: MANUAL UI.pdf",
+    "category": "manuals",
+    "filename": "MANUAL UI.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 17_Memmert.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-YG(B)201G - ",
+    "title": "[20-Darong] Tài liệu tiêu chuẩn: YG(B)201G - May do Formaldehyde cho Vai det (Tieng Viet).pdf",
+    "category": "manuals",
+    "filename": "YG(B)201G - May do Formaldehyde cho Vai det (Tieng Viet).pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 20-Darong.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-roaches-opti",
+    "title": "[02_Optidry] Tài liệu tiêu chuẩn: roaches-optidry-manual-02.pdf",
+    "category": "manuals",
+    "filename": "roaches-optidry-manual-02.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 02_Optidry.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-A7145 Sell Q",
+    "title": "[02_Optidry] Tài liệu tiêu chuẩn: A7145 Sell Quick- Opti-Dry 21840.pdf",
+    "category": "manuals",
+    "filename": "A7145 Sell Quick- Opti-Dry 21840.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 02_Optidry.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Ultraview Us",
+    "title": "[01_UltraView] Tài liệu tiêu chuẩn: Ultraview User Manual.pdf",
+    "category": "manuals",
+    "filename": "Ultraview User Manual.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 01_UltraView.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Ultraview",
+    "title": "[01_UltraView] Tài liệu tiêu chuẩn: Ultraview.pdf",
+    "category": "manuals",
+    "filename": "Ultraview.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 01_UltraView.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-RF3169N IM_C",
+    "title": "[Martindale] Tài liệu tiêu chuẩn: RF3169N IM_CHN_V2.0 说明书(1).pdf",
+    "category": "manuals",
+    "filename": "RF3169N IM_CHN_V2.0 说明书(1).pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Martindale.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-RF3169N Mart",
+    "title": "[Martindale] Tài liệu tiêu chuẩn: RF3169N Martindale_IM_Eng_V2.0.pdf",
+    "category": "manuals",
+    "filename": "RF3169N Martindale_IM_Eng_V2.0.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Martindale.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-READ ME FIRS",
+    "title": "[DRIVER TITAN 10] Tài liệu tiêu chuẩn: READ ME FIRST 2025.pdf",
+    "category": "manuals",
+    "filename": "READ ME FIRST 2025.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục DRIVER TITAN 10.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Titan_Range_",
+    "title": "[DRIVER TITAN 10] Tài liệu tiêu chuẩn: Titan_Range_STK.pdf",
+    "category": "manuals",
+    "filename": "Titan_Range_STK.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục DRIVER TITAN 10.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-titan10",
+    "title": "[DRIVER TITAN 10] Tài liệu tiêu chuẩn: titan10.pdf",
+    "category": "manuals",
+    "filename": "titan10.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục DRIVER TITAN 10.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-ElmaTear",
+    "title": "[01_ElmaTear] Tài liệu tiêu chuẩn: ElmaTear.pdf",
+    "category": "manuals",
+    "filename": "ElmaTear.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 01_ElmaTear.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-JH - ElmaTea",
+    "title": "[01_ElmaTear] Tài liệu tiêu chuẩn: JH - ElmaTear.pdf",
+    "category": "manuals",
+    "filename": "JH - ElmaTear.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 01_ElmaTear.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Titan5 1410 ",
+    "title": "[Titan 5] Tài liệu tiêu chuẩn: Titan5 1410 and TestWise_A_EN.pdf",
+    "category": "manuals",
+    "filename": "Titan5 1410 and TestWise_A_EN.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Titan 5.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-110 Titan4 I",
+    "title": "[Titan 5] Tài liệu tiêu chuẩn: 110 Titan4 Installing a new load cell.pdf",
+    "category": "manuals",
+    "filename": "110 Titan4 Installing a new load cell.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Titan 5.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-GT-LB Chair ",
+    "title": "[Catalogs-Furniture Testing Solutions] Tài liệu tiêu chuẩn: GT-LB Chair Testing Machine 椅子测试试验机.pdf",
+    "category": "manuals",
+    "filename": "GT-LB Chair Testing Machine 椅子测试试验机.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Catalogs-Furniture Testing Solutions.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-GT-LA Mattre",
+    "title": "[Catalogs-Furniture Testing Solutions] Tài liệu tiêu chuẩn: GT-LA Mattress Testing Machine 床垫测试试验机.pdf",
+    "category": "manuals",
+    "filename": "GT-LA Mattress Testing Machine 床垫测试试验机.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Catalogs-Furniture Testing Solutions.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-GT-LD Table ",
+    "title": "[Catalogs-Furniture Testing Solutions] Tài liệu tiêu chuẩn: GT-LD Table Testing Machine 桌子测试试验机.pdf",
+    "category": "manuals",
+    "filename": "GT-LD Table Testing Machine 桌子测试试验机.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Catalogs-Furniture Testing Solutions.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Non Woven Te",
+    "title": "[Catalogs-Textile Testing Solutions] Tài liệu tiêu chuẩn: Non Woven Testing Equipment.pdf",
+    "category": "manuals",
+    "filename": "Non Woven Testing Equipment.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Catalogs-Textile Testing Solutions.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Textile Test",
+    "title": "[Catalogs-Textile Testing Solutions] Tài liệu tiêu chuẩn: Textile Testing Equipment.pdf",
+    "category": "manuals",
+    "filename": "Textile Testing Equipment.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Catalogs-Textile Testing Solutions.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Fiber Testin",
+    "title": "[Catalogs-Textile Testing Solutions] Tài liệu tiêu chuẩn: Fiber Testing Equipment.pdf",
+    "category": "manuals",
+    "filename": "Fiber Testing Equipment.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Catalogs-Textile Testing Solutions.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Flammability",
+    "title": "[Catalogs-Textile Testing Solutions] Tài liệu tiêu chuẩn: Flammability Testing Equipment.pdf",
+    "category": "manuals",
+    "filename": "Flammability Testing Equipment.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Catalogs-Textile Testing Solutions.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Yarn Testing",
+    "title": "[Catalogs-Textile Testing Solutions] Tài liệu tiêu chuẩn: Yarn Testing Equipment.pdf",
+    "category": "manuals",
+    "filename": "Yarn Testing Equipment.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Catalogs-Textile Testing Solutions.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Color Fastne",
+    "title": "[Catalogs-Textile Testing Solutions] Tài liệu tiêu chuẩn: Color Fastness Testing Equipment.pdf",
+    "category": "manuals",
+    "filename": "Color Fastness Testing Equipment.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Catalogs-Textile Testing Solutions.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Lab Dyeing &",
+    "title": "[Catalogs-Textile Testing Solutions] Tài liệu tiêu chuẩn: Lab Dyeing & Finishing Machine.pdf",
+    "category": "manuals",
+    "filename": "Lab Dyeing & Finishing Machine.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Catalogs-Textile Testing Solutions.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Geotextiles ",
+    "title": "[Catalogs-Textile Testing Solutions] Tài liệu tiêu chuẩn: Geotextiles Testing Equipment.pdf",
+    "category": "manuals",
+    "filename": "Geotextiles Testing Equipment.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Catalogs-Textile Testing Solutions.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-GT-K Footwea",
+    "title": "[Catalogs-Footwear Testing Solutions] Tài liệu tiêu chuẩn: GT-K Footwear Testing Machine.pdf",
+    "category": "manuals",
+    "filename": "GT-K Footwear Testing Machine.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Catalogs-Footwear Testing Solutions.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-GT-N Packagi",
+    "title": "[Catalogs-Packaging Testing Solutions] Tài liệu tiêu chuẩn: GT-N Packaging Testing Equipment.pdf",
+    "category": "manuals",
+    "filename": "GT-N Packaging Testing Equipment.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Catalogs-Packaging Testing Solutions.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-GT-N Adhesiv",
+    "title": "[Catalogs-Packaging Testing Solutions] Tài liệu tiêu chuẩn: GT-N Adhesive Testing Equipment.pdf",
+    "category": "manuals",
+    "filename": "GT-N Adhesive Testing Equipment.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Catalogs-Packaging Testing Solutions.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-GT-N Paper a",
+    "title": "[Catalogs-Packaging Testing Solutions] Tài liệu tiêu chuẩn: GT-N Paper and Board Testing Equipment.pdf",
+    "category": "manuals",
+    "filename": "GT-N Paper and Board Testing Equipment.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Catalogs-Packaging Testing Solutions.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-GT-N Carton ",
+    "title": "[Catalogs-Packaging Testing Solutions] Tài liệu tiêu chuẩn: GT-N Carton Box Testing Equipment.pdf",
+    "category": "manuals",
+    "filename": "GT-N Carton Box Testing Equipment.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Catalogs-Packaging Testing Solutions.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-GT-N Flexibl",
+    "title": "[Catalogs-Packaging Testing Solutions] Tài liệu tiêu chuẩn: GT-N Flexible PackagingTesting Equipment.pdf",
+    "category": "manuals",
+    "filename": "GT-N Flexible PackagingTesting Equipment.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Catalogs-Packaging Testing Solutions.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-roaches-opti",
+    "title": "[02_Optidry] Tài liệu tiêu chuẩn: roaches-optidry-manual-01.pdf",
+    "category": "manuals",
+    "filename": "roaches-optidry-manual-01.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 02_Optidry.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches-2025",
+    "title": "[02_Optidry] Tài liệu tiêu chuẩn: Roaches-2025-Brochure-V1.0-(Digital).pdf",
+    "category": "manuals",
+    "filename": "Roaches-2025-Brochure-V1.0-(Digital).pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 02_Optidry.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Fabr",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Fabric_Stiffness.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Fabric_Stiffness.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Pers",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Perspirometer.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Perspirometer.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_DPA",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_DPA.pdf",
+    "category": "manuals",
+    "filename": "Roaches_DPA.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_ICI_",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_ICI_Snag_Mace_Tester.pdf",
+    "category": "manuals",
+    "filename": "Roaches_ICI_Snag_Mace_Tester.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Colo",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Colortec².pdf",
+    "category": "manuals",
+    "filename": "Roaches_Colortec².pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Flye",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Flyer_2022.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Flyer_2022.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Opti",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Opti-Snap.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Opti-Snap.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Cond",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Conditioning_Racks.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Conditioning_Racks.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Samp",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Sample_Cutters.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Sample_Cutters.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Opti",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Opti-Spray.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Opti-Spray.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Gas_",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Gas_Fume.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Gas_Fume.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Winc",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Winch.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Winch.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Cale",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Calender.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Calender.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Wrap",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Wrap_Reel.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Wrap_Reel.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Opti",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Opti-Fade.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Opti-Fade.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_CPS_",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_CPS_Steamer.pdf",
+    "category": "manuals",
+    "filename": "Roaches_CPS_Steamer.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Phot",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Photographic_Standards.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Photographic_Standards.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_TFO",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_TFO.pdf",
+    "category": "manuals",
+    "filename": "Roaches_TFO.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Opti",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Opti-Air.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Opti-Air.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Bean",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Bean_Bag_Snag_Tester.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Bean_Bag_Snag_Tester.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Hydr",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Hydroextractor_(G2_Gravity).pdf",
+    "category": "manuals",
+    "filename": "Roaches_Hydroextractor_(G2_Gravity).pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_SDC_",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_SDC_Multifibre.pdf",
+    "category": "manuals",
+    "filename": "Roaches_SDC_Multifibre.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Scor",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Scorch_Tester.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Scorch_Tester.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Opti",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Opti-Snap_Grip_Options.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Opti-Snap_Grip_Options.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Jigg",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Jigger.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Jigger.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Mini",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Mini-Thermo.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Mini-Thermo.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Elec",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Electric_Opti-Burst.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Electric_Opti-Burst.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Rand",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Random_Tumble.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Random_Tumble.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Wascator_FOM",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Wascator_FOM71CLS.pdf",
+    "category": "manuals",
+    "filename": "Wascator_FOM71CLS.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_DK",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_DK.pdf",
+    "category": "manuals",
+    "filename": "Roaches_DK.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Verivide_Lig",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Verivide_Light_Cabinet.pdf",
+    "category": "manuals",
+    "filename": "Verivide_Light_Cabinet.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Coat",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Coater.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Coater.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Roto",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Rotohose.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Rotohose.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Opti",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Opti-Burst.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Opti-Burst.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Padd",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Padders.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Padders.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Roaches_Zip_",
+    "title": "[00_Roaches Brochures] Tài liệu tiêu chuẩn: Roaches_Zip_Tester.pdf",
+    "category": "manuals",
+    "filename": "Roaches_Zip_Tester.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 00_Roaches Brochures.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-A7135- Opti-",
+    "title": "[03_NOTE] Tài liệu tiêu chuẩn: A7135- Opti-Dry 21834.pdf",
+    "category": "manuals",
+    "filename": "A7135- Opti-Dry 21834.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 03_NOTE.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-A7060 SellQu",
+    "title": "[01_Durawash] Tài liệu tiêu chuẩn: A7060 SellQuick, UK - Durawash - 21784.pdf",
+    "category": "manuals",
+    "filename": "A7060 SellQuick, UK - Durawash - 21784.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 01_Durawash.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-roaches-dura",
+    "title": "[01_Durawash] Tài liệu tiêu chuẩn: roaches-durawash-manual-01.pdf",
+    "category": "manuals",
+    "filename": "roaches-durawash-manual-01.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 01_Durawash.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-roaches-wash",
+    "title": "[04_WASHTEC] Tài liệu tiêu chuẩn: roaches-washtec-manual-02.pdf",
+    "category": "manuals",
+    "filename": "roaches-washtec-manual-02.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 04_WASHTEC.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-roaches-wash",
+    "title": "[04_WASHTEC] Tài liệu tiêu chuẩn: roaches-washtec-manual-03.pdf",
+    "category": "manuals",
+    "filename": "roaches-washtec-manual-03.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 04_WASHTEC.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-A7258 Sellqu",
+    "title": "[04_WASHTEC] Tài liệu tiêu chuẩn: A7258 Sellquick - 4+4 (MK4) 21929.pdf",
+    "category": "manuals",
+    "filename": "A7258 Sellquick - 4+4 (MK4) 21929.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 04_WASHTEC.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Martindale",
+    "title": "[Hero Products] Tài liệu tiêu chuẩn: Martindale.pdf",
+    "category": "manuals",
+    "filename": "Martindale.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Hero Products.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Opti-Therm",
+    "title": "[Hero Products] Tài liệu tiêu chuẩn: Opti-Therm.pdf",
+    "category": "manuals",
+    "filename": "Opti-Therm.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Hero Products.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Durawash",
+    "title": "[Hero Products] Tài liệu tiêu chuẩn: Durawash.pdf",
+    "category": "manuals",
+    "filename": "Durawash.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Hero Products.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Pyrotec4",
+    "title": "[Hero Products] Tài liệu tiêu chuẩn: Pyrotec4.pdf",
+    "category": "manuals",
+    "filename": "Pyrotec4.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Hero Products.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Padder",
+    "title": "[Hero Products] Tài liệu tiêu chuẩn: Padder.pdf",
+    "category": "manuals",
+    "filename": "Padder.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Hero Products.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Autoclaves",
+    "title": "[Hero Products] Tài liệu tiêu chuẩn: Autoclaves.pdf",
+    "category": "manuals",
+    "filename": "Autoclaves.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Hero Products.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Opti-Dry",
+    "title": "[Hero Products] Tài liệu tiêu chuẩn: Opti-Dry.pdf",
+    "category": "manuals",
+    "filename": "Opti-Dry.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Hero Products.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Crocktec_Aut",
+    "title": "[Hero Products] Tài liệu tiêu chuẩn: Crocktec_Auto.pdf",
+    "category": "manuals",
+    "filename": "Crocktec_Auto.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Hero Products.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Washtec",
+    "title": "[Hero Products] Tài liệu tiêu chuẩn: Washtec.pdf",
+    "category": "manuals",
+    "filename": "Washtec.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Hero Products.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-WinTest EC V",
+    "title": "[WinTest EC User Manuals] Tài liệu tiêu chuẩn: WinTest EC Version 6.5.6 - Czech.pdf",
+    "category": "manuals",
+    "filename": "WinTest EC Version 6.5.6 - Czech.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục WinTest EC User Manuals.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-WinTest EC V",
+    "title": "[WinTest EC User Manuals] Tài liệu tiêu chuẩn: WinTest EC Version 6.5.6 - Portuguese.pdf",
+    "category": "manuals",
+    "filename": "WinTest EC Version 6.5.6 - Portuguese.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục WinTest EC User Manuals.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-WinTest EC V",
+    "title": "[WinTest EC User Manuals] Tài liệu tiêu chuẩn: WinTest EC Version 6.5.6 - Italian.pdf",
+    "category": "manuals",
+    "filename": "WinTest EC Version 6.5.6 - Italian.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục WinTest EC User Manuals.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-WinTest EC V",
+    "title": "[WinTest EC User Manuals] Tài liệu tiêu chuẩn: WinTest EC Version 6.5.6 - Polish.pdf",
+    "category": "manuals",
+    "filename": "WinTest EC Version 6.5.6 - Polish.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục WinTest EC User Manuals.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-WinTest EC V",
+    "title": "[WinTest EC User Manuals] Tài liệu tiêu chuẩn: WinTest EC Version 6.5.6 - French.pdf",
+    "category": "manuals",
+    "filename": "WinTest EC Version 6.5.6 - French.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục WinTest EC User Manuals.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-WinTest EC V",
+    "title": "[WinTest EC User Manuals] Tài liệu tiêu chuẩn: WinTest EC Version 6.5.6 - German.pdf",
+    "category": "manuals",
+    "filename": "WinTest EC Version 6.5.6 - German.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục WinTest EC User Manuals.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-WinTest EC V",
+    "title": "[WinTest EC User Manuals] Tài liệu tiêu chuẩn: WinTest EC Version 6.5.6 - Spanish.pdf",
+    "category": "manuals",
+    "filename": "WinTest EC Version 6.5.6 - Spanish.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục WinTest EC User Manuals.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-WinTest EC V",
+    "title": "[WinTest EC User Manuals] Tài liệu tiêu chuẩn: WinTest EC Version 6.5.6 - Dutch.pdf",
+    "category": "manuals",
+    "filename": "WinTest EC Version 6.5.6 - Dutch.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục WinTest EC User Manuals.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-WinTest EC V",
+    "title": "[WinTest EC User Manuals] Tài liệu tiêu chuẩn: WinTest EC Version 6.5.6 - Hartech.pdf",
+    "category": "manuals",
+    "filename": "WinTest EC Version 6.5.6 - Hartech.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục WinTest EC User Manuals.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-WinTest EC V",
+    "title": "[WinTest EC User Manuals] Tài liệu tiêu chuẩn: WinTest EC Version 6.5.6.pdf",
+    "category": "manuals",
+    "filename": "WinTest EC Version 6.5.6.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục WinTest EC User Manuals.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Judge LED 内部",
+    "title": "[SPL QC] Tài liệu tiêu chuẩn: Judge LED 内部培训PPT.pdf",
+    "category": "manuals",
+    "filename": "Judge LED 内部培训PPT.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục SPL QC.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-202507010956",
+    "title": "[New folder] Tài liệu tiêu chuẩn: 20250701095655.pdf",
+    "category": "manuals",
+    "filename": "20250701095655.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục New folder.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-L10-463 Inst",
+    "title": "[VISUAL COLOR ASSESSMENT INSTITUTE] Tài liệu tiêu chuẩn: L10-463 Institute-Quality Measures_EN.pdf",
+    "category": "manuals",
+    "filename": "L10-463 Institute-Quality Measures_EN.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục VISUAL COLOR ASSESSMENT INSTITUTE.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-L10-459 Inst",
+    "title": "[VISUAL COLOR ASSESSMENT INSTITUTE] Tài liệu tiêu chuẩn: L10-459 Institute-SOP_EN-0420.pdf",
+    "category": "manuals",
+    "filename": "L10-459 Institute-SOP_EN-0420.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục VISUAL COLOR ASSESSMENT INSTITUTE.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-L10-466_Inst",
+    "title": "[VISUAL COLOR ASSESSMENT INSTITUTE] Tài liệu tiêu chuẩn: L10-466_Institue_ColorTheory_EN.pdf",
+    "category": "manuals",
+    "filename": "L10-466_Institue_ColorTheory_EN.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục VISUAL COLOR ASSESSMENT INSTITUTE.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-SPLQC-500_CN",
+    "title": "[OPERATION MANUAL] Tài liệu tiêu chuẩn: SPLQC-500_CN_RevG.pdf",
+    "category": "manuals",
+    "filename": "SPLQC-500_CN_RevG.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục OPERATION MANUAL.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-SPLQC-500_EN",
+    "title": "[OPERATION MANUAL] Tài liệu tiêu chuẩn: SPLQC-500_EN_RevG.pdf",
+    "category": "manuals",
+    "filename": "SPLQC-500_EN_RevG.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục OPERATION MANUAL.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-SPLQC-500_RU",
+    "title": "[OPERATION MANUAL] Tài liệu tiêu chuẩn: SPLQC-500_RU_RevG.pdf",
+    "category": "manuals",
+    "filename": "SPLQC-500_RU_RevG.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục OPERATION MANUAL.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-SPLQC-500_ES",
+    "title": "[OPERATION MANUAL] Tài liệu tiêu chuẩn: SPLQC-500_ES_RevG.pdf",
+    "category": "manuals",
+    "filename": "SPLQC-500_ES_RevG.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục OPERATION MANUAL.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-SPLQC-500_JP",
+    "title": "[OPERATION MANUAL] Tài liệu tiêu chuẩn: SPLQC-500_JP_RevG.pdf",
+    "category": "manuals",
+    "filename": "SPLQC-500_JP_RevG.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục OPERATION MANUAL.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-SPLQC-500_IT",
+    "title": "[OPERATION MANUAL] Tài liệu tiêu chuẩn: SPLQC-500_IT_RevG.pdf",
+    "category": "manuals",
+    "filename": "SPLQC-500_IT_RevG.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục OPERATION MANUAL.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-SPLQC-500_DE",
+    "title": "[OPERATION MANUAL] Tài liệu tiêu chuẩn: SPLQC-500_DE_RevG.pdf",
+    "category": "manuals",
+    "filename": "SPLQC-500_DE_RevG.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục OPERATION MANUAL.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-SPLQC-500_PT",
+    "title": "[OPERATION MANUAL] Tài liệu tiêu chuẩn: SPLQC-500_PT_RevG.pdf",
+    "category": "manuals",
+    "filename": "SPLQC-500_PT_RevG.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục OPERATION MANUAL.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-SPLQC-500_CT",
+    "title": "[OPERATION MANUAL] Tài liệu tiêu chuẩn: SPLQC-500_CT_RevG.pdf",
+    "category": "manuals",
+    "filename": "SPLQC-500_CT_RevG.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục OPERATION MANUAL.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-SPLQC-500_FR",
+    "title": "[OPERATION MANUAL] Tài liệu tiêu chuẩn: SPLQC-500_FR_RevG.pdf",
+    "category": "manuals",
+    "filename": "SPLQC-500_FR_RevG.pdf",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục OPERATION MANUAL.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Yêu cầu môi ",
+    "title": "Tài liệu tiêu chuẩn: Yêu cầu môi trường làm việc.docx",
+    "category": "manuals",
+    "filename": "Yêu cầu môi trường làm việc.docx",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 2_Manuals_Standards.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-恒温恒湿箱清洗水路方法2",
+    "title": "[16_Sailham] Tài liệu tiêu chuẩn: 恒温恒湿箱清洗水路方法2025.12.24.docx",
+    "category": "manuals",
+    "filename": "恒温恒湿箱清洗水路方法2025.12.24.docx",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 16_Sailham.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-MullenBurstT",
+    "title": "[09_SDLATLAS] Tài liệu tiêu chuẩn: MullenBurstTester_ModelC_TiengViet.docx",
+    "category": "manuals",
+    "filename": "MullenBurstTester_ModelC_TiengViet.docx",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 09_SDLATLAS.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Taber 1750 -",
+    "title": "[19_Taber] Tài liệu tiêu chuẩn: Taber 1750 - Huong dan Su dung (full Tieng Viet).docx",
+    "category": "manuals",
+    "filename": "Taber 1750 - Huong dan Su dung (full Tieng Viet).docx",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 19_Taber.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-~$ber 1750 -",
+    "title": "[19_Taber] Tài liệu tiêu chuẩn: ~$ber 1750 - Huong dan Su dung (full Tieng Viet).docx",
+    "category": "manuals",
+    "filename": "~$ber 1750 - Huong dan Su dung (full Tieng Viet).docx",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục 19_Taber.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-JH - ElmaTea",
+    "title": "[Manual Tiếng Việt 4 máy] Tài liệu tiêu chuẩn: JH - ElmaTear Catalog  - Tiếng Việt.docx.docx",
+    "category": "manuals",
+    "filename": "JH - ElmaTear Catalog  - Tiếng Việt.docx.docx",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Manual Tiếng Việt 4 máy.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-YG(B)141G - ",
+    "title": "[Manual Tiếng Việt 4 máy] Tài liệu tiêu chuẩn: YG(B)141G - May do Do day Vai - Huong dan su dung (Tieng Viet).docx",
+    "category": "manuals",
+    "filename": "YG(B)141G - May do Do day Vai - Huong dan su dung (Tieng Viet).docx",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Manual Tiếng Việt 4 máy.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Martindale -",
+    "title": "[Manual Tiếng Việt 4 máy] Tài liệu tiêu chuẩn: Martindale - the 1600 Series - manual - Tiếng Việt.docx",
+    "category": "manuals",
+    "filename": "Martindale - the 1600 Series - manual - Tiếng Việt.docx",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Manual Tiếng Việt 4 máy.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Orbitor_mode",
+    "title": "[Manual Tiếng Việt 4 máy] Tài liệu tiêu chuẩn: Orbitor_model_1616-manual_Tiếng_Việt.docx",
+    "category": "manuals",
+    "filename": "Orbitor_model_1616-manual_Tiếng_Việt.docx",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Manual Tiếng Việt 4 máy.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
+  },
+  {
+    "id": "DOC-MAN-Titan10 va T",
+    "title": "[Manual TV] Tài liệu tiêu chuẩn: Titan10 va TestWise - Huong dan Su dung (full Tieng Viet).docx",
+    "category": "manuals",
+    "filename": "Titan10 va TestWise - Huong dan Su dung (full Tieng Viet).docx",
+    "scope": "Tài liệu / Tiêu chuẩn / Manual máy từ thư mục Manual TV.",
+    "verified": true,
+    "added_at": "2026-10-29 22:48:02"
   }
 ]

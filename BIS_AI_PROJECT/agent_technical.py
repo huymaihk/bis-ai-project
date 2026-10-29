@@ -254,6 +254,26 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
         unit = record.get("unit") or "cuốn"
         source_p = record.get("source_page") or "1"
 
+        # KHỐI 5: Đặc điểm nổi bật tùy biến theo người dùng
+        highlights_raw = record.get("highlights")
+        if highlights_raw:
+            if isinstance(highlights_raw, list):
+                hl_items = [str(x).strip() for x in highlights_raw if str(x).strip()]
+            else:
+                hl_items = [line.strip().lstrip("-*• ") for line in str(highlights_raw).split("\n") if line.strip()]
+        else:
+            hl_items = [
+                "Tiêu chuẩn thử nghiệm chính hãng được chuẩn hóa áp dụng toàn cầu trong ngành dệt may.",
+                "Đầy đủ tài liệu hướng dẫn và quy trình thực hành phòng lab QA/QC.",
+                "Cung cấp chính ngạch bởi BIS Textile kèm hỗ trợ kỹ thuật chuyên sâu."
+            ]
+        hl_html = "".join([f'<li style="margin-bottom: 6px;">{it}</li>' for it in hl_items])
+
+        # KHỐI 6 & 7: Phạm vi áp dụng & Tài liệu liên quan tùy biến
+        app_scope = record.get("application_scope") or "Phương pháp kiểm nghiệm dệt may quốc tế"
+        doc_title = record.get("related_doc_title") or f"Tra cứu sản phẩm mã {sku} trên cổng BIS Textile"
+        doc_url = record.get("related_doc_url") or f"https://bistextile.com/search?q={sku}"
+
         html = f"""<div class="bis-product-card" style="background-color: #ffffff !important; color: #1e293b !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; padding: 24px; border-radius: 12px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 100%; box-sizing: border-box;">
 
   <!-- KHỐI 1: Tên sản phẩm tiếng Việt Bold 20px -->
@@ -282,9 +302,7 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
       ✨ Đặc điểm nổi bật:
     </div>
     <ul style="padding-left: 20px; margin: 0; color: #334155 !important; font-size: 13px; line-height: 1.7;">
-      <li style="margin-bottom: 6px;">Tiêu chuẩn thử nghiệm chính hãng được chuẩn hóa áp dụng toàn cầu trong ngành dệt may.</li>
-      <li style="margin-bottom: 6px;">Đầy đủ tài liệu hướng dẫn và quy trình thực hành phòng lab QA/QC.</li>
-      <li style="margin-bottom: 6px;">Cung cấp chính ngạch bởi BIS Textile kèm hỗ trợ kỹ thuật chuyên sâu.</li>
+      {hl_html}
     </ul>
   </div>
 
@@ -305,7 +323,7 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
         </tr>
         <tr style="border-bottom: 1px solid #e2e8f0;">
           <td style="width: 39%; background: #f8fafc !important; font-weight: 700; color: #0f172a !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">Phạm vi áp dụng</td>
-          <td style="width: 61%; background: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">Phương pháp kiểm nghiệm dệt may quốc tế</td>
+          <td style="width: 61%; background: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">{app_scope}</td>
         </tr>
         <tr>
           <td style="width: 39%; background: #f8fafc !important; font-weight: 700; color: #0f172a !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">Trang nguồn tài liệu</td>
@@ -321,8 +339,8 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
       🔗 Tài liệu & Tiêu chuẩn liên quan:
     </div>
     <div style="display: flex; flex-direction: column; gap: 8px;">
-      <a href="https://bistextile.com/search?q={sku}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: space-between; padding: 9px 14px; background: #f8fafc !important; color: #0369a1 !important; border: 1px solid #cbd5e1; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">
-        <span>📄 Tra cứu sản phẩm mã {sku} trên cổng BIS Textile</span>
+      <a href="{doc_url}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: space-between; padding: 9px 14px; background: #f8fafc !important; color: #0369a1 !important; border: 1px solid #cbd5e1; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">
+        <span>📄 {doc_title}</span>
         <span style="font-size: 11px; color: #0284c7; background: #fff; padding: 2px 8px; border-radius: 4px; border: 1px solid #bae6fd;">Mở trang ↗</span>
       </a>
     </div>

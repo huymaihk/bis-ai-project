@@ -23,8 +23,13 @@ class LearningEngine:
             except Exception as e:
                 print(f"⚠ Failed to read feedback memory: {e}")
         return {
-            "version": "1.0",
+            "version": "2.0",
             "last_updated": datetime.utcnow().isoformat() + "Z",
+            "custom_rules": [
+                "Đơn vị tính chuẩn hóa cho sách, cẩm nang, tài liệu luôn là 'cuốn'.",
+                "Hãng phát hành AATCC luôn hiển thị đầy đủ là 'AATCC (Hoa Kỳ)'.",
+                "Tiêu đề tiếng Việt phải được dịch chuẩn xác, mang tính chuyên môn kỹ thuật dệt may QA/QC."
+            ],
             "field_corrections": {},
             "examples": []
         }
@@ -102,6 +107,29 @@ class LearningEngine:
     def get_context_rules_for_prompt(self, max_examples: int = 5) -> str:
         """Alias for get_few_shot_prompt_text."""
         return self.get_few_shot_prompt_text(max_examples)
+
+    def add_custom_rule(self, rule_text: str):
+        """Add an explicit expert business rule for AI to follow."""
+        if not rule_text or not rule_text.strip():
+            return
+        rules = self.memory_data.setdefault("custom_rules", [])
+        if rule_text.strip() not in rules:
+            rules.append(rule_text.strip())
+            self.save_memory()
+
+    def delete_custom_rule(self, index: int):
+        """Remove a custom rule by index."""
+        rules = self.memory_data.get("custom_rules", [])
+        if 0 <= index < len(rules):
+            rules.pop(index)
+            self.save_memory()
+
+    def delete_example(self, index: int):
+        """Remove a recorded learning example by index."""
+        examples = self.memory_data.get("examples", [])
+        if 0 <= index < len(examples):
+            examples.pop(index)
+            self.save_memory()
 
     def load_memory(self) -> dict:
         """Return memory data dictionary."""
