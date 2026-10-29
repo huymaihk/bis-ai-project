@@ -759,22 +759,29 @@ with col_top_left:
 with col_top_right:
     col_reset, col_sync, col_stat, col_logout = st.columns([3.5, 3.2, 2.8, 1.8])
     with col_reset:
-        if st.button("⚡ Reset Hệ Thống", key="btn_top_reset_all", help="Xóa bộ nhớ đệm, quét lại toàn bộ Google Drive và nạp lại toàn bộ sản phẩm mới nhất", use_container_width=True):
+        if st.button("⚡ Reset Hệ Thống", key="btn_top_reset_all", help="Xóa bộ nhớ đệm, quét lại Google Drive và TỰ ĐỘNG ĐỐI SOÁT TRÙNG TRÊN GOOGLE SHEETS & BISTEXTILE.COM", use_container_width=True):
             st.cache_data.clear()
             st.cache_resource.clear()
             if "chosen_sku" in st.session_state:
                 del st.session_state["chosen_sku"]
             if knowledge_agent:
                 knowledge_agent.scan_and_sync_drive_files()
-            if os.path.exists(cache_file):
-                try:
-                    with open(cache_file, "r", encoding="utf-8") as f:
-                        loaded_p = json.load(f)
-                        st.session_state["cached_products"] = loaded_p
-                        products = loaded_p
-                except Exception:
-                    pass
-            st.toast(f"⚡ ĐÃ RESET & ĐỒNG BỘ TOÀN BỘ HỆ THỐNG! ({len(products)} Sản phẩm)", icon="🚀")
+            if operations_agent:
+                dedup_res = operations_agent.check_and_deduplicate_sheets(products)
+                clean_list = dedup_res.get("clean_products", [])
+                if clean_list:
+                    products = clean_list
+                    st.session_state["cached_products"] = products
+                web_locked = dedup_res.get("website_duplicates_locked", 0)
+                sheet_removed = dedup_res.get("sheet_duplicates_removed", 0)
+                st.session_state.audit_logs.append({
+                    "time": datetime.now().strftime("%H:%M:%S"),
+                    "type": "RESET_DEDUP",
+                    "text": f"Reset hệ thống: Đã đối soát Google Sheets & bistextile.com (Khóa {web_locked} mã trùng web, lọc {sheet_removed} dòng trùng Sheet)."
+                })
+                st.toast(f"⚡ ĐÃ RESET & ĐỐI SOÁT GOOGLE SHEETS! {len(products)} SP sạch, đã khóa {web_locked} mã trùng web!", icon="🛡️")
+            else:
+                st.toast(f"⚡ ĐÃ RESET TOÀN BỘ HỆ THỐNG! ({len(products)} Sản phẩm)", icon="🚀")
             st.rerun()
     with col_sync:
         if st.button("🔄 Quét G-Drive", key="btn_top_scan_gdrive", help="Tự động quét và cập nhật các file mới bỏ vào Google Drive", use_container_width=True):
@@ -1037,12 +1044,20 @@ with tab_tech:
                     st.success(f"✓ Đã quét Google Drive! Tìm thấy {len(scan_res.get('catalogues', []))} catalogue, {len(scan_res.get('backgrounds', []))} ảnh nền.")
                 st.rerun()
         with c_sync_b2:
-            if st.button("⚡ Reset hệ thống", key="reset_tab_tech", help="Xóa bộ nhớ tạm, quét lại toàn bộ dữ liệu"):
+            if st.button("⚡ Reset hệ thống", key="reset_tab_tech", help="Xóa bộ nhớ tạm, quét lại toàn bộ Google Drive và đối soát lọc trùng Google Sheets"):
                 st.cache_data.clear()
                 st.cache_resource.clear()
                 if knowledge_agent:
                     knowledge_agent.scan_and_sync_drive_files()
-                st.toast("⚡ ĐÃ RESET TOÀN BỘ HỆ THỐNG!")
+                if operations_agent:
+                    dedup_res = operations_agent.check_and_deduplicate_sheets(products)
+                    clean_list = dedup_res.get("clean_products", [])
+                    if clean_list:
+                        products = clean_list
+                        st.session_state["cached_products"] = products
+                    st.toast(f"⚡ ĐÃ RESET & ĐỐI SOÁT GOOGLE SHEETS! Khóa {dedup_res.get('website_duplicates_locked', 0)} trùng web, lọc {dedup_res.get('sheet_duplicates_removed', 0)} trùng Sheet!", icon="🛡️")
+                else:
+                    st.toast("⚡ ĐÃ RESET TOÀN BỘ HỆ THỐNG!")
                 st.rerun()
 
         up_col1, up_col2 = st.columns([6, 6])
@@ -1730,6 +1745,28 @@ with tab_ops:
         st.warning("👁️ **Trạng thái xuất bản:** Luôn ẩn (`published: false`).")
     with col_h3:
         st.success(f"✅ **Sản phẩm sẵn sàng:** Có {approved_count} sản phẩm đã APPROVED.")
+
+    st.markdown("---")
+    st.markdown("#### 📊 Quản Trị Đối Soát & Lọc Trùng Google Sheets Master:")
+    c_dedup_info, c_dedup_btn = st.columns([7, 5])
+    with c_dedup_info:
+        st.markdown("""
+        Hệ thống tự động thực hiện **đối soát an toàn 2 chiều**:
+        - **Chống trùng với website bistextile.com**: Phát hiện mã SKU đã có trên web ➔ Tự động KHÓA `REJECTED` để ngăn trùng lặp.
+        - **Dọn sạch dòng trùng trên Google Sheets**: Quét toàn bộ trang tính, gom các dòng trùng SKU và loại bỏ dòng rác.
+        """)
+    with c_dedup_btn:
+        st.write("")
+        if st.button("🔍 KIỂM TRA TRÙNG GOOGLE SHEETS NGAY", key="btn_manual_dedup_tab_ops", use_container_width=True):
+            if operations_agent:
+                with st.spinner("Agent_Operations đang quét đối soát Google Sheets & bistextile.com..."):
+                    d_res = operations_agent.check_and_deduplicate_sheets(products)
+                    clean_list = d_res.get("clean_products", [])
+                    if clean_list:
+                        products = clean_list
+                        st.session_state["cached_products"] = products
+                    st.success(f"✓ Đã hoàn tất đối soát! {d_res.get('total_products')} SP hợp lệ, đã khóa {d_res.get('website_duplicates_locked')} mã trùng web, lọc {d_res.get('sheet_duplicates_removed')} dòng trùng trên Sheet.")
+                    st.rerun()
 
     st.markdown("---")
     st.markdown("#### Thực thi đồng bộ an toàn lên Haravan:")

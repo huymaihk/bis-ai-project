@@ -98,6 +98,161 @@ class AgentOperations:
             print(f"⚠️ [Agent_Operations] Google Sheets update skipped ({e}). Local cache intact.")
             return False
 
+    def check_and_deduplicate_sheets(self, products_cache: List[dict] | None = None) -> dict:
+        """
+        Quét và đối soát kiểm tra trùng toàn diện:
+        1. Đối soát trùng SKU với các sản phẩm đang bán thực tế trên website bistextile.com (từ bistextile_existing_products.json).
+           -> Nếu trùng, tự động KHÓA trạng thái = REJECTED, kèm cảnh báo nguồn link URL.
+        2. Quét toàn bộ dòng trên Google Sheets Master:
+           -> Phát hiện và lọc sạch các dòng trùng mã SKU, giữ lại dòng có dữ liệu chuẩn/mới nhất.
+           -> Đồng bộ cập nhật trạng thái mới nhất lên Sheet.
+        3. Tự động chuẩn hóa và lưu sạch vào extracted_products_cache.json.
+        """
+        start_time = time.time()
+        print("\n🔍 [Agent_Operations] Bắt đầu quét đối soát và lọc trùng Google Sheets & bistextile.com...")
+
+        # 1. Tải danh mục sản phẩm đang chạy trên bistextile.com
+        existing_store_file = self.storage_dir / "bistextile_existing_products.json"
+        existing_store_items = []
+        if existing_store_file.exists():
+            try:
+                with open(existing_store_file, "r", encoding="utf-8") as f:
+                    existing_store_items = json.load(f)
+            except Exception as e:
+                print(f"⚠️ [Agent_Operations] Không thể đọc bistextile_existing_products.json: {e}")
+
+        # Hàm kiểm tra trùng trên website bistextile.com
+        def check_web_duplicate(sku_str: str) -> tuple[bool, str]:
+            if not sku_str or not existing_store_items:
+                return False, ""
+            sku_clean = str(sku_str).strip().lower()
+            for it in existing_store_items:
+                t = str(it.get("title", "")).lower()
+                u = str(it.get("url", "")).lower()
+                if sku_clean in t or sku_clean in u:
+                    return True, it.get("url", "")
+            return False, ""
+
+        # 2. Tải hoặc sử dụng danh sách sản phẩm hiện tại
+        products = list(products_cache) if products_cache else []
+        cache_file = self.storage_dir / "extracted_products_cache.json"
+        if not products and cache_file.exists():
+            try:
+                with open(cache_file, "r", encoding="utf-8") as f:
+                    products = json.load(f)
+            except Exception:
+                products = []
+
+        # 3. Lọc trùng nội bộ trong cache và khóa trùng web
+        deduped_cache_dict = {}
+        website_dups_locked = []
+
+        for p in products:
+            sku = str(p.get("sku", "")).strip()
+            if not sku:
+                continue
+
+            # Kiểm tra trùng website
+            is_dup, match_url = check_web_duplicate(sku)
+            if is_dup:
+                p["status"] = STATUS_REJECTED
+                p["notes"] = f"CẢNH BÁO: Đã tồn tại trên website bistextile.com ({match_url})"
+                if sku not in website_dups_locked:
+                    website_dups_locked.append(sku)
+
+            sku_key = sku.upper()
+            if sku_key not in deduped_cache_dict:
+                deduped_cache_dict[sku_key] = p
+            else:
+                # Nếu đã có trong danh sách, ưu tiên giữ bản APPROVED
+                existing_p = deduped_cache_dict[sku_key]
+                if p.get("status") == STATUS_APPROVED and existing_p.get("status") != STATUS_APPROVED:
+                    deduped_cache_dict[sku_key] = p
+
+        clean_products = list(deduped_cache_dict.values())
+        sheet_dups_removed = 0
+        connected_sheet = False
+        sheet_url = ""
+
+        # 4. Kiểm tra và lọc trùng trực tiếp trên Google Sheets (nếu kết nối được)
+        try:
+            client = get_client(self._get_sa_arg())
+            ss = get_or_create_spreadsheet(client)
+            ws = ss.worksheet(SHEET_PRODUCTS)
+            connected_sheet = True
+            sheet_url = ss.url
+
+            all_values = ws.get_all_values()
+            if len(all_values) > 1:
+                headers = [str(h).strip().lower() for h in all_values[0]]
+                sku_idx = headers.index("sku") if "sku" in headers else -1
+                status_idx = headers.index("status") if "status" in headers else -1
+                notes_idx = headers.index("notes") if "notes" in headers else -1
+
+                sheet_rows_dict = {}
+
+                for row in all_values[1:]:
+                    if not row or not any(row):
+                        continue
+                    row_sku = str(row[sku_idx]).strip().upper() if sku_idx >= 0 and len(row) > sku_idx else ""
+                    if not row_sku:
+                        continue
+
+                    # Kiểm tra trùng web cho dòng sheet
+                    is_dup, match_url = check_web_duplicate(row_sku)
+                    if is_dup and status_idx >= 0 and len(row) > status_idx:
+                        row[status_idx] = STATUS_REJECTED
+                        if notes_idx >= 0:
+                            if len(row) <= notes_idx:
+                                row.extend([""] * (notes_idx - len(row) + 1))
+                            row[notes_idx] = f"CẢNH BÁO: Đã tồn tại trên website bistextile.com ({match_url})"
+
+                    if row_sku not in sheet_rows_dict:
+                        sheet_rows_dict[row_sku] = row
+                    else:
+                        sheet_dups_removed += 1
+                        existing_row = sheet_rows_dict[row_sku]
+                        if status_idx >= 0 and len(row) > status_idx and row[status_idx] == STATUS_APPROVED:
+                            sheet_rows_dict[row_sku] = row
+
+                # Nếu có dòng trùng trên Sheet hoặc có sản phẩm bị khóa trùng, ghi đè lại dữ liệu sạch
+                if sheet_dups_removed > 0 or website_dups_locked:
+                    new_values = [all_values[0]] + list(sheet_rows_dict.values())
+                    ws.clear()
+                    ws.update("A1", new_values)
+                    print(f"  ✓ [Agent_Operations] Đã dọn dẹp Google Sheet: loại bỏ {sheet_dups_removed} dòng trùng!")
+
+        except Exception as e:
+            print(f"ℹ️ [Agent_Operations] Quét Google Sheets qua mạng tạm dừng ({e}). Đã tối ưu hóa và lọc trùng toàn bộ bộ nhớ đệm cục bộ.")
+
+        # 5. Lưu lại dữ liệu sạch vào cache file
+        with open(cache_file, "w", encoding="utf-8") as f:
+            json.dump(clean_products, f, ensure_ascii=False, indent=2)
+
+        # Đồng bộ vào repo git nếu có
+        git_cache = Path("c:/Users/Dell/bis-ai-project/BIS_AI_PROJECT/extracted_products_cache.json")
+        if git_cache.parent.exists():
+            try:
+                with open(git_cache, "w", encoding="utf-8") as f:
+                    json.dump(clean_products, f, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
+
+        elapsed = round(time.time() - start_time, 2)
+        summary = {
+            "success": True,
+            "connected_sheet": connected_sheet,
+            "sheet_url": sheet_url,
+            "total_products": len(clean_products),
+            "website_duplicates_locked": len(website_dups_locked),
+            "sheet_duplicates_removed": sheet_dups_removed,
+            "locked_skus": website_dups_locked,
+            "clean_products": clean_products,
+            "duration_seconds": elapsed,
+        }
+        print(f"✓ [Agent_Operations] Hoàn tất đối soát: {len(clean_products)} SP hợp lệ, {len(website_dups_locked)} trùng web đã khóa, {sheet_dups_removed} dòng trùng Sheet đã lọc ({elapsed}s)")
+        return summary
+
     # ── Haravan Guard & Synchronization ───────────────────────────────────────
     def _haravan_headers(self) -> dict:
         return {

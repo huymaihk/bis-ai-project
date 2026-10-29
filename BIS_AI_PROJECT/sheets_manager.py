@@ -161,32 +161,40 @@ def setup_products_sheet_headers(ss: gspread.Spreadsheet, ws: gspread.Worksheet)
 def append_products(ws: gspread.Worksheet, products: list[dict]) -> int:
     """
     Append products to the PRODUCTS sheet.
-    Skips products that already have the same product_id.
+    Skips products that already have the same SKU or product_id to prevent duplicates.
     Returns count of rows appended.
     """
     if not products:
         return 0
 
-    # Get existing product_ids to avoid duplicates
     existing_ids = set()
+    existing_skus = set()
     try:
         all_values = ws.get_all_values()
         if len(all_values) > 1:  # Has data rows
-            headers = all_values[0]
-            try:
-                id_col = headers.index("product_id")
-                existing_ids = {row[id_col] for row in all_values[1:] if len(row) > id_col}
-            except ValueError:
-                pass
+            headers = [str(h).strip().lower() for h in all_values[0]]
+            id_col = headers.index("product_id") if "product_id" in headers else -1
+            sku_col = headers.index("sku") if "sku" in headers else -1
+            for row in all_values[1:]:
+                if id_col >= 0 and len(row) > id_col and row[id_col]:
+                    existing_ids.add(str(row[id_col]).strip())
+                if sku_col >= 0 and len(row) > sku_col and row[sku_col]:
+                    existing_skus.add(str(row[sku_col]).strip().upper())
     except Exception:
         pass
 
     rows_to_append = []
     for prod in products:
-        if prod.get("product_id") in existing_ids:
+        prod_id = str(prod.get("product_id", "") or "").strip()
+        sku_val = str(prod.get("sku", "") or "").strip().upper()
+        if (prod_id and prod_id in existing_ids) or (sku_val and sku_val in existing_skus):
             continue
         row = [str(prod.get(col, "") or "") for col in PRODUCT_COLUMNS]
         rows_to_append.append(row)
+        if prod_id:
+            existing_ids.add(prod_id)
+        if sku_val:
+            existing_skus.add(sku_val)
 
     if not rows_to_append:
         print("  ⚠ No new products to append (all already present)")
