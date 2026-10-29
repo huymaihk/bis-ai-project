@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+.venv
+env/
+venv/
+
+# BIS Sensitive Credentials (Do NOT publish to public GitHub)
+service_account.json
+credentials.json
+.streamlit/secrets.toml
+
+# Temporary caches
+.pytest_cache/
+extracted_products_cache.json

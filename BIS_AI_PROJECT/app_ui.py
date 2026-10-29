@@ -18,6 +18,7 @@ from datetime import datetime
 from pathlib import Path
 
 import streamlit as st
+import streamlit.components.v1 as components
 import fitz  # PyMuPDF
 from PIL import Image
 
@@ -73,6 +74,16 @@ HUD_CSS = """
 
   header[data-testid="stHeader"] {
     background: transparent;
+  }
+
+  .login-container {
+    max-width: 480px;
+    margin: 40px auto 20px auto;
+    background: #0d1322;
+    border: 1.5px solid #1e293b;
+    border-radius: 16px;
+    padding: 32px 28px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(56, 189, 248, 0.15);
   }
 
   /* Cyberpunk Grid Background */
@@ -140,7 +151,14 @@ HUD_CSS = """
     100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
   }
 
-  /* Node Cards */
+  /* Responsive Agent Nodes Grid */
+  .agent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    width: 100%;
+  }
+
   .agent-node {
     background: #0d1322;
     border: 1px solid #1e293b;
@@ -148,7 +166,9 @@ HUD_CSS = """
     padding: 14px;
     transition: all 0.25s ease-in-out;
     position: relative;
-    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 
   .agent-node:hover {
@@ -175,6 +195,13 @@ HUD_CSS = """
     font-weight: 700;
     font-size: 12px;
     color: #f1f5f9;
+  }
+
+  .node-desc {
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin-top: 4px;
   }
 
   .node-badge {
@@ -209,6 +236,7 @@ HUD_CSS = """
     padding: 9px 12px;
     margin-bottom: 8px;
     font-size: 12px;
+    color: #cbd5e1;
   }
 
   .timeline-row {
@@ -221,33 +249,29 @@ HUD_CSS = """
     font-size: 11px;
   }
 
-  /* Google Search Snippet Preview */
-  .google-preview-box {
-    background: #ffffff;
-    color: #202124;
-    padding: 16px;
-    border-radius: 10px;
-    box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28);
-    font-family: Arial, sans-serif;
-    margin-top: 10px;
+  /* Universal High Contrast Typography */
+  .stMarkdown, .stMarkdown p, .stMarkdown span, .stMarkdown li, .stMarkdown div {
+    color: #cbd5e1 !important;
   }
-  .google-preview-url { font-size: 12px; color: #202124; margin-bottom: 4px; }
-  .google-preview-title { font-size: 18px; color: #1a0dab; text-decoration: none; font-weight: 500; cursor: pointer; }
-  .google-preview-desc { font-size: 13px; color: #4d5156; line-height: 1.4; margin-top: 6px; }
-
-  /* Login Card Cyberpunk */
-  .login-container {
-    max-width: 440px;
-    margin: 80px auto;
-    background: radial-gradient(circle at top, #111a2e 0%, #07090e 100%);
-    border: 1px solid #1e293b;
-    border-top: 3px solid #38bdf8;
-    border-radius: 16px;
-    padding: 36px 32px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(56, 189, 248, 0.15);
+  strong, b {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    color: #f8fafc !important;
+    font-weight: 700 !important;
+  }
+  code {
+    background-color: #1e293b !important;
+    color: #38bdf8 !important;
+    border: 1px solid #334155 !important;
+    border-radius: 4px !important;
+    padding: 2px 6px !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 12px !important;
   }
 
-  /* Input, Textarea, Selectbox, Labels Form Chữ & Màu Sắc Chuẩn */
+  /* Form Labels & Inputs High Contrast */
   label,
   label p,
   div[data-testid="stWidgetLabel"] p,
@@ -269,65 +293,238 @@ HUD_CSS = """
     border: 1.5px solid #334155 !important;
     border-radius: 8px !important;
     font-size: 14px !important;
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
   }
-
   .stTextInput > div > div > input:focus,
   .stTextArea > div > div > textarea:focus {
     border-color: #38bdf8 !important;
     box-shadow: 0 0 12px rgba(56, 189, 248, 0.4) !important;
   }
 
-  /* Style cho Tabs Streamlit */
-  div[data-testid="stTabs"] button[role="tab"] {
-    color: #94a3b8 !important;
-    font-weight: 600 !important;
-    font-size: 13px !important;
-    padding: 10px 16px !important;
+  /* Dropdown Selectbox & Popover */
+  div[data-baseweb="select"] {
+    background-color: #0b1120 !important;
+  }
+  div[data-baseweb="select"] > div {
+    background-color: #0b1120 !important;
+    border: 1.5px solid #334155 !important;
+    border-radius: 8px !important;
+  }
+  div[data-baseweb="select"] * {
+    color: #ffffff !important;
+  }
+  div[data-baseweb="popover"],
+  ul[data-baseweb="menu"] {
+    background-color: #0b1120 !important;
+    border: 1px solid #1e293b !important;
+  }
+  li[data-baseweb="menu-item"] {
+    color: #f8fafc !important;
+    background-color: #0b1120 !important;
+  }
+  li[data-baseweb="menu-item"]:hover {
+    background-color: #1e293b !important;
+    color: #38bdf8 !important;
   }
 
-  div[data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
-    color: #38bdf8 !important;
-    border-bottom: 2px solid #38bdf8 !important;
+  /* Sửa Triệt Để Tabs: Xóa sạch gạch đỏ, tab chưa chọn sáng rõ trên nền tối, tab chọn phát sáng Neon */
+  div[data-testid="stTabs"] {
+    background: transparent !important;
+    margin-top: 8px !important;
+    margin-bottom: 22px !important;
+  }
+
+  div[data-testid="stTabs"] [role="tablist"],
+  div[data-baseweb="tab-list"] {
+    background-color: #0b1120 !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 12px !important;
+    padding: 8px !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  /* Inactive Tab: Nền Slate #172033 nổi bật, viền #334155, chữ trắng sáng #e2e8f0 */
+  div[data-testid="stTabs"] button[role="tab"],
+  button[data-baseweb="tab"] {
+    background-color: #172033 !important;
+    border: 1px solid #334155 !important;
+    border-radius: 8px !important;
+    padding: 10px 16px !important;
+    color: #e2e8f0 !important;
+    font-weight: 600 !important;
+    font-size: 13.5px !important;
+    transition: all 0.2s ease !important;
+  }
+
+  div[data-testid="stTabs"] button[role="tab"] *,
+  button[data-baseweb="tab"] * {
+    color: #e2e8f0 !important;
+    font-weight: 600 !important;
+    font-size: 13.5px !important;
+  }
+
+  /* Inactive Tab Hover: Sáng hơn */
+  div[data-testid="stTabs"] button[role="tab"]:hover,
+  button[data-baseweb="tab"]:hover {
+    background-color: #1e293b !important;
+    border-color: #38bdf8 !important;
+    color: #ffffff !important;
+  }
+  div[data-testid="stTabs"] button[role="tab"]:hover * {
+    color: #ffffff !important;
+  }
+
+  /* Active Tab: Nền Xanh Electric #0284c7, viền #38bdf8, phát sáng rực rỡ */
+  div[data-testid="stTabs"] button[role="tab"][aria-selected="true"],
+  button[data-baseweb="tab"][aria-selected="true"] {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+    background-color: #0284c7 !important;
+    border: 1.5px solid #38bdf8 !important;
+    box-shadow: 0 0 18px rgba(56, 189, 248, 0.55) !important;
+  }
+
+  div[data-testid="stTabs"] button[role="tab"][aria-selected="true"] *,
+  button[data-baseweb="tab"][aria-selected="true"] * {
+    color: #ffffff !important;
     font-weight: 700 !important;
   }
 
-  /* Style cho TẤT CẢ nút bấm và nút Submit form */
+  /* Xóa bỏ 100% vạch đỏ gạch chân mặc định của Streamlit */
+  div[data-testid="stTabs"] [data-baseweb="tab-highlight"],
+  div[data-testid="stTabs"] [data-baseweb="tab-border"] {
+    display: none !important;
+    height: 0px !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+
+  /* Nút mũi tên cuộn ngang thanh tab không bị trắng lóa */
+  div[data-testid="stTabs"] button[data-testid="stTabsOverflowButton"],
+  div[data-testid="stTabs"] button[aria-label*="Scroll"],
+  div[data-baseweb="tab-list"] > button {
+    background-color: #1e293b !important;
+    border: 1px solid #334155 !important;
+    border-radius: 6px !important;
+    color: #38bdf8 !important;
+  }
+  div[data-testid="stTabs"] button[data-testid="stTabsOverflowButton"] svg,
+  div[data-testid="stTabs"] button[aria-label*="Scroll"] svg {
+    fill: #38bdf8 !important;
+  }
+
+  /* Sửa Triệt Để Expander */
+  div[data-testid="stExpander"] {
+    background-color: #0b1120 !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    margin-bottom: 12px !important;
+  }
+  div[data-testid="stExpander"] details {
+    background-color: #0b1120 !important;
+  }
+  div[data-testid="stExpander"] details summary {
+    background-color: #101728 !important;
+    color: #f8fafc !important;
+    border-bottom: 1px solid #1e293b !important;
+    padding: 10px 14px !important;
+    font-weight: 700 !important;
+    font-size: 13.5px !important;
+  }
+  div[data-testid="stExpander"] details summary:hover {
+    color: #38bdf8 !important;
+  }
+  div[data-testid="stExpander"] div[data-testid="stExpanderDetails"] {
+    background-color: #0b1120 !important;
+    color: #e2e8f0 !important;
+    padding: 14px !important;
+  }
+
+  /* Style TẤT CẢ nút bấm & Form Submit: Chấm dứt triệt để lỗi nút trắng chữ trắng */
   div[data-testid="stFormSubmitButton"] > button,
+  div[data-testid="stFormSubmitButton"] button,
+  div.stFormSubmitButton > button,
+  div.stFormSubmitButton button,
   div[data-testid="stButton"] > button,
-  .stButton > button,
+  div[data-testid="stButton"] button,
+  div.stButton > button,
+  div.stButton button,
   button[kind="primary"],
-  button[kind="secondary"] {
-    background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%) !important;
+  button[kind="secondary"],
+  button[kind="secondaryFormSubmit"],
+  button[kind="primaryFormSubmit"],
+  button[data-testid^="baseButton"] {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
     background-color: #0284c7 !important;
     color: #ffffff !important;
-    border: 1px solid #38bdf8 !important;
+    border: 1.5px solid #38bdf8 !important;
     border-radius: 8px !important;
     font-weight: 700 !important;
     font-size: 14px !important;
     letter-spacing: 0.5px !important;
-    box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4) !important;
+    box-shadow: 0 4px 15px rgba(2, 132, 199, 0.45) !important;
     transition: all 0.2s ease !important;
-    height: 48px !important;
+    min-height: 48px !important;
+    cursor: pointer !important;
   }
 
-  div[data-testid="stFormSubmitButton"] > button:hover,
-  div[data-testid="stButton"] > button:hover,
-  .stButton > button:hover {
-    background: linear-gradient(180deg, #0369a1 0%, #0284c7 100%) !important;
+  div[data-testid="stFormSubmitButton"] button *,
+  div.stFormSubmitButton button *,
+  div[data-testid="stButton"] button *,
+  div.stButton button *,
+  button[data-testid^="baseButton"] * {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    fill: #ffffff !important;
+  }
+
+  div[data-testid="stFormSubmitButton"] button:hover,
+  div.stFormSubmitButton button:hover,
+  div[data-testid="stButton"] button:hover,
+  div.stButton button:hover,
+  button[data-testid^="baseButton"]:hover {
+    background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
     background-color: #0369a1 !important;
     border-color: #7dd3fc !important;
-    box-shadow: 0 0 20px rgba(56, 189, 248, 0.6) !important;
+    box-shadow: 0 0 22px rgba(56, 189, 248, 0.7) !important;
     transform: translateY(-1px) !important;
   }
 
-  div[data-testid="stFormSubmitButton"] > button p,
-  div[data-testid="stButton"] > button p,
-  .stButton > button p,
-  button p {
-    color: #ffffff !important;
-    font-weight: 700 !important;
-    font-size: 14px !important;
+  /* Responsive Design: Điện thoại, Tablet, Màn hình phóng to thu nhỏ */
+  @media (max-width: 680px) {
+    div[data-testid="column"] {
+      width: 100% !important;
+      flex: 1 1 100% !important;
+      min-width: 100% !important;
+      margin-bottom: 12px !important;
+    }
+    .top-hud-bar {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 12px !important;
+      padding: 12px 14px !important;
+    }
+    .agent-grid {
+      grid-template-columns: 1fr !important;
+    }
+    div[data-testid="stTabs"] [role="tablist"] {
+      flex-direction: column !important;
+    }
+    div[data-testid="stTabs"] button[role="tab"] {
+      width: 100% !important;
+      text-align: left !important;
+    }
+    .login-container {
+      width: 95% !important;
+      padding: 20px 16px !important;
+    }
+  }
+
+  @media (min-width: 681px) and (max-width: 1100px) {
+    .agent-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
   }
 </style>
 """
@@ -503,67 +700,51 @@ with col_canvas:
     </div>
     """, unsafe_allow_html=True)
 
-    # 5 Phòng Ban Chuyên Trách
-    c_d1, c_d2, c_d3, c_d4, c_d5 = st.columns(5)
-    with c_d1:
-        st.markdown("""
-        <div class='agent-node'>
-          <div class='node-header'><span class='node-title'>🔬 TECHNICAL</span><span class='node-badge badge-active'>ONLINE</span></div>
-          <div style='font-size: 10.5px; color: #94a3b8; margin-top: 4px;'>
-            - Gemini Multimodal<br>
-            - Thẩm tra 6 bước B1-B6<br>
-            - Sinh HTML 7 khối
-          </div>
+    # 5 Phòng Ban Chuyên Trách (Responsive Flex Grid - Tự co giãn theo màn hình)
+    st.markdown("""
+    <div class='agent-grid'>
+      <div class='agent-node'>
+        <div class='node-header'><span class='node-title'>🔬 TECHNICAL</span><span class='node-badge badge-active'>ONLINE</span></div>
+        <div class='node-desc'>
+          &bull; Gemini Multimodal<br>
+          &bull; Thẩm tra 6 bước B1-B6<br>
+          &bull; Sinh HTML 7 khối chuẩn
         </div>
-        """, unsafe_allow_html=True)
-
-    with c_d2:
-        st.markdown("""
-        <div class='agent-node'>
-          <div class='node-header'><span class='node-title'>📢 MARKETING</span><span class='node-badge badge-active'>ONLINE</span></div>
-          <div style='font-size: 10.5px; color: #94a3b8; margin-top: 4px;'>
-            - Nghiên cứu từ khóa SEO<br>
-            - Soạn Meta Title &amp; Slug<br>
-            - Bán hàng QA/QC Lab
-          </div>
+      </div>
+      <div class='agent-node'>
+        <div class='node-header'><span class='node-title'>📢 MARKETING</span><span class='node-badge badge-active'>ONLINE</span></div>
+        <div class='node-desc'>
+          &bull; Nghiên cứu từ khóa SEO<br>
+          &bull; Soạn Meta Title &amp; Slug<br>
+          &bull; Bán hàng QA/QC Lab
         </div>
-        """, unsafe_allow_html=True)
-
-    with c_d3:
-        st.markdown("""
-        <div class='agent-node'>
-          <div class='node-header'><span class='node-title'>🎨 MEDIA STUDIO</span><span class='node-badge badge-active'>ONLINE</span></div>
-          <div style='font-size: 10.5px; color: #94a3b8; margin-top: 4px;'>
-            - Tối đa 2 ảnh từ hãng<br>
-            - Ghép nền Mockup chân thực<br>
-            - Chờ người dùng duyệt
-          </div>
+      </div>
+      <div class='agent-node'>
+        <div class='node-header'><span class='node-title'>🎨 MEDIA STUDIO</span><span class='node-badge badge-active'>ONLINE</span></div>
+        <div class='node-desc'>
+          &bull; Tối đa 2 ảnh từ hãng<br>
+          &bull; Ghép nền Mockup chân thực<br>
+          &bull; Chờ người dùng duyệt
         </div>
-        """, unsafe_allow_html=True)
-
-    with c_d4:
-        st.markdown("""
-        <div class='agent-node'>
-          <div class='node-header'><span class='node-title'>📚 KNOWLEDGE</span><span class='node-badge badge-active'>ONLINE</span></div>
-          <div style='font-size: 10.5px; color: #94a3b8; margin-top: 4px;'>
-            - Sách tiêu chuẩn, Manual<br>
-            - COC, CO, CQ &amp; Video<br>
-            - Nạp tri thức học tập
-          </div>
+      </div>
+      <div class='agent-node'>
+        <div class='node-header'><span class='node-title'>📚 KNOWLEDGE</span><span class='node-badge badge-active'>ONLINE</span></div>
+        <div class='node-desc'>
+          &bull; Sách tiêu chuẩn, Manual<br>
+          &bull; COC, CO, CQ &amp; Video<br>
+          &bull; Nạp tri thức học tập
         </div>
-        """, unsafe_allow_html=True)
-
-    with c_d5:
-        st.markdown("""
-        <div class='agent-node'>
-          <div class='node-header'><span class='node-title'>🛡️ OPERATIONS</span><span class='node-badge badge-active'>ONLINE</span></div>
-          <div style='font-size: 10.5px; color: #94a3b8; margin-top: 4px;'>
-            - Google Sheets Master<br>
-            - Haravan Guard 20/10<br>
-            - Đẩy bài ẩn an toàn
-          </div>
+      </div>
+      <div class='agent-node'>
+        <div class='node-header'><span class='node-title'>🛡️ OPERATIONS</span><span class='node-badge badge-active'>ONLINE</span></div>
+        <div class='node-desc'>
+          &bull; Google Sheets Master<br>
+          &bull; Haravan Guard 20/10<br>
+          &bull; Đẩy bài ẩn an toàn
         </div>
-        """, unsafe_allow_html=True)
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -605,16 +786,27 @@ with col_side_queue:
 # ══════════════════════════════════════════════════════════════════════════════
 st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
-tab_tech, tab_mkt, tab_media, tab_know, tab_ops, tab_learn = st.tabs([
-    "🔬 1. Phòng Kỹ Thuật (PDF & HTML 7 Khối)",
-    "📢 2. Phòng Nghiên Cứu SEO & Marketing",
-    "🎨 3. Phòng Edit & Duyệt Ảnh Sản Phẩm",
-    "📚 4. Phòng Lưu Trữ Tri Thức (Sách, Manual, CO/CQ)",
-    "🛡️ 5. Phòng Vận Hành & Haravan Guard",
-    "🧠 6. Bộ Nhớ Tự Học (Few-Shot Feedback)"
+tab_lego, tab_tech, tab_mkt, tab_media, tab_know, tab_ops, tab_learn = st.tabs([
+    "🧱 1. Trụ Sở LEGO AI Team (LEGO HQ)",
+    "🔬 2. Phòng Kỹ Thuật (PDF & HTML 7 Khối)",
+    "📢 3. Phòng Nghiên Cứu SEO & Marketing",
+    "🎨 4. Phòng Edit & Duyệt Ảnh Sản Phẩm",
+    "📚 5. Phòng Lưu Trữ Tri Thức (Sách, Manual, CO/CQ)",
+    "🛡️ 6. Phòng Vận Hành & Haravan Guard",
+    "🧠 7. Bộ Nhớ Tự Học (Few-Shot Feedback)"
 ])
 
-# ── TAB 1: PHÒNG KỸ THUẬT (BÀN DUYỆT 2 CỘT) ──────────────────────────────────
+# ── TAB 1: TRỤ SỞ LEGO AI TEAM (LEGO METAVERSE HQ) ───────────────────────────
+with tab_lego:
+    lego_html_path = PROJECT_DIR / "lego_hq.html"
+    if lego_html_path.exists():
+        with open(lego_html_path, "r", encoding="utf-8") as f:
+            lego_content = f.read()
+        components.html(lego_content, height=880, scrolling=True)
+    else:
+        st.warning("Đang khởi tạo file mô phỏng Trụ sở LEGO...")
+
+# ── TAB 2: PHÒNG KỸ THUẬT (BÀN DUYỆT 2 CỘT) ──────────────────────────────────
 with tab_tech:
     if not products:
         st.warning("Chưa có dữ liệu sản phẩm trong cache. Vui lòng bấm 'Khởi động trích xuất' bên dưới.")
