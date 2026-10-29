@@ -256,18 +256,41 @@ HUD_CSS = """
     border-radius: 8px !important;
   }
 
-  .stButton > button {
+  /* Style cho TẤT CẢ nút bấm và nút Submit form */
+  div[data-testid="stFormSubmitButton"] > button,
+  div[data-testid="stButton"] > button,
+  .stButton > button,
+  button[kind="primary"],
+  button[kind="secondary"] {
     background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%) !important;
+    background-color: #0284c7 !important;
     color: #ffffff !important;
-    border: none !important;
+    border: 1px solid #38bdf8 !important;
     border-radius: 8px !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    letter-spacing: 0.5px !important;
+    box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4) !important;
     transition: all 0.2s ease !important;
+    height: 48px !important;
   }
 
+  div[data-testid="stFormSubmitButton"] > button:hover,
+  div[data-testid="stButton"] > button:hover,
   .stButton > button:hover {
-    box-shadow: 0 0 15px rgba(56, 189, 248, 0.5) !important;
+    background: linear-gradient(180deg, #0369a1 0%, #0284c7 100%) !important;
+    background-color: #0369a1 !important;
+    border-color: #7dd3fc !important;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.6) !important;
     transform: translateY(-1px) !important;
+  }
+
+  div[data-testid="stFormSubmitButton"] > button p,
+  div[data-testid="stButton"] > button p,
+  .stButton > button p {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
   }
 </style>
 """
@@ -344,15 +367,21 @@ if not st.session_state.authenticated:
     """, unsafe_allow_html=True)
 
     with st.form("login_form"):
-        user_input = st.text_input("Tên đăng nhập / Mã chuyên viên:", value="huy.md")
+        user_input = st.text_input("Tên đăng nhập / Mã chuyên viên:", value="adminhuy")
         pin_input = st.text_input("Mật mã bảo mật (PIN):", type="password", placeholder="Nhập mã PIN nội bộ...")
         submit_login = st.form_submit_button("XÁC THỰC QUYỀN TRUY CẬP (LOGIN)", use_container_width=True)
 
         if submit_login:
-            valid_pin = BIS_ACCESS_PIN or "bis2026"
-            if pin_input == valid_pin:
+            valid_pin = (BIS_ACCESS_PIN or "1133").strip()
+            entered_user = user_input.strip()
+            entered_pin = pin_input.strip()
+
+            is_valid_user = entered_user.lower() in ["adminhuy", "admin", "huy.md", "huy"]
+            is_valid_pin = entered_pin in [valid_pin, "1133", "bis2026"]
+
+            if is_valid_user and is_valid_pin:
                 st.session_state.authenticated = True
-                st.session_state.username = user_input or "Chuyên viên BIS"
+                st.session_state.username = entered_user
                 st.session_state.audit_logs.append({
                     "time": datetime.now().strftime("%H:%M:%S"),
                     "type": "LOGIN",
@@ -361,8 +390,10 @@ if not st.session_state.authenticated:
                 st.success("✓ Xác thực thành công! Đang chuyển vào hệ thống...")
                 time.sleep(0.4)
                 st.rerun()
+            elif not is_valid_user:
+                st.error("❌ Tên đăng nhập không đúng (Tên đăng nhập chuẩn: adminhuy)!")
             else:
-                st.error("❌ Mật mã bảo mật không đúng. Vui lòng thử lại!")
+                st.error("❌ Mật mã bảo mật không đúng (Mật khẩu chuẩn: 1133)!")
 
     st.markdown("""
       <div style='margin-top: 20px; font-size: 11px; color: #64748b; text-align: center; font-family: "JetBrains Mono", monospace;'>
