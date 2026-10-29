@@ -716,7 +716,7 @@ with col_canvas:
         <div class='node-desc'>
           &bull; Nghiên cứu từ khóa SEO<br>
           &bull; Soạn Meta Title &amp; Slug<br>
-          &bull; Bán hàng QA/QC Lab
+          &bull; Chuẩn AATCC, ISO, ASTM
         </div>
       </div>
       <div class='agent-node'>
@@ -787,7 +787,7 @@ with col_side_queue:
 st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
 tab_lego, tab_tech, tab_mkt, tab_media, tab_know, tab_ops, tab_learn = st.tabs([
-    "🧱 1. Trụ Sở LEGO AI Team (LEGO HQ)",
+    "🏢 1. Văn Phòng 3D LEGO AI (3D Metaverse HQ)",
     "🔬 2. Phòng Kỹ Thuật (PDF & HTML 7 Khối)",
     "📢 3. Phòng Nghiên Cứu SEO & Marketing",
     "🎨 4. Phòng Edit & Duyệt Ảnh Sản Phẩm",
@@ -796,13 +796,13 @@ tab_lego, tab_tech, tab_mkt, tab_media, tab_know, tab_ops, tab_learn = st.tabs([
     "🧠 7. Bộ Nhớ Tự Học (Few-Shot Feedback)"
 ])
 
-# ── TAB 1: TRỤ SỞ LEGO AI TEAM (LEGO METAVERSE HQ) ───────────────────────────
+# ── TAB 1: VĂN PHÒNG 3D LEGO AI TEAM (3D METAVERSE HQ) ───────────────────────
 with tab_lego:
     lego_html_path = PROJECT_DIR / "lego_hq.html"
     if lego_html_path.exists():
         with open(lego_html_path, "r", encoding="utf-8") as f:
             lego_content = f.read()
-        components.html(lego_content, height=880, scrolling=True)
+        components.html(lego_content, height=960, scrolling=True)
     else:
         st.warning("Đang khởi tạo file mô phỏng Trụ sở LEGO...")
 
