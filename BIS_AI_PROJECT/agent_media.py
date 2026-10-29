@@ -68,6 +68,53 @@ class AgentMedia:
             draw.line([(0, 750), (1000, 750)], fill="#e2e8f0", width=1)
             img.save(studio_bg, quality=95)
 
+    def extract_image_from_pdf(self, sku: str, pdf_path: str | Path, page_num: int) -> Optional[Path]:
+        """Extract high-res equipment photo directly from the PDF catalogue page."""
+        import pymupdf
+        clean_sku = sku.strip().replace(" ", "_")
+        target_path = self.brand_dir / f"{clean_sku}_brand_1.jpg"
+        if not os.path.exists(str(pdf_path)):
+            return None
+        doc = pymupdf.open(str(pdf_path))
+        if 1 <= page_num <= len(doc):
+            page = doc[page_num - 1]
+            img_list = page.get_images(full=True)
+            for img_info in img_list:
+                xref = img_info[0]
+                base_img = doc.extract_image(xref)
+                img_bytes = base_img["image"]
+                # Must be a substantial product photo (>6KB, >120px)
+                if len(img_bytes) > 6000 and base_img["width"] >= 120 and base_img["height"] >= 120:
+                    with open(target_path, "wb") as f:
+                        f.write(img_bytes)
+                    doc.close()
+                    return target_path
+        doc.close()
+        return None
+
+    def fetch_brand_image_from_web(self, sku: str, brand_name: str, title: str) -> Optional[Path]:
+        """Search official brand website using curl_cffi and download official photo."""
+        clean_sku = sku.strip().replace(" ", "_")
+        target_path = self.brand_dir / f"{clean_sku}_brand_1.jpg"
+        try:
+            from brand_web_enricher import resolve_brand_domain, fetch_brand_product_page
+            domain = resolve_brand_domain(brand_name)
+            web_data = fetch_brand_product_page(domain, sku, title)
+            if web_data and web_data.get("images"):
+                import requests
+                for img_url in web_data["images"]:
+                    try:
+                        r = requests.get(img_url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
+                        if r.status_code == 200 and len(r.content) > 5000:
+                            with open(target_path, "wb") as f:
+                                f.write(r.content)
+                            return target_path
+                    except Exception:
+                        continue
+        except Exception as e:
+            print(f"Error fetching brand image from web: {e}")
+        return None
+
     def register_user_image(self, sku: str, image_bytes: bytes, filename: str) -> Path:
         """Save user supplied product photo with strict SKU naming format."""
         clean_sku = sku.strip().replace(" ", "_")

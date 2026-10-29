@@ -1013,16 +1013,22 @@ with tab_tech:
     if not products:
         st.warning("Chưa có dữ liệu sản phẩm trong cache. Vui lòng bấm 'Khởi động trích xuất' bên dưới.")
     else:
-        col_f1, col_f2, col_f3 = st.columns([3, 4, 5])
+        col_f1, col_f2, col_f3 = st.columns([4, 3, 5])
         with col_f1:
             skus = [p.get("sku") for p in products]
-            selected_sku = st.selectbox("Chọn mã SKU cần kiểm tra / duyệt:", skus, key="tech_sku_select")
+            selected_sku = st.selectbox(f"Chọn mã SKU kiểm duyệt ({len(products)} SP hiện có):", skus, key="tech_sku_select")
         with col_f2:
             p = next((item for item in products if item.get("sku") == selected_sku), products[0])
             status_color = "#10b981" if p.get("status") == "APPROVED" else ("#f43f5e" if p.get("status") == "REJECTED" else "#f59e0b")
             st.markdown(f"""
             <div style='padding-top: 26px; font-family: "JetBrains Mono", monospace; font-size: 13px;'>
               Trạng thái: <span style='color: {status_color}; font-weight: 800;'>{p.get('status')}</span>
+            </div>
+            """, unsafe_allow_html=True)
+        with col_f3:
+            st.markdown("""
+            <div style='padding-top: 20px; font-size: 11.5px; color: #94a3b8; line-height: 1.4;'>
+              💡 <em>Muốn bóc tách đầy đủ toàn bộ sản phẩm:</em> Hãy mở rộng mục <strong>1. THIẾT LẬP FILE CATALOGUE</strong> bên trên, tích chọn <strong>'Toàn bộ tài liệu'</strong> và bấm <strong>'🚀 BẮT ĐẦU PHÂN TÍCH CATALOGUE'</strong>.
             </div>
             """, unsafe_allow_html=True)
 
@@ -1180,14 +1186,57 @@ with tab_media:
         col_m1, col_m2 = st.columns([5, 7])
 
         with col_m1:
-            st.markdown("#### 1. Nguồn Ảnh Đầu Vào (Lưu Trực Tiếp Trên Google Drive)")
+            st.markdown("#### 1. Nguồn Ảnh Đầu Vào (Chính Hãng & Thực Tế)")
             st.info(f"📁 **Vị trí lưu trên Google Drive:** `Google_Drive_Storage/4_Product_Images/`\n\nQuy chuẩn lưu file: `{clean_sku}_brand_1.jpg`, `{clean_sku}_user_1.jpg`")
+
+            # Kiểm tra ảnh hãng & ảnh người dùng
+            brand_img_path = media_agent.brand_dir / f"{clean_sku}_brand_1.jpg"
+            user_img_path = media_agent.user_dir / f"{clean_sku}_user_1.jpg"
             
+            page_num_media = int(p_media.get("source_page") or 1)
+            brand_name_media = p_media.get("brand") or "AATCC"
+            title_media = p_media.get("product_name_en") or p_media.get("product_name") or ""
+
+            c_act1, c_act2 = st.columns(2)
+            with c_act1:
+                if st.button("🌐 Tìm ảnh hãng trên Web", key=f"btn_fetch_web_{clean_sku}", help="Dùng AI & curl_cffi tìm ảnh chính hãng trên website của thương hiệu"):
+                    with st.spinner("Đang tìm ảnh trên website chính hãng..."):
+                        fetched = media_agent.fetch_brand_image_from_web(clean_sku, brand_name_media, title_media)
+                        if fetched and fetched.exists():
+                            st.success("✓ Đã tìm thấy và lưu ảnh chính hãng!")
+                            st.rerun()
+                        else:
+                            st.warning("Chưa tìm thấy ảnh khớp trên web hãng. Hãy thử trích xuất từ PDF hoặc tải ảnh lên.")
+            with c_act2:
+                if st.button("✂️ Trích xuất từ Catalogue", key=f"btn_ext_pdf_{clean_sku}", help="Tự động bóc tách ảnh máy dệt từ trang Catalogue PDF"):
+                    with st.spinner(f"Đang trích xuất ảnh từ trang {page_num_media}..."):
+                        active_pdf_for_media = active_pdf if 'active_pdf' in locals() and active_pdf else pdf_file
+                        ext_path = media_agent.extract_image_from_pdf(clean_sku, active_pdf_for_media, page_num_media)
+                        if ext_path and ext_path.exists():
+                            st.success(f"✓ Đã trích xuất ảnh thiết bị từ trang {page_num_media}!")
+                            st.rerun()
+                        else:
+                            st.warning(f"Không tìm thấy ảnh nhúng trong trang {page_num_media} của Catalogue.")
+
+            # Hiển thị ảnh đầu vào hiện có
+            chosen_source_img = None
+            if user_img_path.exists():
+                st.markdown(f"**✓ Ảnh thực tế:** `{clean_sku}_user_1.jpg`")
+                st.image(str(user_img_path), width=200)
+                chosen_source_img = user_img_path
+            elif brand_img_path.exists():
+                st.markdown(f"**✓ Ảnh chính hãng:** `{clean_sku}_brand_1.jpg`")
+                st.image(str(brand_img_path), width=200)
+                chosen_source_img = brand_img_path
+            else:
+                st.info("⚠️ Chưa có ảnh đầu vào. Hãy bấm **'Tìm ảnh hãng trên Web'**, **'Trích xuất từ Catalogue'** hoặc tải ảnh thủ công.")
+
             # Tải ảnh thực tế từ người dùng
-            uploaded_user_img = st.file_uploader(f"Tải lên ảnh thực tế cho mã {clean_sku}:", type=["jpg", "png", "jpeg"], key=f"up_{clean_sku}")
+            uploaded_user_img = st.file_uploader(f"Hoặc tải lên ảnh thủ công cho mã {clean_sku}:", type=["jpg", "png", "jpeg"], key=f"up_{clean_sku}")
             if uploaded_user_img:
                 saved_path = media_agent.register_user_image(clean_sku, uploaded_user_img.getvalue(), uploaded_user_img.name)
                 st.success(f"✓ Đã lưu ảnh vào Google Drive: {saved_path.name}")
+                st.rerun()
 
             # Chọn ảnh nền mockup
             c_bg_head, c_bg_scan = st.columns([8, 4])
@@ -1227,19 +1276,19 @@ with tab_media:
             # Nút xử lý ghép ảnh
             st.markdown("---")
             if st.button("🚀 AI GHÉP NỀN & TĂNG ĐỘ CHÂN THỰC", type="primary"):
-                # Ưu tiên lấy ảnh người dùng tải lên, nếu chưa có thì lấy ảnh mặc định
-                user_img_path = media_agent.user_dir / f"{clean_sku}_user_1.jpg"
-                if not user_img_path.exists():
-                    # Tạo ảnh mẫu thử nghiệm từ biểu tượng nếu chưa tải ảnh lên
-                    sample_img = Image.new("RGBA", (400, 400), (255, 255, 255, 0))
-                    draw = fitz.Pixmap(fitz.csRGB, 400, 400, 1)
-                    # Lưu tạm
-                    sample_img.save(user_img_path)
-                
-                with st.spinner("Agent_Media đang tách nền, tạo bóng đổ và cân chỉnh ánh sáng..."):
-                    final_path = media_agent.composite_product_image(clean_sku, user_img_path, selected_bg_path)
-                    st.success(f"✓ Đã tạo thành phẩm: {final_path.name}")
-                    st.rerun()
+                # Ưu tiên lấy ảnh nguồn (ảnh người dùng hoặc ảnh hãng)
+                img_to_composite = chosen_source_img
+                if not img_to_composite or not img_to_composite.exists():
+                    active_pdf_for_media = active_pdf if 'active_pdf' in locals() and active_pdf else pdf_file
+                    img_to_composite = media_agent.extract_image_from_pdf(clean_sku, active_pdf_for_media, page_num_media)
+
+                if not img_to_composite or not img_to_composite.exists():
+                    st.error("Chưa có ảnh đầu vào! Vui lòng bấm 'Tìm ảnh hãng trên Web', 'Trích xuất từ Catalogue' hoặc tải ảnh lên.")
+                else:
+                    with st.spinner("Agent_Media đang tách nền, tạo bóng đổ và cân chỉnh ánh sáng với nền Studio BIS..."):
+                        final_path = media_agent.composite_product_image(clean_sku, img_to_composite, selected_bg_path)
+                        st.success(f"✓ Đã tạo thành phẩm: {final_path.name}")
+                        st.rerun()
 
         with col_m2:
             st.markdown("#### 3. Bản Xem Trước Ảnh Thành Phẩm & Cổng Duyệt")
