@@ -905,13 +905,27 @@ with tab_tech:
     gdrive_cat_dir = PROJECT_DIR / "Google_Drive_Storage" / "1_Catalogues"
     gdrive_cat_dir.mkdir(parents=True, exist_ok=True)
     
-    # Quét toàn bộ file PDF trong Google_Drive_Storage (bao gồm 1_Catalogues, 2_Manuals_Standards, và thư mục gốc)
-    all_drive_pdfs = sorted(list(set(
-        list(gdrive_cat_dir.glob("*.pdf")) +
-        list((PROJECT_DIR / "Google_Drive_Storage").glob("*.pdf")) +
-        list((PROJECT_DIR / "Google_Drive_Storage" / "2_Manuals_Standards").glob("*.pdf")) +
-        ([pdf_file] if pdf_file.exists() else [])
-    )), key=lambda p: p.name)
+    # Quét thông minh không trùng lặp (Deduplicate theo tên file chính xác)
+    pdf_dict = {}
+    
+    # 1. Quét ưu tiên các file trong 1_Catalogues trước
+    for p in gdrive_cat_dir.glob("*.pdf"):
+        if p.is_file():
+            pdf_dict[p.name] = p
+
+    # 2. Quét thêm thư mục Google_Drive_Storage và các thư mục con khác
+    storage_root = PROJECT_DIR / "Google_Drive_Storage"
+    if storage_root.exists():
+        for p in storage_root.rglob("*.pdf"):
+            if p.is_file() and p.name not in pdf_dict:
+                pdf_dict[p.name] = p
+
+    if pdf_file.exists() and pdf_file.name not in pdf_dict:
+        pdf_dict[pdf_file.name] = pdf_file
+
+    cat_options = sorted(list(pdf_dict.keys()))
+    if not cat_options:
+        cat_options = ["(Chưa có file trong 1_Catalogues)"]
 
     with st.expander("📥 1. THIẾT LẬP FILE CATALOGUE PDF & QUÉT GOOGLE DRIVE", expanded=(not bool(products))):
         c_sync_info, c_sync_btn = st.columns([8, 4])
@@ -926,10 +940,6 @@ with tab_tech:
 
         up_col1, up_col2 = st.columns([6, 6])
         with up_col1:
-            cat_options = [c.name for c in all_drive_pdfs]
-            if not cat_options:
-                cat_options = ["(Chưa có file trong 1_Catalogues)"]
-
             default_idx = 0
             if "chosen_pdf_name" in st.session_state and st.session_state["chosen_pdf_name"] in cat_options:
                 default_idx = cat_options.index(st.session_state["chosen_pdf_name"])
@@ -958,14 +968,9 @@ with tab_tech:
                 st.rerun()
 
         with up_col2:
-            active_pdf = None
-            if selected_cat_name and selected_cat_name != "(Chưa có file trong 1_Catalogues)":
-                for cand in all_drive_pdfs:
-                    if cand.name == selected_cat_name:
-                        active_pdf = cand
-                        break
-            if not active_pdf and all_drive_pdfs:
-                active_pdf = all_drive_pdfs[0]
+            active_pdf = pdf_dict.get(selected_cat_name)
+            if not active_pdf and cat_options and cat_options[0] in pdf_dict:
+                active_pdf = pdf_dict[cat_options[0]]
 
             if active_pdf and active_pdf.exists():
                 try:
