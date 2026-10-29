@@ -296,14 +296,38 @@ if cache_file.exists():
     except Exception:
         pass
 
-# Khởi tạo Leader và các Agent phòng ban
+# Khởi tạo an toàn (Safe Fallback nếu trên GitHub chưa kịp upload đủ các file phòng ban mới)
+try:
+    from agent_marketing import AgentMarketing
+except Exception:
+    AgentMarketing = None
+
+try:
+    from agent_knowledge import AgentKnowledge
+except Exception:
+    AgentKnowledge = None
+
+try:
+    from agent_media import AgentMedia
+except Exception:
+    AgentMedia = None
+
 leader = AgentLeader(workspace_dir=PROJECT_DIR)
-technical_agent = leader.technical_agent
-operations_agent = leader.operations_agent
-marketing_agent = leader.marketing_agent
-knowledge_agent = leader.knowledge_agent
-media_agent = leader.media_agent
-learning_engine = leader.learning_engine
+technical_agent = getattr(leader, "technical_agent", None)
+operations_agent = getattr(leader, "operations_agent", None)
+learning_engine = getattr(leader, "learning_engine", None)
+
+marketing_agent = getattr(leader, "marketing_agent", None)
+if marketing_agent is None and AgentMarketing is not None:
+    marketing_agent = AgentMarketing(PROJECT_DIR)
+
+knowledge_agent = getattr(leader, "knowledge_agent", None)
+if knowledge_agent is None and AgentKnowledge is not None:
+    knowledge_agent = AgentKnowledge(PROJECT_DIR)
+
+media_agent = getattr(leader, "media_agent", None)
+if media_agent is None and AgentMedia is not None:
+    media_agent = AgentMedia(PROJECT_DIR)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -635,7 +659,9 @@ with tab_mkt:
     st.markdown("### 📢 Phòng Nghiên Cứu SEO & Nội Dung (Agent_Marketing)")
     st.write("Nghiên cứu từ khóa ngành dệt may (AATCC, ISO, ASTM), soạn Meta Title, Meta Description chuẩn SEO, tạo URL Slug thân thiện và xây dựng kịch bản bán hàng cho phòng lab QA/QC.")
 
-    if products:
+    if not marketing_agent:
+        st.warning("⚠️ Đang chờ đồng bộ file `agent_marketing.py` trên GitHub. Hãy tải file lên để kích hoạt.")
+    elif products:
         sku_mkt = st.selectbox("Chọn SKU để lập kế hoạch SEO:", [p.get("sku") for p in products], key="mkt_sku_select")
         p_mkt = next((item for item in products if item.get("sku") == sku_mkt), products[0])
 
@@ -682,7 +708,9 @@ with tab_media:
     st.markdown("### 🎨 Phòng Edit & Duyệt Ảnh Sản Phẩm (Agent_Media Studio)")
     st.write("AI tự động lấy ảnh từ hãng (tối đa 2 ảnh), tiếp nhận ảnh thực tế bạn cung cấp (đặt tên file theo mã SKU), ghép vào ảnh nền studio/lab chân thực và **chờ bạn bấm Duyệt** trước khi đăng.")
 
-    if products:
+    if not media_agent:
+        st.warning("⚠️ Đang chờ đồng bộ file `agent_media.py` trên GitHub. Hãy tải file lên để kích hoạt.")
+    elif products:
         sku_media = st.selectbox("Chọn SKU để xử lý ảnh:", [p.get("sku") for p in products], key="media_sku_select")
         p_media = next((item for item in products if item.get("sku") == sku_media), products[0])
         clean_sku = sku_media.strip().replace(" ", "_")
@@ -771,44 +799,47 @@ with tab_know:
     st.markdown("### 📚 Phòng Lưu Trữ Tri Thức & Tài Liệu Chuẩn (Agent_Knowledge)")
     st.write("Kho lưu trữ sách tiêu chuẩn, catalogue, manual, chứng nhận COC, CO, CQ, hình ảnh và video đào tạo để toàn bộ AI Agents nạp tri thức học tập.")
 
-    col_k1, col_k2 = st.columns([7, 5])
-    with col_k1:
-        st.markdown("#### 📂 Danh Mục Tài Liệu Tiêu Chuẩn Hiện Có")
-        docs = knowledge_agent.manifest
-        for d in docs:
-            st.markdown(f"""
-            <div style='background: #0d1322; border: 1px solid #1e293b; border-left: 3px solid #38bdf8; border-radius: 8px; padding: 12px; margin-bottom: 10px;'>
-              <div style='display: flex; justify-content: space-between; align-items: center;'>
-                <strong style='color: #f8fafc; font-size: 13px;'>{d.get('title')}</strong>
-                <span class='node-badge badge-loaded'>{d.get('category').upper()}</span>
-              </div>
-              <div style='font-size: 11.5px; color: #94a3b8; margin-top: 4px;'>{d.get('scope')}</div>
-              <div style='font-size: 10px; color: #64748b; margin-top: 6px; font-family: "JetBrains Mono", monospace;'>
-                File: {d.get('filename')} &bull; Thẩm định: ✓ Đã xác nhận &bull; Ngày nạp: {d.get('added_at')}
-              </div>
-            </div>
-            """, unsafe_allow_html=True)
+    if not knowledge_agent:
+        st.warning("⚠️ Đang chờ đồng bộ file `agent_knowledge.py` trên GitHub. Hãy tải file lên để kích hoạt.")
+    else:
+        col_k1, col_k2 = st.columns([7, 5])
+        with col_k1:
+            st.markdown("#### 📂 Danh Mục Tài Liệu Tiêu Chuẩn Hiện Có")
+            docs = knowledge_agent.manifest
+            for d in docs:
+                st.markdown(f"""
+                <div style='background: #0d1322; border: 1px solid #1e293b; border-left: 3px solid #38bdf8; border-radius: 8px; padding: 12px; margin-bottom: 10px;'>
+                  <div style='display: flex; justify-content: space-between; align-items: center;'>
+                    <strong style='color: #f8fafc; font-size: 13px;'>{d.get('title')}</strong>
+                    <span class='node-badge badge-loaded'>{d.get('category').upper()}</span>
+                  </div>
+                  <div style='font-size: 11.5px; color: #94a3b8; margin-top: 4px;'>{d.get('scope')}</div>
+                  <div style='font-size: 10px; color: #64748b; margin-top: 6px; font-family: "JetBrains Mono", monospace;'>
+                    File: {d.get('filename')} &bull; Thẩm định: ✓ Đã xác nhận &bull; Ngày nạp: {d.get('added_at')}
+                  </div>
+                </div>
+                """, unsafe_allow_html=True)
 
-    with col_k2:
-        st.markdown("#### 📤 Nạp Tài Liệu / Chứng Nhận Mới Cho AI Học")
-        with st.form("add_doc_form"):
-            new_title = st.text_input("Tên tài liệu / Tiêu chuẩn:", placeholder="VD: Tiêu chuẩn thử nghiệm AATCC TM61")
-            new_cat = st.selectbox("Loại tài liệu:", ["standards", "manuals", "certificates", "catalogues", "media"])
-            new_scope = st.text_area("Mục đích / Phạm vi áp dụng:", placeholder="VD: Quy trình kiểm tra độ bền màu giặt phòng thí nghiệm...")
-            uploaded_doc_file = st.file_uploader("Tải file tài liệu (PDF, Word, Ảnh, Video):", type=["pdf", "docx", "jpg", "png", "mp4"])
-            submit_doc = st.form_submit_button("LƯU VÀO KHO & HUẤN LUYỆN AI", use_container_width=True)
+        with col_k2:
+            st.markdown("#### 📤 Nạp Tài Liệu / Chứng Nhận Mới Cho AI Học")
+            with st.form("add_doc_form"):
+                new_title = st.text_input("Tên tài liệu / Tiêu chuẩn:", placeholder="VD: Tiêu chuẩn thử nghiệm AATCC TM61")
+                new_cat = st.selectbox("Loại tài liệu:", ["standards", "manuals", "certificates", "catalogues", "media"])
+                new_scope = st.text_area("Mục đích / Phạm vi áp dụng:", placeholder="VD: Quy trình kiểm tra độ bền màu giặt phòng thí nghiệm...")
+                uploaded_doc_file = st.file_uploader("Tải file tài liệu (PDF, Word, Ảnh, Video):", type=["pdf", "docx", "jpg", "png", "mp4"])
+                submit_doc = st.form_submit_button("LƯU VÀO KHO & HUẤN LUYỆN AI", use_container_width=True)
 
-            if submit_doc and new_title:
-                fname = uploaded_doc_file.name if uploaded_doc_file else f"{new_title[:20]}.pdf"
-                fbytes = uploaded_doc_file.getvalue() if uploaded_doc_file else None
-                knowledge_agent.register_document(new_title, new_cat, fname, new_scope, fbytes)
-                st.session_state.audit_logs.append({
-                    "time": datetime.now().strftime("%H:%M:%S"),
-                    "type": "KNOW",
-                    "text": f"Đã nạp tài liệu '{new_title}' vào Knowledge Vault."
-                })
-                st.success(f"✓ Đã nạp thành công '{new_title}' vào kho tri thức của AI!")
-                st.rerun()
+                if submit_doc and new_title:
+                    fname = uploaded_doc_file.name if uploaded_doc_file else f"{new_title[:20]}.pdf"
+                    fbytes = uploaded_doc_file.getvalue() if uploaded_doc_file else None
+                    knowledge_agent.register_document(new_title, new_cat, fname, new_scope, fbytes)
+                    st.session_state.audit_logs.append({
+                        "time": datetime.now().strftime("%H:%M:%S"),
+                        "type": "KNOW",
+                        "text": f"Đã nạp tài liệu '{new_title}' vào Knowledge Vault."
+                    })
+                    st.success(f"✓ Đã nạp thành công '{new_title}' vào kho tri thức của AI!")
+                    st.rerun()
 
 
 # ── TAB 5: PHÒNG VẬN HÀNH & HARAVAN GUARD ────────────────────────────────────
