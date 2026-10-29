@@ -904,7 +904,14 @@ with tab_lego:
 with tab_tech:
     gdrive_cat_dir = PROJECT_DIR / "Google_Drive_Storage" / "1_Catalogues"
     gdrive_cat_dir.mkdir(parents=True, exist_ok=True)
-    available_cats = list(gdrive_cat_dir.glob("*.pdf"))
+    
+    # Quét toàn bộ file PDF trong Google_Drive_Storage (bao gồm 1_Catalogues, 2_Manuals_Standards, và thư mục gốc)
+    all_drive_pdfs = sorted(list(set(
+        list(gdrive_cat_dir.glob("*.pdf")) +
+        list((PROJECT_DIR / "Google_Drive_Storage").glob("*.pdf")) +
+        list((PROJECT_DIR / "Google_Drive_Storage" / "2_Manuals_Standards").glob("*.pdf")) +
+        ([pdf_file] if pdf_file.exists() else [])
+    )), key=lambda p: p.name)
 
     with st.expander("📥 1. THIẾT LẬP FILE CATALOGUE PDF & QUÉT GOOGLE DRIVE", expanded=(not bool(products))):
         c_sync_info, c_sync_btn = st.columns([8, 4])
@@ -913,20 +920,27 @@ with tab_tech:
         with c_sync_btn:
             if st.button("🔄 Quét lại Google Drive", key="scan_gdrive_tab_tech", help="Quét nhanh các file Catalogue và Background vừa bỏ vào Google Drive"):
                 if knowledge_agent:
-                    knowledge_agent.scan_and_sync_drive_files()
+                    scan_res = knowledge_agent.scan_and_sync_drive_files()
+                    st.success(f"✓ Đã quét Google Drive! Tìm thấy {len(scan_res.get('catalogues', []))} catalogue, {len(scan_res.get('backgrounds', []))} ảnh nền.")
                 st.rerun()
 
         up_col1, up_col2 = st.columns([6, 6])
         with up_col1:
-            cat_options = [c.name for c in available_cats]
+            cat_options = [c.name for c in all_drive_pdfs]
             if not cat_options:
                 cat_options = ["(Chưa có file trong 1_Catalogues)"]
-            
+
+            default_idx = 0
+            if "chosen_pdf_name" in st.session_state and st.session_state["chosen_pdf_name"] in cat_options:
+                default_idx = cat_options.index(st.session_state["chosen_pdf_name"])
+
             selected_cat_name = st.selectbox(
                 "📂 Chọn file Catalogue có sẵn trong Google Drive:",
                 cat_options,
+                index=default_idx,
                 key="select_existing_catalog_pdf"
             )
+            st.session_state["chosen_pdf_name"] = selected_cat_name
 
             uploaded_catalog = st.file_uploader(
                 "Hoặc tải lên file Catalogue (.pdf) mới từ máy tính:",
@@ -937,20 +951,21 @@ with tab_tech:
                 save_path = gdrive_cat_dir / uploaded_catalog.name
                 with open(save_path, "wb") as f:
                     f.write(uploaded_catalog.getvalue())
+                st.session_state["chosen_pdf_name"] = uploaded_catalog.name
                 st.success(f"✓ Đã lưu file `{uploaded_catalog.name}` vào Google Drive (1_Catalogues)!")
                 if knowledge_agent:
                     knowledge_agent.scan_and_sync_drive_files()
                 st.rerun()
 
         with up_col2:
+            active_pdf = None
             if selected_cat_name and selected_cat_name != "(Chưa có file trong 1_Catalogues)":
-                active_pdf = gdrive_cat_dir / selected_cat_name
-            elif available_cats:
-                active_pdf = available_cats[0]
-            elif pdf_file.exists():
-                active_pdf = pdf_file
-            else:
-                active_pdf = None
+                for cand in all_drive_pdfs:
+                    if cand.name == selected_cat_name:
+                        active_pdf = cand
+                        break
+            if not active_pdf and all_drive_pdfs:
+                active_pdf = all_drive_pdfs[0]
 
             if active_pdf and active_pdf.exists():
                 try:
@@ -962,7 +977,7 @@ with tab_tech:
                     <div style='background: #090e1a; border: 1px solid #1e293b; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
                       <strong>File đang chọn:</strong> <code>{active_pdf.name}</code><br>
                       <strong>Kích thước:</strong> <span style='color: #38bdf8; font-weight: 700;'>{size_mb} MB</span> | <strong>Số trang:</strong> <span style='color: #10b981; font-weight: 700;'>{total_pages} trang</span><br>
-                      <strong>Vị trí lưu:</strong> <code>Google_Drive_Storage/1_Catalogues/</code>
+                      <strong>Vị trí lưu:</strong> <code>{active_pdf.parent.name}/{active_pdf.name}</code>
                     </div>
                     """, unsafe_allow_html=True)
                 except Exception as e:
@@ -981,7 +996,10 @@ with tab_tech:
                                 from agent_leader import AgentLeader
                                 leader = AgentLeader()
                                 max_p = 1 if "1 trang" in scan_mode else None
-                                summary = leader.run_autonomous_pipeline(str(active_pdf), max_pages=max_p, sync_to_sheets=False)
+                                if hasattr(leader, "run_autonomous_pipeline"):
+                                    summary = leader.run_autonomous_pipeline(str(active_pdf), max_pages=max_p, sync_to_sheets=False)
+                                else:
+                                    summary = leader.run_catalogue_pipeline(str(active_pdf), max_pages=max_p, sync_to_sheets=False)
                                 st.success(f"✓ Hoàn thành phân tích! Trích xuất được {summary.get('total_extracted', 0)} sản phẩm.")
                                 st.rerun()
                             except Exception as ex:

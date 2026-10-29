@@ -12,3 +12,4 @@ if BIS_DIR.exists():
     runpy.run_path(str(BIS_DIR / "app_ui.py"), run_name="__main__")
 else:
     raise FileNotFoundError("Thư mục BIS_AI_PROJECT không tồn tại!")
+

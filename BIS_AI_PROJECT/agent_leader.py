@@ -50,6 +50,10 @@ class AgentLeader:
         self.departments[name.lower()] = agent_instance
         print(f"🏢 [Agent_Leader] Phòng ban '{name}' đã được kết nối vào hệ sinh thái Multi-Agent.")
 
+    def run_autonomous_pipeline(self, pdf_path: str, max_pages: Optional[int] = None, sync_to_sheets: bool = False) -> dict:
+        """Alias for run_catalogue_pipeline to support autonomous UI triggering."""
+        return self.run_catalogue_pipeline(pdf_path, max_pages=max_pages, sync_to_sheets=sync_to_sheets)
+
     def run_catalogue_pipeline(self, pdf_path: str, max_pages: Optional[int] = None, sync_to_sheets: bool = True) -> dict:
         """
         Orchestrate complete catalogue ingestion:
@@ -130,9 +134,25 @@ class AgentLeader:
             "cache_file": str(self.workspace_dir / "extracted_products_cache.json")
         }
 
-        # Cache locally
+        # Merge into existing cache so we don't wipe out previously reviewed products
+        cache_path = self.workspace_dir / "extracted_products_cache.json"
+        existing_products = []
+        if cache_path.exists():
+            try:
+                with open(cache_path, "r", encoding="utf-8") as f:
+                    existing_products = json.load(f)
+            except Exception:
+                existing_products = []
+
+        merged_dict = {p.get("sku"): p for p in existing_products if p.get("sku")}
+        for p in all_extracted_products:
+            if p.get("sku"):
+                merged_dict[p.get("sku")] = p
+
+        final_product_list = list(merged_dict.values()) if merged_dict else all_extracted_products
+
         with open(summary["cache_file"], "w", encoding="utf-8") as f:
-            json.dump(all_extracted_products, f, ensure_ascii=False, indent=2)
+            json.dump(final_product_list, f, ensure_ascii=False, indent=2)
 
         print("\n" + "=" * 65)
         print("  🎉 [Agent_Leader] HOÀN THÀNH BÁO CÁO NHIỆM VỤ")
