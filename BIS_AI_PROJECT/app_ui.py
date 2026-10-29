@@ -802,15 +802,103 @@ tab_lego, tab_tech, tab_mkt, tab_media, tab_know, tab_ops, tab_learn = st.tabs([
     "🧠 7. Bộ Nhớ Tự Học (Few-Shot Feedback)"
 ])
 
+def load_3d_office_html() -> str:
+    """Đọc trọn vẹn nội dung file HTML 3D từ thư mục dự án."""
+    html_path = PROJECT_DIR / "bis_textile_3d_office.html"
+    if not html_path.exists():
+        html_path = PROJECT_DIR / "lego_hq.html"
+    if not html_path.exists():
+        return "<h3 style='color:red; font-family:sans-serif; text-align:center; padding-top:50px;'>Chưa tìm thấy file bis_textile_3d_office.html cùng thư mục!</h3>"
+    return html_path.read_text(encoding="utf-8")
+
+def render_bis_3d_office(
+    agent_key: str | None = None,
+    state: str | None = None,
+    message: str | None = None,
+    height: int = 820,
+) -> None:
+    """
+    Hàm render Văn phòng 3D BIS Textile lên giao diện Streamlit.
+    Hỗ trợ truyền lệnh điều khiển trực tiếp nhân vật AI qua window.updateAgentStatus().
+    """
+    html_content = load_3d_office_html()
+
+    if agent_key and state:
+        safe_agent = json.dumps(agent_key, ensure_ascii=False)
+        safe_state = json.dumps(state, ensure_ascii=False)
+        safe_msg = json.dumps(message or "", ensure_ascii=False)
+
+        inject_script = f"""
+        <script>
+          window.addEventListener('load', function() {{
+            setTimeout(function() {{
+              if (typeof window.updateAgentStatus === 'function') {{
+                window.updateAgentStatus({safe_agent}, {safe_state}, {safe_msg});
+              }}
+            }}, 700);
+          }});
+        </script>
+        """
+        html_content = html_content.replace("</body>", f"{inject_script}\n</body>")
+
+    components.html(html_content, height=height, scrolling=False)
+
 # ── TAB 1: VĂN PHÒNG 3D LEGO AI TEAM (3D METAVERSE HQ) ───────────────────────
 with tab_lego:
-    lego_html_path = PROJECT_DIR / "lego_hq.html"
-    if lego_html_path.exists():
-        with open(lego_html_path, "r", encoding="utf-8") as f:
-            lego_content = f.read()
-        components.html(lego_content, height=960, scrolling=True)
+    st.markdown("### 🏢 Trung Tâm Điều Hành 3D Multi-Agent — BIS Textile Metaverse")
+    st.markdown("""
+    <div style='background: #090e1a; border: 1px solid #1e293b; border-left: 3px solid #38bdf8; padding: 10px 14px; border-radius: 8px; font-size: 12px; color: #94a3b8; margin-bottom: 12px;'>
+      🌐 <strong>Văn phòng tương tác 3D chân thật:</strong> Chuột trái để xoay (Orbit), chuột phải để trượt góc nhìn, lăn chuột để zoom. Bấm vào từng nhân vật hoặc bàn làm việc để điều khiển trực tiếp!
+    </div>
+    """, unsafe_allow_html=True)
+
+    col_3d_1, col_3d_2, col_3d_3, col_3d_4 = st.columns([1.5, 1.4, 2.5, 1.2])
+    with col_3d_1:
+        selected_3d_agent = st.selectbox(
+            "Chọn Nhân vật AI:",
+            options=["engineer", "boss", "guard", "creator", "studio", "all"],
+            format_func=lambda x: {
+                "boss": "👑 CEO Boss (Vàng Gold)",
+                "engineer": "🔬 Kỹ thuật R&D (Xanh Dương)",
+                "guard": "🛡️ Haravan Guard (Xanh Lá)",
+                "creator": "✍️ Nội dung & SEO (Tím)",
+                "studio": "📸 Studio & Tri Thức (Hồng/Cyan)",
+                "all": "🌐 Toàn bộ 5 Nhân vật",
+            }[x],
+            key="select_3d_agent"
+        )
+    with col_3d_2:
+        selected_3d_state = st.selectbox(
+            "Trạng thái hoạt động:",
+            options=["WORKING", "HANDOFF", "BREAK", "MEETING"],
+            format_func=lambda x: {
+                "WORKING": "💻 WORKING (Tại bàn)",
+                "HANDOFF": "🤝 HANDOFF (Bàn giao)",
+                "BREAK": "☕ BREAK (Phòng nghỉ)",
+                "MEETING": "🗣️ MEETING (Bàn tròn)",
+            }[x],
+            key="select_3d_state"
+        )
+    with col_3d_3:
+        custom_3d_message = st.text_input(
+            "Thông điệp suy nghĩ / Giọng nói tiếng Việt:",
+            value="Đã bóc tách xong 17 mã SKU từ Catalogue 36 trang, bàn giao cho SEO nhé!",
+            key="input_3d_msg"
+        )
+    with col_3d_4:
+        st.write("")
+        st.write("")
+        send_3d_cmd = st.button("🚀 Gửi lệnh vào 3D", key="btn_send_3d_cmd", use_container_width=True)
+
+    if send_3d_cmd:
+        render_bis_3d_office(
+            agent_key=selected_3d_agent,
+            state=selected_3d_state,
+            message=custom_3d_message,
+            height=820,
+        )
     else:
-        st.warning("Đang khởi tạo file mô phỏng Trụ sở LEGO...")
+        render_bis_3d_office(height=820)
 
 # ── TAB 2: PHÒNG KỸ THUẬT (BÀN DUYỆT 2 CỘT) ──────────────────────────────────
 with tab_tech:
