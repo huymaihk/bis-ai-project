@@ -665,12 +665,26 @@ with col_top_left:
     """, unsafe_allow_html=True)
 
 with col_top_right:
-    col_sync, col_stat, col_logout = st.columns([2.5, 2, 1])
+    col_reset, col_sync, col_stat, col_logout = st.columns([2.8, 2.2, 1.8, 1])
+    with col_reset:
+        if st.button("⚡ RESET HỆ THỐNG", key="btn_top_reset_all", help="Xóa bộ nhớ đệm, quét lại toàn bộ Google Drive và cập nhật dữ liệu mới nhất"):
+            st.cache_data.clear()
+            st.cache_resource.clear()
+            if knowledge_agent:
+                knowledge_agent.scan_and_sync_drive_files()
+            if os.path.exists(cache_file):
+                try:
+                    with open(cache_file, "r", encoding="utf-8") as f:
+                        products = json.load(f)
+                except Exception:
+                    pass
+            st.toast("⚡ ĐÃ RESET & ĐỒNG BỘ TOÀN HỆ THỐNG!")
+            st.rerun()
     with col_sync:
         if st.button("🔄 Quét G-Drive", key="btn_top_scan_gdrive", help="Tự động quét và cập nhật các file mới bỏ vào Google Drive"):
             if knowledge_agent:
                 scan_res = knowledge_agent.scan_and_sync_drive_files()
-                st.toast(f"✓ Đã quét Google Drive! Tìm thấy {len(scan_res.get('catalogues', []))} catalogue, {len(scan_res.get('backgrounds', []))} ảnh nền.")
+                st.toast(f"✓ Đã quét Google Drive: {len(scan_res.get('catalogues', []))} catalogue, {len(scan_res.get('backgrounds', []))} ảnh nền.")
             st.rerun()
     with col_stat:
         st.markdown(f"""
@@ -928,14 +942,22 @@ with tab_tech:
         cat_options = ["(Chưa có file trong 1_Catalogues)"]
 
     with st.expander("📥 1. THIẾT LẬP FILE CATALOGUE PDF & QUÉT GOOGLE DRIVE", expanded=(not bool(products))):
-        c_sync_info, c_sync_btn = st.columns([8, 4])
+        c_sync_info, c_sync_b1, c_sync_b2 = st.columns([6, 3, 3])
         with c_sync_info:
             st.markdown("💡 **Cơ chế tự động:** Bạn có thể kéo thả trực tiếp file PDF Catalogue vào thư mục Google Drive `Google_Drive_Storage/1_Catalogues/` trên máy tính hoặc tải qua ô bên dưới.")
-        with c_sync_btn:
-            if st.button("🔄 Quét lại Google Drive", key="scan_gdrive_tab_tech", help="Quét nhanh các file Catalogue và Background vừa bỏ vào Google Drive"):
+        with c_sync_b1:
+            if st.button("🔄 Quét Google Drive", key="scan_gdrive_tab_tech", help="Quét nhanh các file Catalogue và Background vừa bỏ vào Google Drive"):
                 if knowledge_agent:
                     scan_res = knowledge_agent.scan_and_sync_drive_files()
                     st.success(f"✓ Đã quét Google Drive! Tìm thấy {len(scan_res.get('catalogues', []))} catalogue, {len(scan_res.get('backgrounds', []))} ảnh nền.")
+                st.rerun()
+        with c_sync_b2:
+            if st.button("⚡ Reset hệ thống", key="reset_tab_tech", help="Xóa bộ nhớ tạm, quét lại toàn bộ dữ liệu"):
+                st.cache_data.clear()
+                st.cache_resource.clear()
+                if knowledge_agent:
+                    knowledge_agent.scan_and_sync_drive_files()
+                st.toast("⚡ ĐÃ RESET TOÀN BỘ HỆ THỐNG!")
                 st.rerun()
 
         up_col1, up_col2 = st.columns([6, 6])
@@ -1076,50 +1098,76 @@ with tab_tech:
             </div>
             """, unsafe_allow_html=True)
 
+            st.markdown("#### ✏️ Chỉnh Sửa Trực Tiếp & AI Tự Học (Self-Learning)")
+            st.markdown("""
+            <div style='background: #0b1120; border: 1px solid #1e293b; border-left: 3px solid #10b981; padding: 8px 12px; border-radius: 6px; font-size: 11.5px; color: #94a3b8; margin-bottom: 12px;'>
+              🧠 <strong>Cơ chế tự học tức thì:</strong> Khi bạn sửa bất kỳ trường nào dưới đây, AI sẽ ghi nhận ngay vào bộ nhớ <code>feedback_memory.json</code> để tự động áp dụng chuẩn hóa cho các lần bóc tách tiếp theo!
+            </div>
+            """, unsafe_allow_html=True)
+
             with st.form(key=f"edit_form_{p.get('sku')}"):
-                edit_name_vi = st.text_input("Tên sản phẩm (Tiếng Việt):", value=p.get("product_name") or "")
-                edit_name_en = st.text_input("Tên sản phẩm (Tiếng Anh):", value=p.get("product_name_en") or "")
-                edit_unit = st.text_input("Đơn vị tính:", value=p.get("unit") or "cuốn")
-                edit_desc = st.text_area("Mô tả kỹ thuật:", value=p.get("description") or "", height=80)
+                col_ef1, col_ef2 = st.columns(2)
+                with col_ef1:
+                    edit_name_vi = st.text_input("Tên sản phẩm (Tiếng Việt):", value=p.get("product_name") or "")
+                    edit_unit = st.text_input("Đơn vị tính:", value=p.get("unit") or "cuốn")
+                    edit_vendor = st.text_input("Hãng / Nhà sản xuất:", value=p.get("brand") or p.get("brand_evidence") or "AATCC (Hoa Kỳ)")
+                with col_ef2:
+                    edit_name_en = st.text_input("Tên sản phẩm (Tiếng Anh):", value=p.get("product_name_en") or "")
+                    edit_status = st.selectbox("Trạng thái thẩm định:", ["EXTRACTED_UNVERIFIED", "APPROVED", "REJECTED"], index=["EXTRACTED_UNVERIFIED", "APPROVED", "REJECTED"].index(p.get("status", "EXTRACTED_UNVERIFIED")))
+                    edit_page_str = st.text_input("Trang nguồn tài liệu:", value=str(p.get("source_page") or page_num))
+
+                edit_desc = st.text_area("Mô tả kỹ thuật & Thông số chi tiết:", value=p.get("description") or "", height=90)
 
                 col_btn1, col_btn2 = st.columns(2)
                 with col_btn1:
-                    save_corrections = st.form_submit_button("💾 LƯU & HUẤN LUYỆN AI (SELF-LEARNING)")
+                    save_corrections = st.form_submit_button("💾 LƯU & HUẤN LUYỆN AI (SELF-LEARNING)", use_container_width=True)
                 with col_btn2:
-                    approve_btn = st.form_submit_button("✅ PHÊ DUYỆT SẢN PHẨM (APPROVE)")
+                    approve_btn = st.form_submit_button("✅ PHÊ DUYỆT SẢN PHẨM (APPROVE)", use_container_width=True)
 
-                if save_corrections:
+                if save_corrections or approve_btn:
+                    learned_changes = []
                     if edit_name_vi != p.get("product_name"):
                         learning_engine.record_correction(p.get("sku"), "product_name", p.get("product_name"), edit_name_vi, f"Trang {page_num}")
                         p["product_name"] = edit_name_vi
+                        learned_changes.append(f"Tên tiếng Việt ➔ '{edit_name_vi}'")
+                    if edit_name_en != p.get("product_name_en"):
+                        learning_engine.record_correction(p.get("sku"), "product_name_en", p.get("product_name_en"), edit_name_en, f"Trang {page_num}")
+                        p["product_name_en"] = edit_name_en
+                        learned_changes.append(f"Tên tiếng Anh ➔ '{edit_name_en}'")
                     if edit_unit != p.get("unit"):
                         learning_engine.record_correction(p.get("sku"), "unit", p.get("unit"), edit_unit, f"Trang {page_num}")
                         p["unit"] = edit_unit
+                        learned_changes.append(f"Đơn vị tính ➔ '{edit_unit}'")
+                    if edit_vendor != (p.get("brand") or p.get("brand_evidence")):
+                        learning_engine.record_correction(p.get("sku"), "brand", p.get("brand") or "", edit_vendor, f"Trang {page_num}")
+                        p["brand"] = edit_vendor
+                        p["brand_evidence"] = edit_vendor
+                        learned_changes.append(f"Hãng ➔ '{edit_vendor}'")
                     if edit_desc != p.get("description"):
                         learning_engine.record_correction(p.get("sku"), "description", p.get("description"), edit_desc, f"Trang {page_num}")
                         p["description"] = edit_desc
+                        learned_changes.append("Mô tả kỹ thuật")
+
+                    p["source_page"] = edit_page_str
+                    if approve_btn:
+                        p["status"] = "APPROVED"
+                    else:
+                        p["status"] = edit_status
 
                     operations_agent.update_product_status_in_sheet(p.get("sku"), p.get("status"), f"Đã học chỉnh sửa từ {st.session_state.username}")
                     with open(cache_file, "w", encoding="utf-8") as f:
                         json.dump(products, f, ensure_ascii=False, indent=2)
-                    st.success("🧠 Đã nạp thành công vào bộ nhớ Few-shot Learning!")
-                    st.rerun()
 
-                if approve_btn:
-                    p["status"] = "APPROVED"
-                    p["product_name"] = edit_name_vi
-                    p["product_name_en"] = edit_name_en
-                    p["unit"] = edit_unit
-                    p["description"] = edit_desc
-                    operations_agent.update_product_status_in_sheet(p.get("sku"), "APPROVED", f"Đã duyệt bởi {st.session_state.username}")
-                    with open(cache_file, "w", encoding="utf-8") as f:
-                        json.dump(products, f, ensure_ascii=False, indent=2)
-                    st.success(f"🎉 ĐÃ DUYỆT THÀNH CÔNG SKU: {p.get('sku')} -> Sẵn sàng đồng bộ ẩn lên Haravan!")
+                    if learned_changes:
+                        st.success(f"🧠 AI đã tự học {len(learned_changes)} quy tắc: " + ", ".join(learned_changes))
+                    else:
+                        st.success("✓ Đã lưu thông tin sản phẩm thành công!")
                     st.rerun()
 
             with st.expander("👁️ Bản Xem Trước HTML 7 Khối Chuẩn Haravan (Live Preview)", expanded=True):
+                st.caption("Khung xem trước chuẩn giao diện Website Haravan / bistextile.com với độ tương phản cao, chữ sắc nét:")
                 html_code = technical_agent.build_7_block_html(p)
-                st.components.v1.html(html_code, height=480, scrolling=True)
+                components.html(html_code, height=560, scrolling=True)
 
 
 # ── TAB 2: PHÒNG NGHIÊN CỨU SEO & MARKETING ──────────────────────────────────

@@ -242,77 +242,85 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
         }
 
     def build_7_block_html(self, record: dict) -> str:
-        """Generate standard BIS 7-block product description HTML."""
+        """Generate standard BIS 7-block product description HTML with high contrast & pristine styling."""
         title_vi = record.get("product_name") or ""
         title_en = record.get("product_name_en") or ""
         sku = record.get("sku") or ""
         desc = record.get("description") or ""
-        vendor = record.get("brand_evidence") or "AATCC (Hoa Kỳ)"
+        vendor = record.get("brand") or record.get("brand_evidence") or "AATCC (Hoa Kỳ)"
         unit = record.get("unit") or "cuốn"
+        source_p = record.get("source_page") or "1"
 
-        html = f"""<div class="bis-product-description" style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #1e293b;">
-  <!-- KHỐI 1: Tên sản phẩm tiếng Việt Bold 18px -->
-  <h1 style="font-size: 18px; font-weight: bold; color: #1e293b; margin-bottom: 4px;">{title_vi}</h1>
+        html = f"""<div class="bis-product-card" style="background-color: #ffffff !important; color: #1e293b !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; padding: 24px; border-radius: 12px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 100%; box-sizing: border-box;">
 
-  <!-- KHỐI 2: Tên sản phẩm tiếng Anh Bold 16px -->
-  <h2 style="font-size: 16px; font-weight: bold; color: #475569; margin-top: 0; margin-bottom: 10px;">{title_en}</h2>
+  <!-- KHỐI 1: Tên sản phẩm tiếng Việt Bold 20px -->
+  <h1 style="font-size: 20px; font-weight: 800; color: #0f172a !important; margin: 0 0 6px 0; line-height: 1.3;">
+    {title_vi}
+  </h1>
+
+  <!-- KHỐI 2: Tên sản phẩm tiếng Anh Bold 15px -->
+  <h2 style="font-size: 15px; font-weight: 700; color: #0284c7 !important; margin: 0 0 14px 0; line-height: 1.4;">
+    {title_en}
+  </h2>
   
   <!-- KHỐI 3: Hãng ban hành, vai trò, xuất xứ -->
-  <div style="font-size: 13px; color: #334155; padding: 6px 12px; background: #f8fafc; border-radius: 6px; margin-bottom: 12px; border: 1px solid #e2e8f0;">
-    <strong>Tổ chức / Hãng:</strong> {vendor} &bull; <strong>Đơn vị phân phối:</strong> BIS Textile Việt Nam
+  <div style="font-size: 13px; color: #1e293b !important; padding: 8px 14px; background: #f0f9ff !important; border-left: 4px solid #0284c7; border-radius: 6px; margin-bottom: 16px; border: 1px solid #bae6fd;">
+    <strong>Tổ chức / Hãng:</strong> <span style="color: #0369a1; font-weight: 700;">{vendor}</span> &bull; <strong>Đơn vị phân phối:</strong> <span style="color: #0f172a; font-weight: 600;">BIS Textile Việt Nam</span>
   </div>
 
   <!-- KHỐI 4: Giới thiệu sản phẩm -->
-  <div style="font-size: 13px; color: #1e293b; margin-bottom: 14px; text-align: justify;">
-    <p>{desc}</p>
+  <div style="font-size: 13.5px; color: #334155 !important; margin-bottom: 18px; text-align: justify; line-height: 1.7;">
+    <p style="margin: 0;">{desc}</p>
   </div>
 
   <!-- KHỐI 5: Đặc điểm nổi bật -->
-  <div style="margin-bottom: 14px;">
-    <div style="font-weight: bold; font-size: 14px; margin-bottom: 6px; color: #0f172a;">Đặc điểm nổi bật:</div>
-    <ul style="padding-left: 20px; margin: 0; list-style-type: disc; color: #334155; font-size: 13px;">
-      <li style="margin-bottom: 4px;">Tiêu chuẩn thử nghiệm chính hãng được chuẩn hóa áp dụng toàn cầu trong ngành dệt may.</li>
-      <li style="margin-bottom: 4px;">Đầy đủ tài liệu hướng dẫn và quy trình thực hành phòng lab QA/QC.</li>
-      <li style="margin-bottom: 4px;">Cung cấp chính ngạch bởi BIS Textile kèm hỗ trợ kỹ thuật chuyên sâu.</li>
+  <div style="margin-bottom: 18px;">
+    <div style="font-weight: 800; font-size: 14px; margin-bottom: 8px; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.02em;">
+      ✨ Đặc điểm nổi bật:
+    </div>
+    <ul style="padding-left: 20px; margin: 0; color: #334155 !important; font-size: 13px; line-height: 1.7;">
+      <li style="margin-bottom: 6px;">Tiêu chuẩn thử nghiệm chính hãng được chuẩn hóa áp dụng toàn cầu trong ngành dệt may.</li>
+      <li style="margin-bottom: 6px;">Đầy đủ tài liệu hướng dẫn và quy trình thực hành phòng lab QA/QC.</li>
+      <li style="margin-bottom: 6px;">Cung cấp chính ngạch bởi BIS Textile kèm hỗ trợ kỹ thuật chuyên sâu.</li>
     </ul>
   </div>
 
   <!-- KHỐI 6: Bảng thông số kỹ thuật 2 cột chuẩn 39%-61% -->
-  <div style="margin-bottom: 16px;">
-    <div style="font-weight: bold; font-size: 14px; margin-bottom: 6px; color: #0f172a;">Thông số kỹ thuật chính:</div>
-    <table style="width: 100%; border-collapse: collapse; margin-top: 6px;">
+  <div style="margin-bottom: 20px;">
+    <div style="font-weight: 800; font-size: 14px; margin-bottom: 8px; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.02em;">
+      ⚙️ Thông số kỹ thuật chính:
+    </div>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 6px; border: 1px solid #cbd5e1;">
       <tbody>
-        <tr>
-          <td style="width: 39%; background: #f8fafc; font-weight: 600; border: 1px solid #e2e8f0; padding: 8px 12px; font-size: 13px;">Mã sản phẩm (SKU)</td>
-          <td style="width: 61%; border: 1px solid #e2e8f0; padding: 8px 12px; font-size: 13px;">{sku}</td>
+        <tr style="border-bottom: 1px solid #e2e8f0;">
+          <td style="width: 39%; background: #f8fafc !important; font-weight: 700; color: #0f172a !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">Mã sản phẩm (SKU)</td>
+          <td style="width: 61%; background: #ffffff !important; font-weight: 700; color: #0284c7 !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px; font-family: monospace;">{sku}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #e2e8f0;">
+          <td style="width: 39%; background: #f8fafc !important; font-weight: 700; color: #0f172a !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">Đơn vị tính</td>
+          <td style="width: 61%; background: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">{unit}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #e2e8f0;">
+          <td style="width: 39%; background: #f8fafc !important; font-weight: 700; color: #0f172a !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">Phạm vi áp dụng</td>
+          <td style="width: 61%; background: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">Phương pháp kiểm nghiệm dệt may quốc tế</td>
         </tr>
         <tr>
-          <td style="width: 39%; background: #f8fafc; font-weight: 600; border: 1px solid #e2e8f0; padding: 8px 12px; font-size: 13px;">Đơn vị tính</td>
-          <td style="width: 61%; border: 1px solid #e2e8f0; padding: 8px 12px; font-size: 13px;">{unit}</td>
-        </tr>
-        <tr>
-          <td style="width: 39%; background: #f8fafc; font-weight: 600; border: 1px solid #e2e8f0; padding: 8px 12px; font-size: 13px;">Phạm vi áp dụng</td>
-          <td style="width: 61%; border: 1px solid #e2e8f0; padding: 8px 12px; font-size: 13px;">Phương pháp kiểm nghiệm dệt may quốc tế</td>
-        </tr>
-        <tr>
-          <td style="width: 39%; background: #f8fafc; font-weight: 600; border: 1px solid #e2e8f0; padding: 8px 12px; font-size: 13px;">Trang nguồn tài liệu</td>
-          <td style="width: 61%; border: 1px solid #e2e8f0; padding: 8px 12px; font-size: 13px;">Trang {record.get('source_page', '1')}</td>
+          <td style="width: 39%; background: #f8fafc !important; font-weight: 700; color: #0f172a !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">Trang nguồn tài liệu</td>
+          <td style="width: 61%; background: #ffffff !important; color: #64748b !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">Trang {source_p} trong Catalogue</td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <!-- KHỐI 7: Tài liệu & Sản phẩm liên quan (Hiển thị tên đầy đủ, nhấp mở trang thật) -->
+  <!-- KHỐI 7: Tài liệu & Tiêu chuẩn liên quan -->
   <div style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed #cbd5e1;">
-    <div style="font-weight: bold; font-size: 13px; color: #0f172a; margin-bottom: 8px;">Tài liệu & Tiêu chuẩn liên quan:</div>
+    <div style="font-weight: 800; font-size: 13px; color: #0f172a !important; margin-bottom: 8px;">
+      🔗 Tài liệu & Tiêu chuẩn liên quan:
+    </div>
     <div style="display: flex; flex-direction: column; gap: 8px;">
-      <a href="https://bistextile.com/search?q={sku}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 500;">
+      <a href="https://bistextile.com/search?q={sku}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: space-between; padding: 9px 14px; background: #f8fafc !important; color: #0369a1 !important; border: 1px solid #cbd5e1; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">
         <span>📄 Tra cứu sản phẩm mã {sku} trên cổng BIS Textile</span>
-        <span style="font-size: 11px; color: #0284c7; background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #e0f2fe;">Mở trang ↗</span>
-      </a>
-      <a href="https://bistextile.com/products/sach-textile-coloration-for-the-retail-supply-chain-09616a" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 500;">
-        <span>📄 Sách nhuộm màu hàng dệt may cho chuỗi cung ứng bán lẻ AATCC 09616A</span>
-        <span style="font-size: 11px; color: #0284c7; background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #e0f2fe;">Mở trang ↗</span>
+        <span style="font-size: 11px; color: #0284c7; background: #fff; padding: 2px 8px; border-radius: 4px; border: 1px solid #bae6fd;">Mở trang ↗</span>
       </a>
     </div>
   </div>
