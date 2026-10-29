@@ -1224,6 +1224,31 @@
       input.value = '';
       playBeep(840, 0.15);
     }
+
+    // Cầu nối tương thích nhận lệnh từ Streamlit / Python
+    window.updateAgentStatus = function(agentKey, state, message) {
+      console.log("Agent status update received:", agentKey, state, message);
+      if (agentKey === 'all') {
+        if (state === 'MEETING') setOfficeMode('meeting');
+        else if (state === 'BREAK') setOfficeMode('coffee');
+        else if (state === 'WORKING') setOfficeMode('work');
+        else setOfficeMode('wander');
+        return;
+      }
+      const char = characters[agentKey];
+      if (!char) return;
+      selectChar(agentKey);
+      if (message) setBubbleText(agentKey, message);
+      if (state === 'WORKING') {
+        char.targetPos.set(char.data.deskPos.x, 0, char.data.deskPos.z);
+      } else if (state === 'BREAK') {
+        char.targetPos.set(char.data.coffeePos.x, 0, char.data.coffeePos.z);
+      } else if (state === 'MEETING' || state === 'HANDOFF') {
+        char.targetPos.set(char.data.meetingPos.x, 0, char.data.meetingPos.z);
+      }
+      charSpeak(agentKey);
+    };
+
   </script>
 </body>
 </html>

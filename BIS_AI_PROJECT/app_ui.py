@@ -808,6 +808,44 @@ with tab_lego:
 
 # ── TAB 2: PHÒNG KỸ THUẬT (BÀN DUYỆT 2 CỘT) ──────────────────────────────────
 with tab_tech:
+    with st.expander("📥 1. TẢI LÊN FILE CATALOGUE PDF MỚI & THIẾT LẬP BÓC TÁCH", expanded=(not bool(products))):
+        up_col1, up_col2 = st.columns([7, 5])
+        with up_col1:
+            uploaded_catalog = st.file_uploader(
+                "Kéo thả hoặc chọn file Catalogue (.pdf) cần phân tích:",
+                type=["pdf"],
+                key="catalog_pdf_uploader"
+            )
+            if uploaded_catalog is not None:
+                gdrive_cat_dir = PROJECT_DIR / "Google_Drive_Storage" / "1_Catalogues"
+                gdrive_cat_dir.mkdir(parents=True, exist_ok=True)
+                save_path = gdrive_cat_dir / uploaded_catalog.name
+                with open(save_path, "wb") as f:
+                    f.write(uploaded_catalog.getvalue())
+                with open(pdf_file, "wb") as f:
+                    f.write(uploaded_catalog.getvalue())
+                st.success(f"✓ Đã lưu file `{uploaded_catalog.name}` vào Google Drive Storage (1_Catalogues)!")
+                st.rerun()
+
+        with up_col2:
+            if pdf_file.exists():
+                try:
+                    doc = fitz.open(str(pdf_file))
+                    total_pages = len(doc)
+                    doc.close()
+                    st.markdown(f"""
+                    <div style='background: #090e1a; border: 1px solid #1e293b; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
+                      <strong>File hiện tại:</strong> <code>{pdf_file.name}</code><br>
+                      <strong>Tổng số trang:</strong> <span style='color: #38bdf8; font-weight: 700;'>{total_pages} trang</span><br>
+                      <strong>Vị trí lưu:</strong> <code>Google_Drive_Storage/1_Catalogues/</code>
+                    </div>
+                    """, unsafe_allow_html=True)
+                except Exception as e:
+                    st.error(f"Lỗi đọc PDF: {e}")
+
+            if st.button("🚀 BẮT ĐẦU PHÂN TÍCH CATALOGUE BẰNG AI", type="primary", key="btn_run_extract_ui"):
+                st.info("Agent_Technical đang quét các trang PDF và thẩm tra 6 bước B1-B6...")
+
     if not products:
         st.warning("Chưa có dữ liệu sản phẩm trong cache. Vui lòng bấm 'Khởi động trích xuất' bên dưới.")
     else:
