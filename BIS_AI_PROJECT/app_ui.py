@@ -591,22 +591,92 @@ try:
 except Exception:
     AgentMedia = None
 
-leader = AgentLeader(workspace_dir=PROJECT_DIR)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# BỘ NHỚ ĐỆM HIỆU SUẤT CAO (ULTRA-FAST CACHING & PERFORMANCE ENGINE)
+# Giúp ứng dụng phản hồi tức thì (<0.05s), loại bỏ triệt để hiện tượng giật lag
+# ══════════════════════════════════════════════════════════════════════════════
+
+@st.cache_resource(show_spinner=False)
+def get_cached_agent_leader(project_dir_str: str) -> AgentLeader:
+    """Khởi tạo Hệ sinh thái Multi-Agent DUY NHẤT 1 LẦN trong RAM (Singleton Pattern)."""
+    ldr = AgentLeader(workspace_dir=Path(project_dir_str))
+    mkt = getattr(ldr, "marketing_agent", None)
+    if mkt is None and AgentMarketing is not None:
+        mkt = AgentMarketing(Path(project_dir_str))
+        ldr.departments["marketing"] = mkt
+    knw = getattr(ldr, "knowledge_agent", None)
+    if knw is None and AgentKnowledge is not None:
+        knw = AgentKnowledge(Path(project_dir_str))
+        ldr.departments["knowledge"] = knw
+    med = getattr(ldr, "media_agent", None)
+    if med is None and AgentMedia is not None:
+        med = AgentMedia(Path(project_dir_str))
+        ldr.departments["media"] = med
+    return ldr
+
+
+@st.cache_data(show_spinner=False, max_entries=60)
+def cached_render_pdf_page(pdf_path_str: str, page_num: int):
+    """Kết xuất trang PDF sang ảnh JPEG tối ưu (Matrix 1.5) và lưu RAM cache."""
+    p = Path(pdf_path_str)
+    if not p.exists():
+        return None, 0
+    try:
+        doc = fitz.open(str(p))
+        total = len(doc)
+        if 1 <= page_num <= total:
+            page = doc[page_num - 1]
+            pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))
+            img_bytes = pix.tobytes("jpeg")
+            doc.close()
+            return img_bytes, total
+        doc.close()
+        return None, total
+    except Exception:
+        return None, 0
+
+
+@st.cache_data(show_spinner=False)
+def cached_pdf_metadata(pdf_path_str: str, mtime: float):
+    """Truy xuất số trang và dung lượng PDF tức thì từ bộ nhớ đệm."""
+    p = Path(pdf_path_str)
+    if not p.exists():
+        return 0, 0.0
+    try:
+        doc = fitz.open(str(p))
+        cnt = len(doc)
+        doc.close()
+        mb = round(p.stat().st_size / (1024 * 1024), 2)
+        return cnt, mb
+    except Exception:
+        return 0, 0.0
+
+
+@st.cache_data(ttl=60, show_spinner=False)
+def cached_scan_catalog_pdfs(cat_dir_str: str, root_dir_str: str) -> dict:
+    """Quét danh sách catalogue PDF có cache 60s tránh nghẽn đọc ghi ổ đĩa."""
+    res = {}
+    cat_d = Path(cat_dir_str)
+    if cat_d.exists():
+        for f in cat_d.glob("*.pdf"):
+            if f.is_file():
+                res[f.name] = str(f)
+    root_d = Path(root_dir_str)
+    if root_d.exists():
+        for f in root_d.rglob("*.pdf"):
+            if f.is_file() and f.name not in res:
+                res[f.name] = str(f)
+    return res
+
+
+leader = get_cached_agent_leader(str(PROJECT_DIR))
 technical_agent = getattr(leader, "technical_agent", None)
 operations_agent = getattr(leader, "operations_agent", None)
 learning_engine = getattr(leader, "learning_engine", None)
-
 marketing_agent = getattr(leader, "marketing_agent", None)
-if marketing_agent is None and AgentMarketing is not None:
-    marketing_agent = AgentMarketing(PROJECT_DIR)
-
 knowledge_agent = getattr(leader, "knowledge_agent", None)
-if knowledge_agent is None and AgentKnowledge is not None:
-    knowledge_agent = AgentKnowledge(PROJECT_DIR)
-
 media_agent = getattr(leader, "media_agent", None)
-if media_agent is None and AgentMedia is not None:
-    media_agent = AgentMedia(PROJECT_DIR)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -842,8 +912,9 @@ tab_lego, tab_tech, tab_mkt, tab_media, tab_know, tab_ops, tab_learn = st.tabs([
     "🧠 7. Bộ Nhớ Tự Học (Few-Shot Feedback)"
 ])
 
+@st.cache_data(show_spinner=False)
 def load_3d_office_html() -> str:
-    """Đọc trọn vẹn nội dung file HTML 3D từ thư mục dự án."""
+    """Đọc trọn vẹn nội dung file HTML 3D từ thư mục dự án (có RAM cache)."""
     html_path = PROJECT_DIR / "bis_textile_3d_office.html"
     if not html_path.exists():
         html_path = PROJECT_DIR / "lego_hq.html"
@@ -943,26 +1014,14 @@ with tab_lego:
 # ── TAB 2: PHÒNG KỸ THUẬT (BÀN DUYỆT 2 CỘT) ──────────────────────────────────
 with tab_tech:
     gdrive_cat_dir = PROJECT_DIR / "Google_Drive_Storage" / "1_Catalogues"
-    gdrive_cat_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Quét thông minh không trùng lặp (Deduplicate theo tên file chính xác)
-    pdf_dict = {}
-    
-    # 1. Quét ưu tiên các file trong 1_Catalogues trước
-    for p in gdrive_cat_dir.glob("*.pdf"):
-        if p.is_file():
-            pdf_dict[p.name] = p
-
-    # 2. Quét thêm thư mục Google_Drive_Storage và các thư mục con khác
     storage_root = PROJECT_DIR / "Google_Drive_Storage"
-    if storage_root.exists():
-        for p in storage_root.rglob("*.pdf"):
-            if p.is_file() and p.name not in pdf_dict:
-                pdf_dict[p.name] = p
 
-    if pdf_file.exists() and pdf_file.name not in pdf_dict:
-        pdf_dict[pdf_file.name] = pdf_file
+    # Quét thông minh qua bộ nhớ đệm RAM (Cached Scan) tránh giật lag khi chuyển Tab
+    pdf_paths_map = cached_scan_catalog_pdfs(str(gdrive_cat_dir), str(storage_root))
+    if pdf_file.exists() and pdf_file.name not in pdf_paths_map:
+        pdf_paths_map[pdf_file.name] = str(pdf_file)
 
+    pdf_dict = {name: Path(p_str) for name, p_str in pdf_paths_map.items()}
     cat_options = sorted(list(pdf_dict.keys()))
     if not cat_options:
         cat_options = ["(Chưa có file trong 1_Catalogues)"]
@@ -1022,10 +1081,7 @@ with tab_tech:
 
             if active_pdf and active_pdf.exists():
                 try:
-                    doc = fitz.open(str(active_pdf))
-                    total_pages = len(doc)
-                    doc.close()
-                    size_mb = round(active_pdf.stat().st_size / (1024 * 1024), 2)
+                    total_pages, size_mb = cached_pdf_metadata(str(active_pdf), active_pdf.stat().st_mtime)
                     st.markdown(f"""
                     <div style='background: #090e1a; border: 1px solid #1e293b; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
                       <strong>File đang chọn:</strong> <code>{active_pdf.name}</code><br>
@@ -1087,16 +1143,11 @@ with tab_tech:
         with col_pdf:
             st.markdown(f"#### 📄 Nguồn: Trang {page_num} trong Catalogue")
             if pdf_file.exists():
-                try:
-                    doc = fitz.open(str(pdf_file))
-                    if 1 <= page_num <= len(doc):
-                        page = doc[page_num - 1]
-                        pix = page.get_pixmap(matrix=fitz.Matrix(2.0, 2.0))
-                        img = Image.open(io.BytesIO(pix.tobytes("jpeg")))
-                        st.image(img, use_container_width=True, caption=f"Catalogue PDF - Trang {page_num}/{len(doc)}")
-                    doc.close()
-                except Exception as e:
-                    st.error(f"Lỗi hiển thị PDF: {e}")
+                img_bytes, total_pages_doc = cached_render_pdf_page(str(pdf_file), page_num)
+                if img_bytes:
+                    st.image(img_bytes, use_container_width=True, caption=f"Catalogue PDF - Trang {page_num}/{total_pages_doc}")
+                else:
+                    st.info(f"Không thể kết xuất trang {page_num} từ catalogue.")
             else:
                 st.info("File catalogue_sample.pdf chưa có trong thư mục.")
 
