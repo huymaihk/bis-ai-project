@@ -562,18 +562,18 @@ if "audit_logs" not in st.session_state:
         {"time": "15:15:30", "type": "PLUG", "text": "Kết nối thành công Agent_Marketing, Agent_Media & Agent_Knowledge."},
     ]
 
-# Nạp dữ liệu sản phẩm
+# Nạp dữ liệu sản phẩm (Luôn ưu tiên đọc đồng bộ từ file cache trên đĩa để đảm bảo dữ liệu mới nhất)
 cache_file = PROJECT_DIR / "extracted_products_cache.json"
 pdf_file = PROJECT_DIR / "catalogue_sample.pdf"
 products = []
-if "cached_products" in st.session_state and st.session_state["cached_products"]:
-    products = st.session_state["cached_products"]
-elif cache_file.exists():
+if cache_file.exists():
     try:
         products = json.load(open(cache_file, encoding="utf-8"))
         st.session_state["cached_products"] = products
     except Exception:
         pass
+if not products and "cached_products" in st.session_state and st.session_state["cached_products"]:
+    products = st.session_state["cached_products"]
 
 # Khởi tạo an toàn (Safe Fallback nếu trên GitHub chưa kịp upload đủ các file phòng ban mới)
 try:
@@ -767,19 +767,18 @@ with col_top_right:
             if knowledge_agent:
                 knowledge_agent.scan_and_sync_drive_files()
             if operations_agent:
-                dedup_res = operations_agent.check_and_deduplicate_sheets(products)
+                dedup_res = operations_agent.scan_live_haravan_and_web(products)
                 clean_list = dedup_res.get("clean_products", [])
                 if clean_list:
                     products = clean_list
                     st.session_state["cached_products"] = products
-                web_locked = dedup_res.get("website_duplicates_locked", 0)
-                sheet_removed = dedup_res.get("sheet_duplicates_removed", 0)
+                web_locked = dedup_res.get("matched_count", 0)
                 st.session_state.audit_logs.append({
                     "time": datetime.now().strftime("%H:%M:%S"),
-                    "type": "RESET_DEDUP",
-                    "text": f"Reset hệ thống: Đã đối soát Google Sheets & bistextile.com (Khóa {web_locked} mã trùng web, lọc {sheet_removed} dòng trùng Sheet)."
+                    "type": "RESET_HARAVAN",
+                    "text": f"Reset hệ thống: Đã quét Live Haravan ({dedup_res.get('total_haravan', 0)} SP) -> Khóa {web_locked} mã trùng, {dedup_res.get('unmatched_count', 0)} SP mới."
                 })
-                st.toast(f"⚡ ĐÃ RESET & ĐỐI SOÁT GOOGLE SHEETS! {len(products)} SP sạch, đã khóa {web_locked} mã trùng web!", icon="🛡️")
+                st.toast(f"⚡ ĐÃ RESET & QUÉT LIVE HARAVAN! {len(products)} SP sạch, đã khóa {web_locked} mã trùng web!", icon="🛡️")
             else:
                 st.toast(f"⚡ ĐÃ RESET TOÀN BỘ HỆ THỐNG! ({len(products)} Sản phẩm)", icon="🚀")
             st.rerun()
@@ -1034,31 +1033,42 @@ with tab_tech:
         cat_options = ["(Chưa có file trong 1_Catalogues)"]
 
     with st.expander("📥 1. THIẾT LẬP FILE CATALOGUE PDF & QUÉT GOOGLE DRIVE", expanded=(not bool(products))):
-        c_sync_info, c_sync_b1, c_sync_b2 = st.columns([6, 3, 3])
+        c_sync_info, c_sync_b1, c_sync_b2, c_sync_b3 = st.columns([4.2, 2.6, 2.6, 2.6])
         with c_sync_info:
-            st.markdown("💡 **Cơ chế tự động:** Bạn có thể kéo thả trực tiếp file PDF Catalogue vào thư mục Google Drive `Google_Drive_Storage/1_Catalogues/` trên máy tính hoặc tải qua ô bên dưới.")
+            st.markdown("💡 **Cơ chế tự động:** Bạn có thể kéo thả trực tiếp file PDF Catalogue vào thư mục Google Drive `Google_Drive_Storage/1_Catalogues/` hoặc tải qua ô bên dưới.")
         with c_sync_b1:
-            if st.button("🔄 Quét Google Drive", key="scan_gdrive_tab_tech", help="Quét nhanh các file Catalogue và Background vừa bỏ vào Google Drive"):
+            if st.button("🔄 Quét G-Drive", key="scan_gdrive_tab_tech", help="Quét nhanh các file Catalogue và Background vừa bỏ vào Google Drive"):
                 if knowledge_agent:
                     scan_res = knowledge_agent.scan_and_sync_drive_files()
                     st.success(f"✓ Đã quét Google Drive! Tìm thấy {len(scan_res.get('catalogues', []))} catalogue, {len(scan_res.get('backgrounds', []))} ảnh nền.")
                 st.rerun()
         with c_sync_b2:
-            if st.button("⚡ Reset hệ thống", key="reset_tab_tech", help="Xóa bộ nhớ tạm, quét lại toàn bộ Google Drive và đối soát lọc trùng Google Sheets"):
+            if st.button("⚡ Reset hệ thống", key="reset_tab_tech", help="Xóa bộ nhớ tạm, quét lại toàn bộ Google Drive và đối soát lọc trùng Live Haravan & bistextile.com"):
                 st.cache_data.clear()
                 st.cache_resource.clear()
                 if knowledge_agent:
                     knowledge_agent.scan_and_sync_drive_files()
                 if operations_agent:
-                    dedup_res = operations_agent.check_and_deduplicate_sheets(products)
+                    dedup_res = operations_agent.scan_live_haravan_and_web(products)
                     clean_list = dedup_res.get("clean_products", [])
                     if clean_list:
                         products = clean_list
                         st.session_state["cached_products"] = products
-                    st.toast(f"⚡ ĐÃ RESET & ĐỐI SOÁT GOOGLE SHEETS! Khóa {dedup_res.get('website_duplicates_locked', 0)} trùng web, lọc {dedup_res.get('sheet_duplicates_removed', 0)} trùng Sheet!", icon="🛡️")
+                    st.toast(f"⚡ ĐÃ RESET & QUÉT HARAVAN! {len(products)} SP sạch, đã khóa {dedup_res.get('matched_count', 0)} mã trùng!", icon="🛡️")
                 else:
                     st.toast("⚡ ĐÃ RESET TOÀN BỘ HỆ THỐNG!")
                 st.rerun()
+        with c_sync_b3:
+            if st.button("🌐 Quét Live Haravan", key="scan_live_haravan_tech", help="Quét trực tiếp Haravan API (Đã đăng / Đã ẩn) và bistextile.com/collections/all để cập nhật chống trùng"):
+                if operations_agent:
+                    with st.spinner("Đang quét trực tiếp Haravan API & Website bistextile.com..."):
+                        h_res = operations_agent.scan_live_haravan_and_web(products)
+                        clean_list = h_res.get("clean_products", [])
+                        if clean_list:
+                            products = clean_list
+                            st.session_state["cached_products"] = products
+                        st.toast(f"✓ Quét Haravan thành công: {h_res.get('total_haravan', 0)} SP trên sàn, {h_res.get('matched_count', 0)} mã trùng đã khóa!", icon="🌐")
+                        st.rerun()
 
         up_col1, up_col2 = st.columns([6, 6])
         with up_col1:
@@ -1139,9 +1149,10 @@ with tab_tech:
 
         # ── 1. BẢNG TỔNG HỢP & TÁCH RIÊNG 2 DANH SÁCH: TRÙNG & KHÔNG TRÙNG ──────────────
         with st.expander(f"📊 BẢNG TỔNG HỢP: TÁCH RIÊNG DANH SÁCH TRÙNG ({len(dups_products)} SP) & KHÔNG TRÙNG ({len(valid_products)} SP)", expanded=False):
-            tab_dup_view, tab_valid_view = st.tabs([
-                f"🚫 1. Danh Sách {len(dups_products)} Sản Phẩm Bị Trùng Web (Đã Khóa Bảo Vệ)",
-                f"✅ 2. Danh Sách {len(valid_products)} Sản Phẩm Hợp Lệ (Mới - Sẵn Sàng Duyệt)"
+            tab_dup_view, tab_valid_view, tab_store_view = st.tabs([
+                f"🚫 1. Danh Sách {len(dups_products)} Sản Phẩm Bị Trùng Trên Sàn (Đã Khóa Bảo Vệ)",
+                f"✅ 2. Danh Sách {len(valid_products)} Sản Phẩm Hợp Lệ (Mới - Sẵn Sàng Duyệt)",
+                "🌐 3. Danh Mục Toàn Bộ Sản Phẩm Đang Có Trên Haravan & bistextile.com"
             ])
             with tab_dup_view:
                 st.markdown("""
@@ -1182,6 +1193,32 @@ with tab_tech:
                     })
                 if valid_table_data:
                     st.dataframe(valid_table_data, use_container_width=True, hide_index=True)
+
+            with tab_store_view:
+                store_file_p = PROJECT_DIR / "bistextile_existing_products.json"
+                store_items = []
+                if store_file_p.exists():
+                    try:
+                        with open(store_file_p, "r", encoding="utf-8") as f_st:
+                            store_items = json.load(f_st)
+                    except Exception:
+                        pass
+                pub_cnt = sum(1 for it in store_items if it.get("published", True))
+                hid_cnt = len(store_items) - pub_cnt
+                st.markdown(f"**Tổng số sản phẩm đang có trên Haravan / bistextile.com:** `{len(store_items)} sản phẩm` (Đã đăng: `{pub_cnt}`, Đã ẩn/Draft: `{hid_cnt}`)")
+                store_display = []
+                for it in store_items:
+                    store_display.append({
+                        "Haravan ID": it.get("id"),
+                        "Tên sản phẩm": it.get("title"),
+                        "Trạng thái": it.get("status_str") or ("ĐÃ ĐĂNG" if it.get("published", True) else "ĐÃ ẨN"),
+                        "Đường dẫn (URL)": it.get("url"),
+                        "SKU biến thể": ", ".join(it.get("variants_skus", []))
+                    })
+                if store_display:
+                    st.dataframe(store_display, use_container_width=True, hide_index=True)
+                else:
+                    st.info("Chưa có dữ liệu sản phẩm sàn. Vui lòng bấm '🌐 Quét Live Haravan' ở mục 1 phía trên.")
 
         st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
 
@@ -1854,7 +1891,7 @@ with tab_ops:
         """)
     with c_dedup_btn:
         st.write("")
-        if st.button("🔍 KIỂM TRA TRÙNG GOOGLE SHEETS NGAY", key="btn_manual_dedup_tab_ops", use_container_width=True):
+        if st.button("🔍 ĐỐI SOÁT GOOGLE SHEETS NGAY", key="btn_manual_dedup_tab_ops", use_container_width=True):
             if operations_agent:
                 with st.spinner("Agent_Operations đang quét đối soát Google Sheets & bistextile.com..."):
                     d_res = operations_agent.check_and_deduplicate_sheets(products)
@@ -1863,6 +1900,16 @@ with tab_ops:
                         products = clean_list
                         st.session_state["cached_products"] = products
                     st.success(f"✓ Đã hoàn tất đối soát! {d_res.get('total_products')} SP hợp lệ, đã khóa {d_res.get('website_duplicates_locked')} mã trùng web, lọc {d_res.get('sheet_duplicates_removed')} dòng trùng trên Sheet.")
+                    st.rerun()
+        if st.button("🌐 QUÉT LIVE HARAVAN & BISTEXTILE.COM", key="btn_live_scan_tab_ops", type="primary", use_container_width=True):
+            if operations_agent:
+                with st.spinner("Đang quét trực tiếp toàn bộ 202 sản phẩm trên Haravan & bistextile.com/collections/all..."):
+                    h_res = operations_agent.scan_live_haravan_and_web(products)
+                    clean_list = h_res.get("clean_products", [])
+                    if clean_list:
+                        products = clean_list
+                        st.session_state["cached_products"] = products
+                    st.success(f"✓ Hoàn tất quét sàn: {h_res.get('total_haravan', 0)} SP trên Haravan ({h_res.get('total_published', 0)} Đã đăng, {h_res.get('total_hidden', 0)} Đã ẩn), đã khóa {h_res.get('matched_count', 0)} mã trùng, {h_res.get('unmatched_count', 0)} SP mới!")
                     st.rerun()
 
     st.markdown("---")

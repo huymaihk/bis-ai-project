@@ -1,786 +1,2228 @@
 [
   {
+    "id": 1077294670,
     "title": "Sách nhuộm màu hàng dệt may cho chuỗi cung ứng bán lẻ AATCC 09616A",
-    "url": "/products/sach-textile-coloration-for-the-retail-supply-chain-09616a"
+    "handle": "sach-textile-coloration-for-the-retail-supply-chain-09616a",
+    "url": "/products/sach-textile-coloration-for-the-retail-supply-chain-09616a",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [
+      "09616A"
+    ],
+    "created_at": "2026-10-27T04:12:34.028Z",
+    "updated_at": "2026-10-28T07:58:56.597Z"
   },
   {
+    "id": 1077283042,
     "title": "Vải Thử Độ Bền Màu Ma Sát AATCC Crock Cloth (Gói 1m)",
-    "url": "/products/vai-thu-do-ben-mau-ma-sat-aatcc-crock-cloth-goi-1m-0101002"
+    "handle": "vai-thu-do-ben-mau-ma-sat-aatcc-crock-cloth-goi-1m-0101002",
+    "url": "/products/vai-thu-do-ben-mau-ma-sat-aatcc-crock-cloth-goi-1m-0101002",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [
+      "0101002"
+    ],
+    "created_at": "2026-10-26T12:45:11.078Z",
+    "updated_at": "2026-10-27T02:58:34.329Z"
   },
   {
+    "id": 1076671211,
     "title": "Chuẩn phai màu cho len xanh AATCC 38611C",
-    "url": "/products/chuan-phai-mau-cho-len-xanh-aatcc-38611c-aatcc"
+    "handle": "chuan-phai-mau-cho-len-xanh-aatcc-38611c-aatcc",
+    "url": "/products/chuan-phai-mau-cho-len-xanh-aatcc-38611c-aatcc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-09-23T07:14:41.75Z",
+    "updated_at": "2026-09-23T07:14:41.75Z"
   },
   {
+    "id": 1076661120,
     "title": "Chuẩn phai màu cho len xanh AATCC 38610C",
-    "url": "/products/chuan-phai-mau-cho-len-xanh-aatcc-38610c-aatcc"
+    "handle": "chuan-phai-mau-cho-len-xanh-aatcc-38610c-aatcc",
+    "url": "/products/chuan-phai-mau-cho-len-xanh-aatcc-38610c-aatcc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-09-22T07:44:32.204Z",
+    "updated_at": "2026-09-22T07:46:05.784Z"
   },
   {
+    "id": 1076652167,
     "title": "Mẫu len xanh chuẩn độ bền ánh sáng AATCC 38362C",
-    "url": "/products/mau-len-xanh-chuan-do-ben-anh-sang-aatcc-38362c-aatcc"
+    "handle": "mau-len-xanh-chuan-do-ben-anh-sang-aatcc-38362c-aatcc",
+    "url": "/products/mau-len-xanh-chuan-do-ben-anh-sang-aatcc-38362c-aatcc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-09-22T02:00:47.566Z",
+    "updated_at": "2026-09-22T02:00:47.566Z"
   },
   {
+    "id": 1076636808,
     "title": "Thang ảnh đánh giá bụi thuốc nhuộm AATCC 58725A",
-    "url": "/products/thang-anh-danh-gia-bui-thuoc-nhuom-aatcc-58725a-aatcc"
+    "handle": "thang-anh-danh-gia-bui-thuoc-nhuom-aatcc-58725a-aatcc",
+    "url": "/products/thang-anh-danh-gia-bui-thuoc-nhuom-aatcc-58725a-aatcc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-09-21T02:49:00.936Z",
+    "updated_at": "2026-09-21T02:49:00.936Z"
   },
   {
+    "id": 1076604823,
     "title": "Thang ảnh đánh giá cặn lọc AATCC 58335A",
-    "url": "/products/thang-anh-danh-gia-can-loc-aatcc-58335a-aatcc"
+    "handle": "thang-anh-danh-gia-can-loc-aatcc-58335a-aatcc",
+    "url": "/products/thang-anh-danh-gia-can-loc-aatcc-58335a-aatcc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-09-18T02:27:26.117Z",
+    "updated_at": "2026-09-18T02:27:26.117Z"
   },
   {
+    "id": 1076604647,
     "title": "Thang ảnh đánh giá thử phun nước AATCC 78387A",
-    "url": "/products/thang-anh-danh-gia-thu-phun-nuoc-aatcc-78387a-aatcc"
+    "handle": "thang-anh-danh-gia-thu-phun-nuoc-aatcc-78387a-aatcc",
+    "url": "/products/thang-anh-danh-gia-thu-phun-nuoc-aatcc-78387a-aatcc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-09-18T02:07:48.901Z",
+    "updated_at": "2026-09-18T02:07:48.901Z"
   },
   {
+    "id": 1076604559,
     "title": "Thang đánh giá khả năng giải phóng vết bẩn AATCC 68379A",
-    "url": "/products/thang-danh-gia-kha-nang-giai-phong-vet-ban-aatcc-68379a-aatcc"
+    "handle": "thang-danh-gia-kha-nang-giai-phong-vet-ban-aatcc-68379a-aatcc",
+    "url": "/products/thang-danh-gia-kha-nang-giai-phong-vet-ban-aatcc-68379a-aatcc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-09-18T02:01:32.425Z",
+    "updated_at": "2026-09-18T02:01:32.425Z"
   },
   {
+    "id": 1076604451,
     "title": "Bộ mẫu 3D đánh giá phục hồi nhăn AATCC 68390A",
-    "url": "/products/bo-mau-3d-danh-gia-phuc-hoi-nhan-aatcc-68390a-aatcc"
+    "handle": "bo-mau-3d-danh-gia-phuc-hoi-nhan-aatcc-68390a-aatcc",
+    "url": "/products/bo-mau-3d-danh-gia-phuc-hoi-nhan-aatcc-68390a-aatcc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-09-18T01:53:28.3Z",
+    "updated_at": "2026-09-18T01:53:28.3Z"
   },
   {
+    "id": 1076604301,
     "title": "Bộ mẫu 3D đánh giá giữ nếp gấp AATCC 68720A",
-    "url": "/products/bo-mau-3d-danh-gia-giu-nep-gap-aatcc-68720a-aatcc"
+    "handle": "bo-mau-3d-danh-gia-giu-nep-gap-aatcc-68720a-aatcc",
+    "url": "/products/bo-mau-3d-danh-gia-giu-nep-gap-aatcc-68720a-aatcc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-09-18T01:34:56.971Z",
+    "updated_at": "2026-09-18T01:34:56.971Z"
   },
   {
+    "id": 1076590084,
     "title": "Thang ảnh đánh giá độ phẳng đường may AATCC 68373A",
-    "url": "/products/thang-anh-danh-gia-do-phang-duong-may-aatcc-68373a-aatcc"
+    "handle": "thang-anh-danh-gia-do-phang-duong-may-aatcc-68373a-aatcc",
+    "url": "/products/thang-anh-danh-gia-do-phang-duong-may-aatcc-68373a-aatcc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-09-17T03:06:44.447Z",
+    "updated_at": "2026-09-17T03:06:44.447Z"
   },
   {
+    "id": 1076589993,
     "title": "Bộ mẫu 3D đánh giá độ phẳng bề mặt AATCC 68353A",
-    "url": "/products/bo-mau-3d-danh-gia-do-phang-be-mat-aatcc-68353a-aatcc"
+    "handle": "bo-mau-3d-danh-gia-do-phang-be-mat-aatcc-68353a-aatcc",
+    "url": "/products/bo-mau-3d-danh-gia-do-phang-be-mat-aatcc-68353a-aatcc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-09-17T02:55:43.396Z",
+    "updated_at": "2026-09-17T02:55:43.396Z"
   },
   {
+    "id": 1076589524,
     "title": "Thang đánh giá vết bẩn Red 40 AATCC 19129A",
-    "url": "/products/thang-danh-gia-vet-ban-red-40-aatcc-19129a-aatcc"
+    "handle": "thang-danh-gia-vet-ban-red-40-aatcc-19129a-aatcc",
+    "url": "/products/thang-danh-gia-vet-ban-red-40-aatcc-19129a-aatcc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-09-17T01:59:43.889Z",
+    "updated_at": "2026-09-17T01:59:43.889Z"
   },
   {
+    "id": 1076589500,
     "title": "Thang chuyển màu 9 cấp AATCC 28347A",
-    "url": "/products/thang-chuyen-mau-9-cap-aatcc-28347a-aatcc"
+    "handle": "thang-chuyen-mau-9-cap-aatcc-28347a-aatcc",
+    "url": "/products/thang-chuyen-mau-9-cap-aatcc-28347a-aatcc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-09-17T01:48:56.081Z",
+    "updated_at": "2026-09-17T01:48:56.081Z"
   },
   {
+    "id": 1076407139,
     "title": "Tủ Soi Màu LED UltraView90 – VeriVide",
-    "url": "/products/buong-soi-mau-led-ultraview90-verivide"
+    "handle": "buong-soi-mau-led-ultraview90-verivide",
+    "url": "/products/buong-soi-mau-led-ultraview90-verivide",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-09-06T08:04:14.989Z",
+    "updated_at": "2026-09-07T01:29:39.621Z"
   },
   {
+    "id": 1076406956,
     "title": "Tủ soi Màu LED UltraView60 – VeriVide",
-    "url": "/products/buong-soi-mau-led-ultraview60-verivide"
+    "handle": "buong-soi-mau-led-ultraview60-verivide",
+    "url": "/products/buong-soi-mau-led-ultraview60-verivide",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-09-06T07:20:26.306Z",
+    "updated_at": "2026-09-07T01:28:58.705Z"
   },
   {
+    "id": 1076318552,
     "title": "Bột Giặt Tiêu Chuẩn AATCC 1993",
-    "url": "/products/bot-giat-chuan-tham-chieu-aatcc-1993"
+    "handle": "bot-giat-chuan-tham-chieu-aatcc-1993",
+    "url": "/products/bot-giat-chuan-tham-chieu-aatcc-1993",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-09-03T03:02:40.91Z",
+    "updated_at": "2026-09-03T07:51:50.935Z"
   },
   {
+    "id": 1076317668,
     "title": "Sách Tiêu Chuẩn Kiểm Nghiệm Dệt May AATCC 2026",
-    "url": "/products/so-tay-tieu-chuan-kiem-nghiem-det-may-aatcc-03026"
+    "handle": "so-tay-tieu-chuan-kiem-nghiem-det-may-aatcc-03026",
+    "url": "/products/so-tay-tieu-chuan-kiem-nghiem-det-may-aatcc-03026",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-09-03T02:10:00.731Z",
+    "updated_at": "2026-09-03T02:10:00.731Z"
   },
   {
+    "id": 1076002906,
     "title": "Bo Mạch Màn Hình LCD 240128G – Electrolux Wascator FOM71 CLS",
-    "url": "/products/bo-mach-man-hinh-lcd-240128g-clarus-control-wascator-fom71-cls"
+    "handle": "bo-mach-man-hinh-lcd-240128g-clarus-control-wascator-fom71-cls",
+    "url": "/products/bo-mach-man-hinh-lcd-240128g-clarus-control-wascator-fom71-cls",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-08-09T12:02:03.523Z",
+    "updated_at": "2026-08-24T09:06:39.639Z"
   },
   {
+    "id": 1074521613,
     "title": "Máy kiểm tra độ thấm khí AIRPRO - JAMES HEAL- Martindale",
-    "url": "/products/may-kiem-tra-do-tham-khi-airpro-james-heal-martindale"
+    "handle": "may-kiem-tra-do-tham-khi-airpro-james-heal-martindale",
+    "url": "/products/may-kiem-tra-do-tham-khi-airpro-james-heal-martindale",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-05-11T02:20:57.959Z",
+    "updated_at": "2026-07-23T08:06:51.29Z"
   },
   {
+    "id": 1074464982,
     "title": "Máy kiểm tra mài mòn và xù lông MINI 2 đầu thử - JAMES HEAL- Martindale",
-    "url": "/products/may-kiem-tra-mai-mon-va-xu-long-2-dau-thu-james-heal-martindale"
+    "handle": "may-kiem-tra-mai-mon-va-xu-long-2-dau-thu-james-heal-martindale",
+    "url": "/products/may-kiem-tra-mai-mon-va-xu-long-2-dau-thu-james-heal-martindale",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-05-08T06:29:27.263Z",
+    "updated_at": "2026-05-08T07:20:42.099Z"
   },
   {
+    "id": 1074464927,
     "title": "Máy kiểm tra mài mòn và xù lông MIDI 5 đầu thử - JAMES HEAL- Martindale",
-    "url": "/products/may-kiem-tra-mai-mon-va-xu-long-5-dau-thu-james-heal-martindale"
+    "handle": "may-kiem-tra-mai-mon-va-xu-long-5-dau-thu-james-heal-martindale",
+    "url": "/products/may-kiem-tra-mai-mon-va-xu-long-5-dau-thu-james-heal-martindale",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-05-08T06:25:00.704Z",
+    "updated_at": "2026-05-08T07:17:57.259Z"
   },
   {
+    "id": 1074442056,
     "title": "Máy kiểm tra mài mòn và xù lông MAXI 9 đầu thử - JAMES HEAL- Martindale",
-    "url": "/products/may-kiem-tra-mai-mon-va-xu-long-james-heal-martindale"
+    "handle": "may-kiem-tra-mai-mon-va-xu-long-james-heal-martindale",
+    "url": "/products/may-kiem-tra-mai-mon-va-xu-long-james-heal-martindale",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-05-07T07:35:00.972Z",
+    "updated_at": "2026-05-08T07:18:19.77Z"
   },
   {
+    "id": 1074441162,
     "title": "Máy thử độ vón cục và xù lông - JAMES HEAL- Martindale Motion",
-    "url": "/products/may-thu-do-von-cuc-va-xu-long-james-heal-martindale-motion"
+    "handle": "may-thu-do-von-cuc-va-xu-long-james-heal-martindale-motion",
+    "url": "/products/may-thu-do-von-cuc-va-xu-long-james-heal-martindale-motion",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-05-07T06:16:40.938Z",
+    "updated_at": "2026-05-07T07:38:42.371Z"
   },
   {
+    "id": 1074439354,
     "title": "Máy kiểm tra độ mài mòn ướt - JAMES HEAL- AquAbrasion",
-    "url": "/products/may-kiem-tra-do-mai-mon-uot-james-heal-aquabrasion"
+    "handle": "may-kiem-tra-do-mai-mon-uot-james-heal-aquabrasion",
+    "url": "/products/may-kiem-tra-do-mai-mon-uot-james-heal-aquabrasion",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-05-07T04:22:59.446Z",
+    "updated_at": "2026-05-07T04:58:30.833Z"
   },
   {
+    "id": 1073995648,
     "title": "Máy đo độ bền nổ - Roaches - Opti Burst",
-    "url": "/products/may-do-do-ben-no-roaches-opti-burst"
+    "handle": "may-do-do-ben-no-roaches-opti-burst",
+    "url": "/products/may-do-do-ben-no-roaches-opti-burst",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-04-07T07:34:17.332Z",
+    "updated_at": "2026-04-07T08:08:29.664Z"
   },
   {
+    "id": 1073993273,
     "title": "Máy kiểm tra xù lông - Roaches - Martindale",
-    "url": "/products/may-kiem-tra-xu-long-roaches-martindale"
+    "handle": "may-kiem-tra-xu-long-roaches-martindale",
+    "url": "/products/may-kiem-tra-xu-long-roaches-martindale",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-04-07T04:23:22.694Z",
+    "updated_at": "2026-04-07T09:39:05.281Z"
   },
   {
+    "id": 1073991159,
     "title": "Máy xác định độ mài mòn và xù lông - Roaches - Martindale AXYZ",
-    "url": "/products/may-xac-dinh-do-mai-mon-va-xu-long-roaches-martindale-axyz"
+    "handle": "may-xac-dinh-do-mai-mon-va-xu-long-roaches-martindale-axyz",
+    "url": "/products/may-xac-dinh-do-mai-mon-va-xu-long-roaches-martindale-axyz",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-04-07T03:08:12.538Z",
+    "updated_at": "2026-04-07T07:25:20.146Z"
   },
   {
+    "id": 1073990785,
     "title": "Máy kiểm tra xước vải - Roaches - ICI Mace Snag Tester",
-    "url": "/products/may-kiem-tra-xuoc-vai-roaches-ici-mace-snag-tester"
+    "handle": "may-kiem-tra-xuoc-vai-roaches-ici-mace-snag-tester",
+    "url": "/products/may-kiem-tra-xuoc-vai-roaches-ici-mace-snag-tester",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-04-07T02:40:49.317Z",
+    "updated_at": "2026-04-07T03:03:15.147Z"
   },
   {
+    "id": 1073990563,
     "title": "Máy kiểm tra độ bền xé, Roaches - Elmendorf Tear Tester",
-    "url": "/products/may-kiem-tra-do-ben-xe-roaches-elmendorf-tear-tester"
+    "handle": "may-kiem-tra-do-ben-xe-roaches-elmendorf-tear-tester",
+    "url": "/products/may-kiem-tra-do-ben-xe-roaches-elmendorf-tear-tester",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-04-07T02:20:12.209Z",
+    "updated_at": "2026-04-07T02:31:52.213Z"
   },
   {
+    "id": 1073979674,
     "title": "Máy đánh giá sờn vải, Roaches- Bean Bag Snag Tester",
-    "url": "/products/may-danh-gia-son-vai-roaches-bean-bag-snag-tester"
+    "handle": "may-danh-gia-son-vai-roaches-bean-bag-snag-tester",
+    "url": "/products/may-danh-gia-son-vai-roaches-bean-bag-snag-tester",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-04-06T07:39:55.018Z",
+    "updated_at": "2026-04-07T02:00:49.404Z"
   },
   {
+    "id": 1073880325,
     "title": "Máy thử độ bền nén bìa carton sóng, Testometric-XCR-5",
-    "url": "/products/may-thu-do-ben-nen-bia-carton-song-testometric-xcr-5"
+    "handle": "may-thu-do-ben-nen-bia-carton-song-testometric-xcr-5",
+    "url": "/products/may-thu-do-ben-nen-bia-carton-song-testometric-xcr-5",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-04-01T09:08:16.925Z",
+    "updated_at": "2026-04-06T08:41:04.301Z"
   },
   {
+    "id": 1073879317,
     "title": "Máy đo lực kéo nén công nghiệp, Testometric - XBC - Box Compression",
-    "url": "/products/may-do-luc-keo-nen-cong-nghiep-testometric-xbc-box-compression"
+    "handle": "may-do-luc-keo-nen-cong-nghiep-testometric-xbc-box-compression",
+    "url": "/products/may-do-luc-keo-nen-cong-nghiep-testometric-xbc-box-compression",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-04-01T08:36:47.124Z",
+    "updated_at": "2026-04-01T09:05:28.748Z"
   },
   {
+    "id": 1073846203,
     "title": "Máy kiểm tra lực nén chuyên dụng, Testometric - XFS-4 - Box Compression",
-    "url": "/products/may-kiem-tra-luc-nen-chuyen-dung-testometric-xfs-4-box-compression"
+    "handle": "may-kiem-tra-luc-nen-chuyen-dung-testometric-xfs-4-box-compression",
+    "url": "/products/may-kiem-tra-luc-nen-chuyen-dung-testometric-xfs-4-box-compression",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-03-31T09:41:44.08Z",
+    "updated_at": "2026-04-01T08:27:01.011Z"
   },
   {
+    "id": 1073842455,
     "title": "Máy kiểm tra lực kéo đứng sàn hạng nặng, Testometric - XFS - Floor Standing Machine",
-    "url": "/products/may-kiem-tra-luc-keo-dung-san-testometric-xfs-floor-standing-machine"
+    "handle": "may-kiem-tra-luc-keo-dung-san-testometric-xfs-floor-standing-machine",
+    "url": "/products/may-kiem-tra-luc-keo-dung-san-testometric-xfs-floor-standing-machine",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-03-31T08:36:00.438Z",
+    "updated_at": "2026-03-31T09:11:10.367Z"
   },
   {
+    "id": 1073839469,
     "title": "Máy đo lực nén hộp, Testometric - X500-BC - Box Compression",
-    "url": "/products/may-do-luc-nen-hop-testometric-x500-bc-box-compression"
+    "handle": "may-do-luc-nen-hop-testometric-x500-bc-box-compression",
+    "url": "/products/may-do-luc-nen-hop-testometric-x500-bc-box-compression",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-03-31T07:07:59.416Z",
+    "updated_at": "2026-03-31T08:06:23.205Z"
   },
   {
+    "id": 1073838170,
     "title": "Máy kiểm tra độ bền nén hộp, Testometric-X350-BC",
-    "url": "/products/may-kiem-tra-do-ben-nen-hop-testometric-x350-bc"
+    "handle": "may-kiem-tra-do-ben-nen-hop-testometric-x350-bc",
+    "url": "/products/may-kiem-tra-do-ben-nen-hop-testometric-x350-bc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-03-31T04:40:12.749Z",
+    "updated_at": "2026-03-31T06:23:14.186Z"
   },
   {
+    "id": 1073837107,
     "title": "Máy thử nghiệm thực phẩm và kết cấu, Testometric - X100-FTA",
-    "url": "/products/may-thu-nghiem-thuc-pham-va-ket-cau-testometric-x100-fta"
+    "handle": "may-thu-nghiem-thuc-pham-va-ket-cau-testometric-x100-fta",
+    "url": "/products/may-thu-nghiem-thuc-pham-va-ket-cau-testometric-x100-fta",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-03-31T03:40:30.78Z",
+    "updated_at": "2026-03-31T04:31:47.778Z"
   },
   {
+    "id": 1073830054,
     "title": "Máy thử nghiệm đa năng, Testometric - X100-1 Testing Machine",
-    "url": "/products/may-thu-nghiem-da-nang-testometric-x100-1-testing-machine"
+    "handle": "may-thu-nghiem-da-nang-testometric-x100-1-testing-machine",
+    "url": "/products/may-thu-nghiem-da-nang-testometric-x100-1-testing-machine",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-03-30T08:36:16.779Z",
+    "updated_at": "2026-03-31T03:30:05.202Z"
   },
   {
+    "id": 1073827892,
     "title": "Máy kiểm tra độ bền kéo, Testometric - X100",
-    "url": "/products/may-kiem-tra-do-ben-keo-testometric-x100"
+    "handle": "may-kiem-tra-do-ben-keo-testometric-x100",
+    "url": "/products/may-kiem-tra-do-ben-keo-testometric-x100",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-03-30T07:46:22.916Z",
+    "updated_at": "2026-03-31T02:51:40.269Z"
   },
   {
+    "id": 1073775519,
     "title": "Máy kiểm tra độ bền kéo nhiều trạm, X500-MS-Testometric",
-    "url": "/products/may-kiem-tra-do-ben-keo-nhieu-tram-x500-ms-testometric"
+    "handle": "may-kiem-tra-do-ben-keo-nhieu-tram-x500-ms-testometric",
+    "url": "/products/may-kiem-tra-do-ben-keo-nhieu-tram-x500-ms-testometric",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-03-26T02:10:00.951Z",
+    "updated_at": "2026-03-31T02:55:33.2Z"
   },
   {
+    "id": 1073754955,
     "title": "Máy kiểm tra lực kéo đa năng, Testometric - X350",
-    "url": "/products/may-kiem-tra-luc-keo-da-nang-testometric-x350"
+    "handle": "may-kiem-tra-luc-keo-da-nang-testometric-x350",
+    "url": "/products/may-kiem-tra-luc-keo-da-nang-testometric-x350",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-03-24T08:10:40.781Z",
+    "updated_at": "2026-03-31T03:20:39.961Z"
   },
   {
+    "id": 1073753843,
     "title": "Máy kiểm tra lực kéo, Testometric - X500 - Machine",
-    "url": "/products/may-kiem-tra-luc-keo-testometric-x500"
+    "handle": "may-kiem-tra-luc-keo-testometric-x500",
+    "url": "/products/may-kiem-tra-luc-keo-testometric-x500",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-03-24T07:11:52.222Z",
+    "updated_at": "2026-03-31T06:27:59.425Z"
   },
   {
+    "id": 1073753329,
     "title": "Máy đo độ bền kéo nén đa năng, Testometric - X250",
-    "url": "/products/may-do-do-ben-keo-nen-da-nang-testometric-x250"
+    "handle": "may-do-do-ben-keo-nen-da-nang-testometric-x250",
+    "url": "/products/may-do-do-ben-keo-nen-da-nang-testometric-x250",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2026-03-24T06:57:41.678Z",
+    "updated_at": "2026-03-31T03:02:36.636Z"
   },
   {
+    "id": 1069329634,
     "title": "Máy sấy phòng thí nghiệm, Model: OPTI-DRY",
-    "url": "/products/may-say-opti-dry-roaches"
+    "handle": "may-say-opti-dry-roaches",
+    "url": "/products/may-say-opti-dry-roaches",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-08-08T04:24:07.533Z",
+    "updated_at": "2026-04-07T09:38:19.683Z"
   },
   {
+    "id": 1067796455,
     "title": "Tủ sấy thăng hoa - Boxun - BXFD Series",
-    "url": "/products/bxfd-series-boxun"
+    "handle": "bxfd-series-boxun",
+    "url": "/products/bxfd-series-boxun",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-06-05T08:43:19.648Z",
+    "updated_at": "2026-04-08T04:03:20.899Z"
   },
   {
+    "id": 1067795624,
     "title": "Tủ sấy thăng hoa BLG Series Boxun",
-    "url": "/products/may-say-thang-hoa-blg-series-boxun"
+    "handle": "may-say-thang-hoa-blg-series-boxun",
+    "url": "/products/may-say-thang-hoa-blg-series-boxun",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-06-05T07:51:01.907Z",
+    "updated_at": "2026-04-08T03:23:59.461Z"
   },
   {
+    "id": 1067762536,
     "title": "Lò nung phòng thí nghiệm BXSX-S Boxun",
-    "url": "/products/lo-nung-phong-thi-nghiem-bxsx-s-boxun"
+    "handle": "lo-nung-phong-thi-nghiem-bxsx-s-boxun",
+    "url": "/products/lo-nung-phong-thi-nghiem-bxsx-s-boxun",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-06-03T09:29:52.904Z",
+    "updated_at": "2026-04-20T06:57:23.313Z"
   },
   {
+    "id": 1067760867,
     "title": "Lò nung công nghiệp BXSX Series Boxun",
-    "url": "/products/lo-nung-cong-nghiep-boxun"
+    "handle": "lo-nung-cong-nghiep-boxun",
+    "url": "/products/lo-nung-cong-nghiep-boxun",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-06-03T09:10:07.06Z",
+    "updated_at": "2026-04-20T06:55:50.591Z"
   },
   {
+    "id": 1067756997,
     "title": "Lò nung phòng thí nghiệm - Boxun - SX2-TZ Series",
-    "url": "/products/lo-nung-boxun-sx2-tz-series"
+    "handle": "lo-nung-boxun-sx2-tz-series",
+    "url": "/products/lo-nung-boxun-sx2-tz-series",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-06-03T07:39:32.299Z",
+    "updated_at": "2026-04-08T04:10:52.327Z"
   },
   {
+    "id": 1067412148,
     "title": "Lò nung thử nghiệm nhanh công nghiệp - Boxun - SX2-Z Series",
-    "url": "/products/lo-nung-cong-nghiep-sx2-z-series-boxun"
+    "handle": "lo-nung-cong-nghiep-sx2-z-series-boxun",
+    "url": "/products/lo-nung-cong-nghiep-sx2-z-series-boxun",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-05-22T08:42:02.044Z",
+    "updated_at": "2026-04-08T06:17:14.264Z"
   },
   {
+    "id": 1067410846,
     "title": "Lò nung công nghiệp SX2-TZ / SX2-TBZ Series Boxun",
-    "url": "/products/lo-nung-cong-nghiep-sx2-z-sx2-tbz-series-boxun"
+    "handle": "lo-nung-cong-nghiep-sx2-z-sx2-tbz-series-boxun",
+    "url": "/products/lo-nung-cong-nghiep-sx2-z-sx2-tbz-series-boxun",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-05-22T07:55:48.253Z",
+    "updated_at": "2026-04-20T03:26:01.233Z"
   },
   {
+    "id": 1067349057,
     "title": "Tủ sấy chân không BXK Series Boxun",
-    "url": "/products/tu-say-chan-khong-bxk-series-boxun"
+    "handle": "tu-say-chan-khong-bxk-series-boxun",
+    "url": "/products/tu-say-chan-khong-bxk-series-boxun",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-05-19T09:05:05.53Z",
+    "updated_at": "2026-04-20T03:45:22.159Z"
   },
   {
+    "id": 1067347133,
     "title": "Tủ sấy chân không BZF Series Boxun",
-    "url": "/products/tu-say-chan-khong-bzf-series-boxun"
+    "handle": "tu-say-chan-khong-bzf-series-boxun",
+    "url": "/products/tu-say-chan-khong-bzf-series-boxun",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-05-19T08:09:06.099Z",
+    "updated_at": "2026-04-20T06:27:00.014Z"
   },
   {
+    "id": 1067346332,
     "title": "Tủ sấy chân không DZF Series Boxun",
-    "url": "/products/tu-say-chan-khong-dzf-series-boxun"
+    "handle": "tu-say-chan-khong-dzf-series-boxun",
+    "url": "/products/tu-say-chan-khong-dzf-series-boxun",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-05-19T07:37:57.272Z",
+    "updated_at": "2026-04-20T06:46:44.785Z"
   },
   {
+    "id": 1067340521,
     "title": "Tủ sấy chính xác BXH Series Boxun",
-    "url": "/products/tu-say-chinh-xac-bxh-series-boxun"
+    "handle": "tu-say-chinh-xac-bxh-series-boxun",
+    "url": "/products/tu-say-chinh-xac-bxh-series-boxun",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-05-19T02:45:26.618Z",
+    "updated_at": "2026-04-20T09:42:47.444Z"
   },
   {
+    "id": 1067307961,
     "title": "Tủ sấy nhiệt độ cao BGG Series Boxun",
-    "url": "/products/tu-say-cong-nghiep-bgg-series-boxun"
+    "handle": "tu-say-cong-nghiep-bgg-series-boxun",
+    "url": "/products/tu-say-cong-nghiep-bgg-series-boxun",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-05-16T08:12:55.094Z",
+    "updated_at": "2026-04-20T09:55:16.453Z"
   },
   {
+    "id": 1067266787,
     "title": "Tủ sấy vải công nghiệp dòng BXH Series Boxun",
-    "url": "/products/tu-say-cong-nghiep-bxh-series-boxun"
+    "handle": "tu-say-cong-nghiep-bxh-series-boxun",
+    "url": "/products/tu-say-cong-nghiep-bxh-series-boxun",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-05-14T04:00:05.858Z",
+    "updated_at": "2026-04-21T02:04:41.474Z"
   },
   {
+    "id": 1067265813,
     "title": "Tủ sấy 129 Lít - BGZ-146 Series Boxun (300°C)",
-    "url": "/products/tu-say-129-lit-bgz-146-series-boxun-300c"
+    "handle": "tu-say-129-lit-bgz-146-series-boxun-300c",
+    "url": "/products/tu-say-129-lit-bgz-146-series-boxun-300c",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-05-14T02:56:53.539Z",
+    "updated_at": "2026-04-21T02:23:11.653Z"
   },
   {
+    "id": 1067257637,
     "title": "Tủ sấy công nghiệp GZX-9456MBE - Boxun (300°C)",
-    "url": "/products/tu-say-cong-nghiep-gzx-9456mbe-boxun-300-c"
+    "handle": "tu-say-cong-nghiep-gzx-9456mbe-boxun-300-c",
+    "url": "/products/tu-say-cong-nghiep-gzx-9456mbe-boxun-300-c",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-05-13T09:22:07.897Z",
+    "updated_at": "2026-04-21T02:41:40.08Z"
   },
   {
+    "id": 1067253585,
     "title": "Thiết bị sấy nóng công nghiệp BGZ - 250°C Series Boxun (250°C)",
-    "url": "/products/thiet-bi-say-nong-cong-nghiep-bgz-250oc-series-boxun"
+    "handle": "thiet-bi-say-nong-cong-nghiep-bgz-250oc-series-boxun",
+    "url": "/products/thiet-bi-say-nong-cong-nghiep-bgz-250oc-series-boxun",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-05-13T06:38:38.419Z",
+    "updated_at": "2026-04-21T03:18:08.707Z"
   },
   {
+    "id": 1067227093,
     "title": "Series tủ sấy GZX-9xxxMBE Boxun (200°C)",
-    "url": "/products/tu-say-cong-nghiep-gzx-series-boxun"
+    "handle": "tu-say-cong-nghiep-gzx-series-boxun",
+    "url": "/products/tu-say-cong-nghiep-gzx-series-boxun",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-05-12T08:28:21.742Z",
+    "updated_at": "2026-04-21T03:32:55.189Z"
   },
   {
+    "id": 1062828238,
     "title": "Tủ soi màu Judge LED/X-RITE/USA",
-    "url": "/products/tu-soi-mau-judge-led"
+    "handle": "tu-soi-mau-judge-led",
+    "url": "/products/tu-soi-mau-judge-led",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2025-01-13T06:22:06.956Z",
+    "updated_at": "2026-04-21T03:49:18.355Z"
   },
   {
+    "id": 1062419873,
     "title": "Máy kiểm tra độ xù lông INTEC/Nhật bản (tiêu chuẩn JIS)",
-    "url": "/products/may-kiem-tra-do-xu-long-intec"
+    "handle": "may-kiem-tra-do-xu-long-intec",
+    "url": "/products/may-kiem-tra-do-xu-long-intec",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-12-25T04:00:23.046Z",
+    "updated_at": "2026-04-21T04:10:03.055Z"
   },
   {
+    "id": 1062035068,
     "title": "Máy kiểm tra quản lý độ ẩm WickView James Heal",
-    "url": "/products/may-kiem-tra-quan-ly-do-am-wickview-james-heal"
+    "handle": "may-kiem-tra-quan-ly-do-am-wickview-james-heal",
+    "url": "/products/may-kiem-tra-quan-ly-do-am-wickview-james-heal",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-12-05T09:45:54.413Z",
+    "updated_at": "2026-04-23T02:26:30.302Z"
   },
   {
+    "id": 1062025732,
     "title": "Máy kiểm tra chống thấm nước TruRain",
-    "url": "/products/may-kiem-tra-chong-tham-nuoc-trurain"
+    "handle": "may-kiem-tra-chong-tham-nuoc-trurain",
+    "url": "/products/may-kiem-tra-chong-tham-nuoc-trurain",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-12-05T04:33:36.31Z",
+    "updated_at": "2026-04-23T02:37:20.828Z"
   },
   {
+    "id": 1061681895,
     "title": "Máy kiểm tra tốc độ khô ProDry James Heal",
-    "url": "/products/may-kiem-tra-toc-do-kho-prodry-james-heal"
+    "handle": "may-kiem-tra-toc-do-kho-prodry-james-heal",
+    "url": "/products/may-kiem-tra-toc-do-kho-prodry-james-heal",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-11-22T07:33:26.508Z",
+    "updated_at": "2026-04-23T02:50:56.347Z"
   },
   {
+    "id": 1060493893,
     "title": "Máy thử áp lực thủy tĩnh James Heal",
-    "url": "/products/hydroview-james-heal"
+    "handle": "hydroview-james-heal",
+    "url": "/products/hydroview-james-heal",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-11-15T04:47:56.199Z",
+    "updated_at": "2026-04-24T04:43:15.823Z"
   },
   {
+    "id": 1058032909,
     "title": "Máy đo độ mờ TH-09/TH-100/TH-110",
-    "url": "/products/may-do-do-mo-th-09-th-100-th-110"
+    "handle": "may-do-do-mo-th-09-th-100-th-110",
+    "url": "/products/may-do-do-mo-th-09-th-100-th-110",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-11-07T07:52:04.313Z",
+    "updated_at": "2026-04-28T02:04:27.717Z"
   },
   {
+    "id": 1057863127,
     "title": "Máy quang phổ cầm tay DS-700D",
-    "url": "/products/may-quang-pho-cam-tay-ds-700d"
+    "handle": "may-quang-pho-cam-tay-ds-700d",
+    "url": "/products/may-quang-pho-cam-tay-ds-700d",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-10-30T09:24:31.627Z",
+    "updated_at": "2026-04-28T02:11:45.935Z"
   },
   {
+    "id": 1057643735,
     "title": "Thiết bị kiểm tra độ mài mòn quay Taber Model 1700/1750",
-    "url": "/products/mai-mon-quay-taber-model-1700-1750"
+    "handle": "mai-mon-quay-taber-model-1700-1750",
+    "url": "/products/mai-mon-quay-taber-model-1700-1750",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-10-22T09:07:49.089Z",
+    "updated_at": "2026-04-28T02:47:53.988Z"
   },
   {
+    "id": 1057433121,
     "title": "Bóng LED3500K dùng cho tủ Spectralight QC / Judge III",
-    "url": "/products/bong-led3500k-dung-cho-tu-spectralight-qc-judge-iii"
+    "handle": "bong-led3500k-dung-cho-tu-spectralight-qc-judge-iii",
+    "url": "/products/bong-led3500k-dung-cho-tu-spectralight-qc-judge-iii",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-10-11T02:29:17.017Z",
+    "updated_at": "2026-04-28T03:22:56.365Z"
   },
   {
+    "id": 1057421734,
     "title": "Tủ soi màu Judge QC X-rite",
-    "url": "/products/tu-soi-mau-judge-qc-xrite"
+    "handle": "tu-soi-mau-judge-qc-xrite",
+    "url": "/products/tu-soi-mau-judge-qc-xrite",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-10-10T03:13:57.32Z",
+    "updated_at": "2026-04-28T03:36:19.56Z"
   },
   {
+    "id": 1057209239,
     "title": "Máy thử độ thông thoáng khí James Heal",
-    "url": "/products/may-thu-do-thong-thoang-khi-james-heal"
+    "handle": "may-thu-do-thong-thoang-khi-james-heal",
+    "url": "/products/may-thu-do-thong-thoang-khi-james-heal",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-10-03T03:33:40.157Z",
+    "updated_at": "2026-04-28T03:42:10.197Z"
   },
   {
+    "id": 1057183648,
     "title": "Máy quang phổ để bàn CHNSpec",
-    "url": "/products/may-quang-pho-de-ban-chnspec"
+    "handle": "may-quang-pho-de-ban-chnspec",
+    "url": "/products/may-quang-pho-de-ban-chnspec",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-10-02T04:26:36.238Z",
+    "updated_at": "2026-04-28T04:17:55.066Z"
   },
   {
+    "id": 1056908635,
     "title": "Buồng thử nghiệm thời tiết tăng tốc UV",
-    "url": "/products/buong-thu-nghiem-thoi-tiet-tang-toc-uv-sanwood"
+    "handle": "buong-thu-nghiem-thoi-tiet-tang-toc-uv-sanwood",
+    "url": "/products/buong-thu-nghiem-thoi-tiet-tang-toc-uv-sanwood",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-09-23T04:00:13.796Z",
+    "updated_at": "2026-04-28T04:49:36.34Z"
   },
   {
+    "id": 1056460645,
     "title": "Máy chiết xuất dầu nhanh Wira",
-    "url": "/products/may-chiet-xuat-dau-nhanh-wira"
+    "handle": "may-chiet-xuat-dau-nhanh-wira",
+    "url": "/products/may-chiet-xuat-dau-nhanh-wira",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-08-28T06:48:47.627Z",
+    "updated_at": "2026-04-28T06:25:08.116Z"
   },
   {
+    "id": 1056349167,
     "title": "Bóng LED 90cm L840 Walmart lắp cho tủ Judge QC và Judge II",
-    "url": "/products/bong-led-90cm-l840-lap-cho-tu-judge-qc-va-judge-ii"
+    "handle": "bong-led-90cm-l840-lap-cho-tu-judge-qc-va-judge-ii",
+    "url": "/products/bong-led-90cm-l840-lap-cho-tu-judge-qc-va-judge-ii",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-08-22T06:48:07.266Z",
+    "updated_at": "2024-08-22T06:48:07.266Z"
   },
   {
+    "id": 1056348197,
     "title": "Bóng LED 60cm L840 Walmart lắp cho tủ Judge QC và Judge II",
-    "url": "/products/led-840-cho-tu-jugde-qc-judge-ii"
+    "handle": "led-840-cho-tu-jugde-qc-judge-ii",
+    "url": "/products/led-840-cho-tu-jugde-qc-judge-ii",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-08-22T06:23:50.779Z",
+    "updated_at": "2024-08-22T06:47:01.289Z"
   },
   {
+    "id": 1055891370,
     "title": "Máy cắt sợi chính xác Wira",
-    "url": "/products/may-cat-soi-chinh-xac-wira"
+    "handle": "may-cat-soi-chinh-xac-wira",
+    "url": "/products/may-cat-soi-chinh-xac-wira",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-22T04:49:59.364Z",
+    "updated_at": "2026-04-28T07:29:19.276Z"
   },
   {
+    "id": 1055890253,
     "title": "Máy mở sợi Wira",
-    "url": "/products/may-mo-soi-wira"
+    "handle": "may-mo-soi-wira",
+    "url": "/products/may-mo-soi-wira",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-22T04:02:34.543Z",
+    "updated_at": "2026-04-28T07:37:07.834Z"
   },
   {
+    "id": 1055829001,
     "title": "VisionView Verivide",
-    "url": "/products/visionview-verivide"
+    "handle": "visionview-verivide",
+    "url": "/products/visionview-verivide",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-18T09:32:48.787Z",
+    "updated_at": "2026-04-28T07:53:09.563Z"
   },
   {
+    "id": 1055782343,
     "title": "Tủ soi màu UltraView Verivide",
-    "url": "/products/tu-soi-mau-ultraview-verivide"
+    "handle": "tu-soi-mau-ultraview-verivide",
+    "url": "/products/tu-soi-mau-ultraview-verivide",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-17T08:58:42.989Z",
+    "updated_at": "2026-05-06T07:51:12.643Z"
   },
   {
+    "id": 1055761528,
     "title": "Máy kiểm tra sơ đồ sợi Wira",
-    "url": "/products/may-kiem-tra-so-do-soi-wira"
+    "handle": "may-kiem-tra-so-do-soi-wira",
+    "url": "/products/may-kiem-tra-so-do-soi-wira",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-16T09:55:21.17Z",
+    "updated_at": "2026-05-06T07:58:37.939Z"
   },
   {
+    "id": 1055756751,
     "title": "Máy đo độ mịn và độ chín của bông Mk 3 Wira",
-    "url": "/products/may-do-do-min-va-do-chin-bong-mk-3-wira"
+    "handle": "may-do-do-min-va-do-chin-bong-mk-3-wira",
+    "url": "/products/may-do-do-min-va-do-chin-bong-mk-3-wira",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-16T06:38:54.921Z",
+    "updated_at": "2026-05-06T08:07:03.175Z"
   },
   {
+    "id": 1055753159,
     "title": "Máy đo độ mịn và độ chín của bông Mk 2 Wira",
-    "url": "/products/may-do-do-min-va-do-chin-bong-mk2-wira"
+    "handle": "may-do-do-min-va-do-chin-bong-mk2-wira",
+    "url": "/products/may-do-do-min-va-do-chin-bong-mk2-wira",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-16T03:47:42.743Z",
+    "updated_at": "2026-05-07T01:48:10.483Z"
   },
   {
+    "id": 1055751351,
     "title": "Máy đo độ mịn sợi điện tử Wira",
-    "url": "/products/may-do-do-min-soi-wira"
+    "handle": "may-do-do-min-soi-wira",
+    "url": "/products/may-do-do-min-soi-wira",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-16T02:49:28.194Z",
+    "updated_at": "2026-05-07T01:59:47.089Z"
   },
   {
+    "id": 1055611679,
     "title": "Máy kiểm tra tốc độ hơi nước Darong",
-    "url": "/products/may-kiem-tra-toc-do-hoi-nuoc-darong"
+    "handle": "may-kiem-tra-toc-do-hoi-nuoc-darong",
+    "url": "/products/may-kiem-tra-toc-do-hoi-nuoc-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-05T04:58:19.405Z",
+    "updated_at": "2024-07-05T04:58:19.405Z"
   },
   {
+    "id": 1055611097,
     "title": "Máy kiểm tra độ thấm hơi nước Darong",
-    "url": "/products/may-kiem-tra-do-tham-hoi-nuoc-darong"
+    "handle": "may-kiem-tra-do-tham-hoi-nuoc-darong",
+    "url": "/products/may-kiem-tra-do-tham-hoi-nuoc-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-05T04:31:00.298Z",
+    "updated_at": "2024-07-05T04:31:00.298Z"
   },
   {
+    "id": 1055608914,
     "title": "Máy kiểm tra khả năng chống thấm nước Darong",
-    "url": "/products/may-kiem-tra-chong-tham-nuoc-darong"
+    "handle": "may-kiem-tra-chong-tham-nuoc-darong",
+    "url": "/products/may-kiem-tra-chong-tham-nuoc-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-05T02:27:47.778Z",
+    "updated_at": "2024-07-05T02:27:47.778Z"
   },
   {
+    "id": 1055596600,
     "title": "Máy kiểm tra độ bền giặt Darong",
-    "url": "/products/may-kiem-tra-do-ben-giat-darong"
+    "handle": "may-kiem-tra-do-ben-giat-darong",
+    "url": "/products/may-kiem-tra-do-ben-giat-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-04T04:58:26.04Z",
+    "updated_at": "2024-07-04T04:58:26.04Z"
   },
   {
+    "id": 1055594943,
     "title": "Máy cắt mẫu vải Darong",
-    "url": "/products/may-cat-mau-vai-darong"
+    "handle": "may-cat-mau-vai-darong",
+    "url": "/products/may-cat-mau-vai-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-04T04:00:41.888Z",
+    "updated_at": "2024-07-04T04:00:41.888Z"
   },
   {
+    "id": 1055593889,
     "title": "Máy mài mòn Taber Darong",
-    "url": "/products/may-mai-mon-taber-darong"
+    "handle": "may-mai-mon-taber-darong",
+    "url": "/products/may-mai-mon-taber-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-04T02:54:22.717Z",
+    "updated_at": "2024-07-04T02:54:22.717Z"
   },
   {
+    "id": 1055593660,
     "title": "Máy kiểm tra độ ẩm và khả năng chịu nhiệt Darong",
-    "url": "/products/may-kiem-tra-do-am-va-chiu-nhiet-darong"
+    "handle": "may-kiem-tra-do-am-va-chiu-nhiet-darong",
+    "url": "/products/may-kiem-tra-do-am-va-chiu-nhiet-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-04T02:31:32.797Z",
+    "updated_at": "2024-07-04T02:32:01.617Z"
   },
   {
+    "id": 1055578394,
     "title": "Máy kiểm tra độ bền sợi Darong",
-    "url": "/products/may-kiem-tra-do-ben-soi-darong"
+    "handle": "may-kiem-tra-do-ben-soi-darong",
+    "url": "/products/may-kiem-tra-do-ben-soi-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-03T02:24:43.073Z",
+    "updated_at": "2024-07-03T02:24:43.073Z"
   },
   {
+    "id": 1055569560,
     "title": "Máy kiểm tra độ bền cháy/thăng hoa Darong",
-    "url": "/products/may-kiem-tra-do-ben-chay-thang-hoa-darong"
+    "handle": "may-kiem-tra-do-ben-chay-thang-hoa-darong",
+    "url": "/products/may-kiem-tra-do-ben-chay-thang-hoa-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-02T04:09:26.223Z",
+    "updated_at": "2024-07-02T04:09:26.223Z"
   },
   {
+    "id": 1055569313,
     "title": "Máy kiểm tra độ bền ma sát Darong",
-    "url": "/products/crockmeter-darong"
+    "handle": "crockmeter-darong",
+    "url": "/products/crockmeter-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-02T03:46:34.205Z",
+    "updated_at": "2024-07-02T03:46:34.205Z"
   },
   {
+    "id": 1055555210,
     "title": "Máy kiểm tra tĩnh ma sát quay Darong",
-    "url": "/products/may-kiem-tra-tinh-ma-sat-quay-darong"
+    "handle": "may-kiem-tra-tinh-ma-sat-quay-darong",
+    "url": "/products/may-kiem-tra-tinh-ma-sat-quay-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-07-01T04:59:28.621Z",
+    "updated_at": "2024-07-01T04:59:28.621Z"
   },
   {
+    "id": 1055528789,
     "title": "Bộ thử nghiệm mồ hôi Darong",
-    "url": "/products/bo-thu-nghiem-mo-hoi-darong"
+    "handle": "bo-thu-nghiem-mo-hoi-darong",
+    "url": "/products/bo-thu-nghiem-mo-hoi-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-28T08:25:08.496Z",
+    "updated_at": "2024-06-28T08:25:08.496Z"
   },
   {
+    "id": 1055525968,
     "title": "Máy kiểm tra độ vón cục xơ vải PAV Darong",
-    "url": "/products/may-do-von-cuc-xo-vai-pav-darong"
+    "handle": "may-do-von-cuc-xo-vai-pav-darong",
+    "url": "/products/may-do-von-cuc-xo-vai-pav-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-28T07:26:47.115Z",
+    "updated_at": "2024-06-28T07:28:34.452Z"
   },
   {
+    "id": 1055523388,
     "title": "Máy kiểm tra độ mài mòn Martindale Darong",
-    "url": "/products/may-kiem-tra-do-mai-mon-darong"
+    "handle": "may-kiem-tra-do-mai-mon-darong",
+    "url": "/products/may-kiem-tra-do-mai-mon-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-28T04:37:55.204Z",
+    "updated_at": "2024-06-28T04:37:55.204Z"
   },
   {
+    "id": 1055522804,
     "title": "Máy kiểm tra độ bền ánh sáng Darong",
-    "url": "/products/may-kiem-tra-do-ben-anh-sang-darong"
+    "handle": "may-kiem-tra-do-ben-anh-sang-darong",
+    "url": "/products/may-kiem-tra-do-ben-anh-sang-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-28T04:00:48.875Z",
+    "updated_at": "2024-06-28T04:00:48.875Z"
   },
   {
+    "id": 1055522245,
     "title": "Máy kiểm tra đầu thủy tĩnh Darong",
-    "url": "/products/may-kiem-tra-dau-thuy-tinh-darong"
+    "handle": "may-kiem-tra-dau-thuy-tinh-darong",
+    "url": "/products/may-kiem-tra-dau-thuy-tinh-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-28T03:21:44.681Z",
+    "updated_at": "2024-06-28T03:22:03.533Z"
   },
   {
+    "id": 1055521561,
     "title": "Máy kiểm tra thành phần/ độ mịn sợi Darong",
-    "url": "/products/may-kiem-tra-thanh-phan-soi-darong"
+    "handle": "may-kiem-tra-thanh-phan-soi-darong",
+    "url": "/products/may-kiem-tra-thanh-phan-soi-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-28T02:38:51.938Z",
+    "updated_at": "2024-06-28T02:38:51.938Z"
   },
   {
+    "id": 1055520950,
     "title": "Máy kiểm tra cảm ứng vải Darong",
-    "url": "/products/may-kiem-tra-cam-ung-vai-darong"
+    "handle": "may-kiem-tra-cam-ung-vai-darong",
+    "url": "/products/may-kiem-tra-cam-ung-vai-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-28T02:09:06.552Z",
+    "updated_at": "2024-06-28T02:09:06.552Z"
   },
   {
+    "id": 1055516298,
     "title": "Máy kiểm tra độ co của vải Darong",
-    "url": "/products/may-kiem-tra-do-co-cua-vai-darong"
+    "handle": "may-kiem-tra-do-co-cua-vai-darong",
+    "url": "/products/may-kiem-tra-do-co-cua-vai-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-27T09:22:37.428Z",
+    "updated_at": "2024-06-27T09:33:24.265Z"
   },
   {
+    "id": 1055513094,
     "title": "Máy đo độ dày vải Darong",
-    "url": "/products/may-do-do-day-vai-darong"
+    "handle": "may-do-do-day-vai-darong",
+    "url": "/products/may-do-do-day-vai-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-27T07:36:17.935Z",
+    "updated_at": "2024-06-27T08:31:21.811Z"
   },
   {
+    "id": 1055509367,
     "title": "Máy kiểm tra độ rách Elmendorf Darong",
-    "url": "/products/may-kiem-tra-nuoc-mat-darong"
+    "handle": "may-kiem-tra-nuoc-mat-darong",
+    "url": "/products/may-kiem-tra-nuoc-mat-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-27T04:40:49.554Z",
+    "updated_at": "2024-06-27T08:23:31.754Z"
   },
   {
+    "id": 1055508641,
     "title": "Máy kiểm tra tốc độ khô Darong",
-    "url": "/products/may-kiem-tra-toc-do-kho-darong"
+    "handle": "may-kiem-tra-toc-do-kho-darong",
+    "url": "/products/may-kiem-tra-toc-do-kho-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-27T03:59:00.674Z",
+    "updated_at": "2024-06-27T08:27:47.856Z"
   },
   {
+    "id": 1055508374,
     "title": "Máy thử Drap Darong",
-    "url": "/products/may-thu-drap-darong"
+    "handle": "may-thu-drap-darong",
+    "url": "/products/may-thu-drap-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-27T03:38:49.536Z",
+    "updated_at": "2024-06-27T08:27:12.613Z"
   },
   {
+    "id": 1055500857,
     "title": "Máy kiểm tra phục hồi nếp nhăn Darong",
-    "url": "/products/may-kiem-tra-phuc-hoi-nep-nhan-darong"
+    "handle": "may-kiem-tra-phuc-hoi-nep-nhan-darong",
+    "url": "/products/may-kiem-tra-phuc-hoi-nep-nhan-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-26T09:22:44.625Z",
+    "updated_at": "2024-06-27T08:26:48.834Z"
   },
   {
+    "id": 1055500588,
     "title": "Buồng điều hòa nhiệt độ và độ ẩm Darong",
-    "url": "/products/buong-dieu-hoa-darong"
+    "handle": "buong-dieu-hoa-darong",
+    "url": "/products/buong-dieu-hoa-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-26T09:08:46.577Z",
+    "updated_at": "2024-06-27T08:26:27.699Z"
   },
   {
+    "id": 1055499872,
     "title": "Tủ soi màu Darong",
-    "url": "/products/tu-soi-mau-darong"
+    "handle": "tu-soi-mau-darong",
+    "url": "/products/tu-soi-mau-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-26T08:24:27.397Z",
+    "updated_at": "2024-06-27T08:10:04.656Z"
   },
   {
+    "id": 1055499580,
     "title": "Máy kiểm tra độ bền bó sợi và sợi Darong",
-    "url": "/products/may-kiem-tra-do-ben-bo-soi-darong"
+    "handle": "may-kiem-tra-do-ben-bo-soi-darong",
+    "url": "/products/may-kiem-tra-do-ben-bo-soi-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-26T08:04:20.819Z",
+    "updated_at": "2024-06-27T08:25:08.17Z"
   },
   {
+    "id": 1055499434,
     "title": "Máy kiểm tra độ thấm khí DaRong",
-    "url": "/products/may-kiem-tra-do-tham-khi-darong"
+    "handle": "may-kiem-tra-do-tham-khi-darong",
+    "url": "/products/may-kiem-tra-do-tham-khi-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-26T07:54:17.471Z",
+    "updated_at": "2024-06-27T08:24:41.678Z"
   },
   {
+    "id": 1055499087,
     "title": "Máy kiểm tra khả năng chống cháy vải Darong",
-    "url": "/products/may-kiem-tra-kha-nang-chong-chay-darong"
+    "handle": "may-kiem-tra-kha-nang-chong-chay-darong",
+    "url": "/products/may-kiem-tra-kha-nang-chong-chay-darong",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-26T07:26:23.286Z",
+    "updated_at": "2024-06-27T08:24:09.774Z"
   },
   {
+    "id": 1055496454,
     "title": "Chất tẩy rửa tiêu chuẩn Tide",
-    "url": "/products/bot-giat-tide"
+    "handle": "bot-giat-tide",
+    "url": "/products/bot-giat-tide",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-26T03:59:39.752Z",
+    "updated_at": "2024-06-26T03:59:39.752Z"
   },
   {
+    "id": 1055495892,
     "title": "Tủ Soi Màu SpectraLight QC Xrite",
-    "url": "/products/tu-soi-mau-splqc"
+    "handle": "tu-soi-mau-splqc",
+    "url": "/products/tu-soi-mau-splqc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-26T03:27:18.575Z",
+    "updated_at": "2024-06-26T03:27:18.575Z"
   },
   {
+    "id": 1055427427,
     "title": "Màn hình LCD 5 nguồn thay thế hãng Verivide",
-    "url": "/products/lcd-5-nguon-verivide"
+    "handle": "lcd-5-nguon-verivide",
+    "url": "/products/lcd-5-nguon-verivide",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-21T03:08:18.226Z",
+    "updated_at": "2024-06-21T09:56:25.187Z"
   },
   {
+    "id": 1055426646,
     "title": "Máy chà xát Schroder CM-1",
-    "url": "/products/may-cha-xat-schroder-cm1"
+    "handle": "may-cha-xat-schroder-cm1",
+    "url": "/products/may-cha-xat-schroder-cm1",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-21T02:06:16.8Z",
+    "updated_at": "2024-06-21T03:11:00.163Z"
   },
   {
+    "id": 1055409545,
     "title": "Hộp đèn kiểm tra độ vón cục xơ vải PAV Verivide",
-    "url": "/products/hop-den-kiem-tra-do-von-pav-verivide"
+    "handle": "hop-den-kiem-tra-do-von-pav-verivide",
+    "url": "/products/hop-den-kiem-tra-do-von-pav-verivide",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-19T09:52:59.437Z",
+    "updated_at": "2024-06-19T09:52:59.437Z"
   },
   {
+    "id": 1055406330,
     "title": "Tủ soi màu Verivide 5 nguồn sáng",
-    "url": "/products/tu-soi-mau-verivide-5-nguon-sang"
+    "handle": "tu-soi-mau-verivide-5-nguon-sang",
+    "url": "/products/tu-soi-mau-verivide-5-nguon-sang",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-19T06:40:44.114Z",
+    "updated_at": "2024-06-19T06:40:44.114Z"
   },
   {
+    "id": 1055404494,
     "title": "Tủ soi màu Verivide 4 nguồn sáng",
-    "url": "/products/tu-soi-mau-verivide-4-nguon-sang"
+    "handle": "tu-soi-mau-verivide-4-nguon-sang",
+    "url": "/products/tu-soi-mau-verivide-4-nguon-sang",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-19T04:21:32.004Z",
+    "updated_at": "2024-06-19T06:04:10.039Z"
   },
   {
+    "id": 1055402311,
     "title": "Thước đo mật độ vải K.Onishi",
-    "url": "/products/thuoc-do-mat-do-vai-konishi"
+    "handle": "thuoc-do-mat-do-vai-konishi",
+    "url": "/products/thuoc-do-mat-do-vai-konishi",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-19T02:32:35.507Z",
+    "updated_at": "2024-06-19T02:33:00.309Z"
   },
   {
+    "id": 1055395790,
     "title": "Vải chà xát ISO",
-    "url": "/products/vai-cha-xat-iso"
+    "handle": "vai-cha-xat-iso",
+    "url": "/products/vai-cha-xat-iso",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-18T07:58:09.141Z",
+    "updated_at": "2024-06-18T07:58:09.141Z"
   },
   {
+    "id": 1055395133,
     "title": "Máy kiểm tra độ bền ma sát James Heal 680",
-    "url": "/products/may-kiem-tra-ma-sat-jh-680"
+    "handle": "may-kiem-tra-ma-sat-jh-680",
+    "url": "/products/may-kiem-tra-ma-sat-jh-680",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-18T07:34:11.178Z",
+    "updated_at": "2024-06-18T07:34:11.178Z"
   },
   {
+    "id": 1055394782,
     "title": "Máy kiểm tra độ bền ma sát James Heal 670",
-    "url": "/products/may-kiem-tra-ma-sat-jh-670"
+    "handle": "may-kiem-tra-ma-sat-jh-670",
+    "url": "/products/may-kiem-tra-ma-sat-jh-670",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-18T07:16:57.803Z",
+    "updated_at": "2024-06-18T07:34:41.332Z"
   },
   {
+    "id": 1055390354,
     "title": "Đĩa vải mài mòn Martindale Abrasion James Heal",
-    "url": "/products/dia-vai-mai-mon-jh"
+    "handle": "dia-vai-mai-mon-jh",
+    "url": "/products/dia-vai-mai-mon-jh",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-18T03:56:24.524Z",
+    "updated_at": "2024-06-18T03:58:47.544Z"
   },
   {
+    "id": 1055387793,
     "title": "Vải tham chiếu hiệu chuẩn UV AATCC",
-    "url": "/products/vai-uv-aatcc"
+    "handle": "vai-uv-aatcc",
+    "url": "/products/vai-uv-aatcc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-18T03:09:11.591Z",
+    "updated_at": "2024-06-18T03:09:11.591Z"
   },
   {
+    "id": 1055384020,
     "title": "Vải đa sợi James Heal DW",
-    "url": "/products/vai-da-soi-jh-dw"
+    "handle": "vai-da-soi-jh-dw",
+    "url": "/products/vai-da-soi-jh-dw",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-18T02:33:23.602Z",
+    "updated_at": "2024-06-18T02:34:01.565Z"
   },
   {
+    "id": 1055383100,
     "title": "Vải chà xát AATCC",
-    "url": "/products/vai-cha-xat-aatcc"
+    "handle": "vai-cha-xat-aatcc",
+    "url": "/products/vai-cha-xat-aatcc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-18T02:17:09.382Z",
+    "updated_at": "2024-06-18T02:17:09.382Z"
   },
   {
+    "id": 1055372181,
     "title": "Bóng đèn D65 USHIO Halogen 500W",
-    "url": "/products/d65-ushio-500w"
+    "handle": "d65-ushio-500w",
+    "url": "/products/d65-ushio-500w",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-17T08:58:27.461Z",
+    "updated_at": "2024-06-17T08:58:27.461Z"
   },
   {
+    "id": 1055371513,
     "title": "Bóng đèn D65 USHIO Halogen 750W",
-    "url": "/products/d65-ushio-750w"
+    "handle": "d65-ushio-750w",
+    "url": "/products/d65-ushio-750w",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-17T08:16:57.426Z",
+    "updated_at": "2024-06-17T08:53:30.758Z"
   },
   {
+    "id": 1055370020,
     "title": "Bóng đèn Inc A 300W USHIO",
-    "url": "/products/inc-a-300w-ushio"
+    "handle": "inc-a-300w-ushio",
+    "url": "/products/inc-a-300w-ushio",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-17T07:35:14.557Z",
+    "updated_at": "2024-06-17T07:35:14.557Z"
   },
   {
+    "id": 1055343908,
     "title": "Tấm PVC mềm Swissatest 727",
-    "url": "/products/pvc-mem-728"
+    "handle": "pvc-mem-728",
+    "url": "/products/pvc-mem-728",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-14T09:45:43.234Z",
+    "updated_at": "2024-06-17T03:41:40.291Z"
   },
   {
+    "id": 1055341814,
     "title": "Thước xám Staining JIS L 0805:2004",
-    "url": "/products/thuoc-xam-staining-jis"
+    "handle": "thuoc-xam-staining-jis",
+    "url": "/products/thuoc-xam-staining-jis",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-14T07:44:20.791Z",
+    "updated_at": "2024-06-17T03:42:38.702Z"
   },
   {
+    "id": 1055341157,
     "title": "Thước xám Color Change JIS L 0804:2004",
-    "url": "/products/thuoc-xam-color-change-jis"
+    "handle": "thuoc-xam-color-change-jis",
+    "url": "/products/thuoc-xam-color-change-jis",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-14T07:05:53.731Z",
+    "updated_at": "2024-06-17T03:44:22.074Z"
   },
   {
+    "id": 1055339709,
     "title": "Thước xám Staining James Heal",
-    "url": "/products/thuoc-xam-staining-jh"
+    "handle": "thuoc-xam-staining-jh",
+    "url": "/products/thuoc-xam-staining-jh",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-14T04:50:23.377Z",
+    "updated_at": "2024-06-17T03:56:46.717Z"
   },
   {
+    "id": 1055339536,
     "title": "Thước xám Color Change James Heal",
-    "url": "/products/thuoc-xam-color-change-jh"
+    "handle": "thuoc-xam-color-change-jh",
+    "url": "/products/thuoc-xam-color-change-jh",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-14T04:33:34.55Z",
+    "updated_at": "2024-06-17T03:59:15.419Z"
   },
   {
+    "id": 1055338727,
     "title": "Màng Film BHT James Heal",
-    "url": "/products/mang-film-bht-jh"
+    "handle": "mang-film-bht-jh",
+    "url": "/products/mang-film-bht-jh",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-14T03:41:33.806Z",
+    "updated_at": "2024-06-17T04:04:48.463Z"
   },
   {
+    "id": 1055338001,
     "title": "Vải đối chứng độ ố vàng James Heal",
-    "url": "/products/vai-doi-chung-o-vang-jh"
+    "handle": "vai-doi-chung-o-vang-jh",
+    "url": "/products/vai-doi-chung-o-vang-jh",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-14T03:21:19.763Z",
+    "updated_at": "2024-06-17T04:10:31.387Z"
   },
   {
+    "id": 1055337523,
     "title": "Giấy tẩm hóa chất thử nghiệm độ ố vàng James Heal",
-    "url": "/products/giay-hoa-chat-o-vang-jh"
+    "handle": "giay-hoa-chat-o-vang-jh",
+    "url": "/products/giay-hoa-chat-o-vang-jh",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-14T03:00:15.566Z",
+    "updated_at": "2024-06-14T03:00:15.566Z"
   },
   {
+    "id": 1055332680,
     "title": "Máy cắt mẫu tròn định lượng vải Samsung nECO SPI2003",
-    "url": "/products/may-cat-vai-spi2003"
+    "handle": "may-cat-vai-spi2003",
+    "url": "/products/may-cat-vai-spi2003",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-13T09:07:26.859Z",
+    "updated_at": "2024-06-13T09:17:41.865Z"
   },
   {
+    "id": 1055330865,
     "title": "Bộ thử nghiệm mồ hôi Labtex",
-    "url": "/products/bo-thu-nghiem-mo-hoi-labtex"
+    "handle": "bo-thu-nghiem-mo-hoi-labtex",
+    "url": "/products/bo-thu-nghiem-mo-hoi-labtex",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-13T07:05:31.695Z",
+    "updated_at": "2024-06-13T07:05:31.695Z"
   },
   {
+    "id": 1055327272,
     "title": "Vải đa sợi Testfabrics #10",
-    "url": "/products/vai-da-soi-mff-10"
+    "handle": "vai-da-soi-mff-10",
+    "url": "/products/vai-da-soi-mff-10",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-13T04:11:12.288Z",
+    "updated_at": "2024-06-13T07:18:13.811Z"
   },
   {
+    "id": 1055325749,
     "title": "Vải đa sợi Testfabrics DW 10A",
-    "url": "/products/vai-da-soi-mff-dw-10a"
+    "handle": "vai-da-soi-mff-dw-10a",
+    "url": "/products/vai-da-soi-mff-dw-10a",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-13T03:28:40.437Z",
+    "updated_at": "2024-06-13T07:35:53.134Z"
   },
   {
+    "id": 1055299668,
     "title": "Thước xám Grey Scale for Staining AATCC",
-    "url": "/products/thuoc-xam-staining-aatcc"
+    "handle": "thuoc-xam-staining-aatcc",
+    "url": "/products/thuoc-xam-staining-aatcc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-12T07:58:06.216Z",
+    "updated_at": "2024-06-13T04:45:22.957Z"
   },
   {
+    "id": 1055298148,
     "title": "Thước xám Grey Scale for color change AATCC",
-    "url": "/products/thuoc-xam-color-change-aatcc"
+    "handle": "thuoc-xam-color-change-aatcc",
+    "url": "/products/thuoc-xam-color-change-aatcc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-12T07:30:03.967Z",
+    "updated_at": "2024-06-13T04:44:57.463Z"
   },
   {
+    "id": 1055291628,
     "title": "Bột giặt tiêu chuẩn AATCC 1993",
-    "url": "/products/bot-giat-aatcc-1993"
+    "handle": "bot-giat-aatcc-1993",
+    "url": "/products/bot-giat-aatcc-1993",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-06-12T04:35:31.793Z",
+    "updated_at": "2024-06-13T04:46:13.711Z"
   },
   {
+    "id": 1054217931,
     "title": "Vải đa sợi james Heal DW 702-521",
-    "url": "/products/vai-da-soi-james-heal-dw-702-521"
+    "handle": "vai-da-soi-james-heal-dw-702-521",
+    "url": "/products/vai-da-soi-james-heal-dw-702-521",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-04-22T07:32:17.058Z",
+    "updated_at": "2024-04-22T07:43:25.393Z"
   },
   {
+    "id": 1054078292,
     "title": "Vải bù trọng AATCC loại 1 Testfabric",
-    "url": "/products/vai-bu-trong-aatcc-loai-1-testfabric"
+    "handle": "vai-bu-trong-aatcc-loai-1-testfabric",
+    "url": "/products/vai-bu-trong-aatcc-loai-1-testfabric",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-04-12T02:51:34.968Z",
+    "updated_at": "2024-06-12T01:27:28.439Z"
   },
   {
+    "id": 1054060273,
     "title": "Vải bù trọng AATCC loại 3 Testfabric",
-    "url": "/products/vai-bu-trong-aatcc-loai-3-testfabric"
+    "handle": "vai-bu-trong-aatcc-loai-3-testfabric",
+    "url": "/products/vai-bu-trong-aatcc-loai-3-testfabric",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-04-11T08:24:01.002Z",
+    "updated_at": "2024-04-12T02:03:47.316Z"
   },
   {
+    "id": 1054058920,
     "title": "Len xanh tiêu chuẩn ISO No.2 (23 x 15 cm)",
-    "url": "/products/len-xanh-tieu-chuan-iso-no-2-23-x-15-cm"
+    "handle": "len-xanh-tieu-chuan-iso-no-2-23-x-15-cm",
+    "url": "/products/len-xanh-tieu-chuan-iso-no-2-23-x-15-cm",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-04-11T07:22:17.29Z",
+    "updated_at": "2024-04-22T07:58:04.521Z"
   },
   {
+    "id": 1054048589,
     "title": "Thang màu xám AATCC James Heal để nhuộm vải",
-    "url": "/products/thang-mau-xam-aatcc-james-heal-de-nhuom-vai"
+    "handle": "thang-mau-xam-aatcc-james-heal-de-nhuom-vai",
+    "url": "/products/thang-mau-xam-aatcc-james-heal-de-nhuom-vai",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-04-11T03:15:50.568Z",
+    "updated_at": "2024-04-12T02:06:53.422Z"
   },
   {
+    "id": 1054047741,
     "title": "Thang màu xám AATCC James Heal  để đánh giá thay đổi màu sắc",
-    "url": "/products/thang-mau-xam-aatcc-james-heal-de-danh-gia-thay-doi-mau-sac"
+    "handle": "thang-mau-xam-aatcc-james-heal-de-danh-gia-thay-doi-mau-sac",
+    "url": "/products/thang-mau-xam-aatcc-james-heal-de-danh-gia-thay-doi-mau-sac",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-04-11T02:43:39.532Z",
+    "updated_at": "2024-04-12T02:07:51.324Z"
   },
   {
+    "id": 1053989632,
     "title": "Thước xám so màu vải AATCC tiêu chuẩn",
-    "url": "/products/thuoc-xam-so-mau-vai-aatcc-tieu-chuan"
+    "handle": "thuoc-xam-so-mau-vai-aatcc-tieu-chuan",
+    "url": "/products/thuoc-xam-so-mau-vai-aatcc-tieu-chuan",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-04-09T08:12:46.679Z",
+    "updated_at": "2024-04-09T08:16:32.837Z"
   },
   {
+    "id": 1053984596,
     "title": "Thiêt bị kiểm tra khả năng chống thấm nước Opti-Spray",
-    "url": "/products/thiet-bi-kiem-tra-kha-nang-chong-tham-nuoc-opti-spray"
+    "handle": "thiet-bi-kiem-tra-kha-nang-chong-tham-nuoc-opti-spray",
+    "url": "/products/thiet-bi-kiem-tra-kha-nang-chong-tham-nuoc-opti-spray",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-04-09T03:26:31.874Z",
+    "updated_at": "2024-04-09T03:27:33.701Z"
   },
   {
+    "id": 1053883491,
     "title": "Máy nhuộm mẫu Roaches Winch",
-    "url": "/products/may-nhuom-roaches-winch"
+    "handle": "may-nhuom-roaches-winch",
+    "url": "/products/may-nhuom-roaches-winch",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-04-04T07:49:45.812Z",
+    "updated_at": "2024-04-06T10:44:11.621Z"
   },
   {
+    "id": 1053882440,
     "title": "Máy nhuộm  DK Atmospheric Sample Dyeing ở nhiệt độ cao",
-    "url": "/products/may-nhuom-dk-atmospheric-sample-dyeing-o-nhiet-do-cao"
+    "handle": "may-nhuom-dk-atmospheric-sample-dyeing-o-nhiet-do-cao",
+    "url": "/products/may-nhuom-dk-atmospheric-sample-dyeing-o-nhiet-do-cao",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-04-04T07:16:51.606Z",
+    "updated_at": "2024-04-04T07:21:13.314Z"
   },
   {
+    "id": 1053524515,
     "title": "Máy nhuộm vải Roaches Jigger trong phòng thí nghiệm",
-    "url": "/products/may-nhuom-trong-phong-thi-nghiem-jigger"
+    "handle": "may-nhuom-trong-phong-thi-nghiem-jigger",
+    "url": "/products/may-nhuom-trong-phong-thi-nghiem-jigger",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-19T08:17:06.291Z",
+    "updated_at": "2024-04-04T02:54:13.337Z"
   },
   {
+    "id": 1053521186,
     "title": "Máy nhuộm màu hồng ngoại Pyrotec⁴",
-    "url": "/products/may-nhuom-mau-hong-ngoai-pyrotec"
+    "handle": "may-nhuom-mau-hong-ngoai-pyrotec",
+    "url": "/products/may-nhuom-mau-hong-ngoai-pyrotec",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-19T07:36:28.033Z",
+    "updated_at": "2024-04-01T03:26:38.848Z"
   },
   {
+    "id": 1053520289,
     "title": "Máy kiểm tra độ xoắn của sợi Yarn Twisting Tester",
-    "url": "/products/may-kiem-tra-do-xoan-cua-soi-yarn-twisting-tester"
+    "handle": "may-kiem-tra-do-xoan-cua-soi-yarn-twisting-tester",
+    "url": "/products/may-kiem-tra-do-xoan-cua-soi-yarn-twisting-tester",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-19T06:55:35.425Z",
+    "updated_at": "2024-03-19T06:55:58.838Z"
   },
   {
+    "id": 1053518903,
     "title": "Máy quấn cuộn sợi chỉ Wrap Reel",
-    "url": "/products/thiet-bi-quan-cuon-soi-wrap-reel"
+    "handle": "thiet-bi-quan-cuon-soi-wrap-reel",
+    "url": "/products/thiet-bi-quan-cuon-soi-wrap-reel",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-19T04:48:59.522Z",
+    "updated_at": "2024-04-01T03:31:24.229Z"
   },
   {
+    "id": 1053517280,
     "title": "Máy kiểm tra sợi Roaches",
-    "url": "/products/may-kiem-tra-soi-roaches"
+    "handle": "may-kiem-tra-soi-roaches",
+    "url": "/products/may-kiem-tra-soi-roaches",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-19T04:19:10.223Z",
+    "updated_at": "2024-04-04T02:57:48.625Z"
   },
   {
+    "id": 1053516552,
     "title": "Máy thử đóng cọc để xác định độ vón cục và độ mờ của vải.",
-    "url": "/products/may-thu-dong-coc-de-xac-dinh-do-von-cuc-va-do-mo-cua-vai-1"
+    "handle": "may-thu-dong-coc-de-xac-dinh-do-von-cuc-va-do-mo-cua-vai-1",
+    "url": "/products/may-thu-dong-coc-de-xac-dinh-do-von-cuc-va-do-mo-cua-vai-1",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-19T04:02:10.178Z",
+    "updated_at": "2024-03-19T04:03:28.916Z"
   },
   {
+    "id": 1053513857,
     "title": "Thiết bị đo mồ  hôi và nước biển để xác định độ bền màu của hàng dệt PERSPIROMETER",
-    "url": "/products/thiet-bi-do-mo-hoi-va-nuoc-bien-de-xac-dinh-do-ben-mau-cua-hang-det-perspirometer"
+    "handle": "thiet-bi-do-mo-hoi-va-nuoc-bien-de-xac-dinh-do-ben-mau-cua-hang-det-perspirometer",
+    "url": "/products/thiet-bi-do-mo-hoi-va-nuoc-bien-de-xac-dinh-do-ben-mau-cua-hang-det-perspirometer",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-19T03:00:44.447Z",
+    "updated_at": "2024-03-19T03:09:44.671Z"
   },
   {
+    "id": 1053512969,
     "title": "Máy đo độ bền ánh sáng OPTI-FADE dành cho nghành dệt may",
-    "url": "/products/may-do-do-ben-anh-sang-opti-fade-danh-cho-nghanh-det-may"
+    "handle": "may-do-do-ben-anh-sang-opti-fade-danh-cho-nghanh-det-may",
+    "url": "/products/may-do-do-ben-anh-sang-opti-fade-danh-cho-nghanh-det-may",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-19T02:29:42.202Z",
+    "updated_at": "2024-03-19T02:31:20.745Z"
   },
   {
+    "id": 1053495072,
     "title": "Thiết bị kiểm tra độ bền nhiệt của vải OPTI-THERM",
-    "url": "/products/thiet-bi-kiem-tra-do-on-dinh-nhiet-do-ben-mau-khi-ep-nong-opti-therm"
+    "handle": "thiet-bi-kiem-tra-do-on-dinh-nhiet-do-ben-mau-khi-ep-nong-opti-therm",
+    "url": "/products/thiet-bi-kiem-tra-do-on-dinh-nhiet-do-ben-mau-khi-ep-nong-opti-therm",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-18T02:38:16.485Z",
+    "updated_at": "2024-04-04T02:43:54.049Z"
   },
   {
+    "id": 1053442210,
     "title": "Máy Sấy quần áo  Opti-Dry dành cho nghành dệt may",
-    "url": "/products/may-say-quan-ao-opti-dry-danh-cho-nghanh-det-may"
+    "handle": "may-say-quan-ao-opti-dry-danh-cho-nghanh-det-may",
+    "url": "/products/may-say-quan-ao-opti-dry-danh-cho-nghanh-det-may",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-15T05:05:43.104Z",
+    "updated_at": "2026-07-23T08:04:31.942Z"
   },
   {
+    "id": 1053439791,
     "title": "Máy kiểm tra độ bền độ giãn của các mẫu dệt bằng khí nén Opti-Burst",
-    "url": "/products/may-kiem-tra-do-ben-do-gian-cua-cac-mau-det-bang-khi-nen-opti-burst"
+    "handle": "may-kiem-tra-do-ben-do-gian-cua-cac-mau-det-bang-khi-nen-opti-burst",
+    "url": "/products/may-kiem-tra-do-ben-do-gian-cua-cac-mau-det-bang-khi-nen-opti-burst",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-15T02:40:06.997Z",
+    "updated_at": "2024-03-15T06:33:39.246Z"
   },
   {
+    "id": 1053424416,
     "title": "Máy kiểm tra độ thoáng khí của vải Opti-Air",
-    "url": "/products/may-kiem-tra-do-thoang-khi-cua-vai-opti-air"
+    "handle": "may-kiem-tra-do-thoang-khi-cua-vai-opti-air",
+    "url": "/products/may-kiem-tra-do-thoang-khi-cua-vai-opti-air",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-14T09:11:00.781Z",
+    "updated_at": "2024-03-14T09:15:36.148Z"
   },
   {
+    "id": 1053422454,
     "title": "Máy kiểm tra độ vón cục của vải ICI Pilling",
-    "url": "/products/may-kiem-tra-do-von-cuc-cua-vai-ici-pilling"
+    "handle": "may-kiem-tra-do-von-cuc-cua-vai-ici-pilling",
+    "url": "/products/may-kiem-tra-do-von-cuc-cua-vai-ici-pilling",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-14T07:34:09.95Z",
+    "updated_at": "2024-03-14T07:35:07.099Z"
   },
   {
+    "id": 1053418804,
     "title": "Máy hút khói khí kiểm tra độ bền màu Gas Fume Fader",
-    "url": "/products/may-hut-khoi-khi-kiem-tra-do-ben-mau"
+    "handle": "may-hut-khoi-khi-kiem-tra-do-ben-mau",
+    "url": "/products/may-hut-khoi-khi-kiem-tra-do-ben-mau",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-14T04:30:10.176Z",
+    "updated_at": "2024-03-14T04:31:22.439Z"
   },
   {
+    "id": 1053418086,
     "title": "Máy giặt tiêu chuẩn Durawash dành cho nghành dệt may",
-    "url": "/products/may-giat-tieu-chuan-durawash-danh-cho-nghanh-det-may"
+    "handle": "may-giat-tieu-chuan-durawash-danh-cho-nghanh-det-may",
+    "url": "/products/may-giat-tieu-chuan-durawash-danh-cho-nghanh-det-may",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-14T04:03:50.983Z",
+    "updated_at": "2024-03-14T07:13:31.021Z"
   },
   {
+    "id": 1053415437,
     "title": "Dụng cụ kiểm tra độ bền màu thông qua sự cọ xát(crocking)",
-    "url": "/products/dung-cu-kiem-tra-do-ben-mau-thong-qua-su-co-xat-crocking"
+    "handle": "dung-cu-kiem-tra-do-ben-mau-thong-qua-su-co-xat-crocking",
+    "url": "/products/dung-cu-kiem-tra-do-ben-mau-thong-qua-su-co-xat-crocking",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-14T03:08:15.346Z",
+    "updated_at": "2024-04-05T04:18:55.642Z"
   },
   {
+    "id": 1053413509,
     "title": "Máy đo độ bền kéo vải Centurion",
-    "url": "/products/may-do-do-ben-keo-centurion"
+    "handle": "may-do-do-ben-keo-centurion",
+    "url": "/products/may-do-do-ben-keo-centurion",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-14T02:07:43.04Z",
+    "updated_at": "2024-03-14T02:17:15.255Z"
   },
   {
+    "id": 1053399858,
     "title": "Máy giặt dành cho các phòng thí nghiệm,dệt may Wascator  FOM71 CLS",
-    "url": "/products/may-giat-danh-cho-cac-phong-thi-nghiem-det-may-wascator"
+    "handle": "may-giat-danh-cho-cac-phong-thi-nghiem-det-may-wascator",
+    "url": "/products/may-giat-danh-cho-cac-phong-thi-nghiem-det-may-wascator",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-13T07:38:14.878Z",
+    "updated_at": "2024-03-13T12:56:10.779Z"
   },
   {
+    "id": 1053394115,
     "title": "Máy kiểm tra độ bền màu GyroWash",
-    "url": "/products/may-kiem-tra-do-ben-mau-gyrowash-1"
+    "handle": "may-kiem-tra-do-ben-mau-gyrowash-1",
+    "url": "/products/may-kiem-tra-do-ben-mau-gyrowash-1",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-13T03:51:56.577Z",
+    "updated_at": "2024-03-13T04:06:35.833Z"
   },
   {
+    "id": 1053325161,
     "title": "Máy kiểm tra độ bền ánh sáng hồ quang Xenon với TestWise Touch™",
-    "url": "/products/may-kiem-tra-do-ben-anh-sang-ho-quang-xenon-voi-testwise-touch"
+    "handle": "may-kiem-tra-do-ben-anh-sang-ho-quang-xenon-voi-testwise-touch",
+    "url": "/products/may-kiem-tra-do-ben-anh-sang-ho-quang-xenon-voi-testwise-touch",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-08T02:37:15.05Z",
+    "updated_at": "2024-03-13T12:50:17.53Z"
   },
   {
+    "id": 1053317016,
     "title": "Tủ phân loại độ bền màu Verivide (CF 60)",
-    "url": "/products/tu-phan-loai-do-ben-mau-verivide-cf-60"
+    "handle": "tu-phan-loai-do-ben-mau-verivide-cf-60",
+    "url": "/products/tu-phan-loai-do-ben-mau-verivide-cf-60",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-07T07:40:52.75Z",
+    "updated_at": "2024-03-07T08:02:16.629Z"
   },
   {
+    "id": 1053314846,
     "title": "Dụng cụ đánh giá độ giãn của vải OmniStretch",
-    "url": "/products/dung-cu-danh-gia-do-gian-cua-vai-omnistretch"
+    "handle": "dung-cu-danh-gia-do-gian-cua-vai-omnistretch",
+    "url": "/products/dung-cu-danh-gia-do-gian-cua-vai-omnistretch",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-07T04:53:27.66Z",
+    "updated_at": "2024-03-07T07:10:06.296Z"
   },
   {
+    "id": 1053313370,
     "title": "Buồng đèn so màu VisionView",
-    "url": "/products/buong-den-so-mau-visionview"
+    "handle": "buong-den-so-mau-visionview",
+    "url": "/products/buong-den-so-mau-visionview",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-07T03:26:02.671Z",
+    "updated_at": "2024-04-09T04:08:10.291Z"
   },
   {
+    "id": 1053306956,
     "title": "Tủ đánh giá màu sắc nhiều nguồn sáng hãng Gester",
-    "url": "/products/tu-danh-gia-mau-sac-nhieu-nguon-sang-hang-gester"
+    "handle": "tu-danh-gia-mau-sac-nhieu-nguon-sang-hang-gester",
+    "url": "/products/tu-danh-gia-mau-sac-nhieu-nguon-sang-hang-gester",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-06T09:11:39.027Z",
+    "updated_at": "2024-04-09T04:13:47.63Z"
   },
   {
+    "id": 1053302938,
     "title": "Buồng đèn so màu X-Rite Spectralight QC",
-    "url": "/products/buong-den-so-mau-x-rite-spectralight-qc"
+    "handle": "buong-den-so-mau-x-rite-spectralight-qc",
+    "url": "/products/buong-den-so-mau-x-rite-spectralight-qc",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-03-06T02:55:02.106Z",
+    "updated_at": "2024-03-07T06:43:34.131Z"
   },
   {
+    "id": 1053203620,
     "title": "Bóng đèn CWF Sylvania",
-    "url": "/products/bong-den-cwf-sylvania"
+    "handle": "bong-den-cwf-sylvania",
+    "url": "/products/bong-den-cwf-sylvania",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-02-29T04:27:36.812Z",
+    "updated_at": "2024-03-07T02:30:14.659Z"
   },
   {
+    "id": 1053186301,
     "title": "Bóng đèn U30",
-    "url": "/products/bong-den-u30"
+    "handle": "bong-den-u30",
+    "url": "/products/bong-den-u30",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-02-28T03:38:57.594Z",
+    "updated_at": "2024-03-07T02:22:36.192Z"
   },
   {
+    "id": 1053186038,
     "title": "Bóng đèn soi màu TL83",
-    "url": "/products/bong-den-soi-mau-tl83"
+    "handle": "bong-den-soi-mau-tl83",
+    "url": "/products/bong-den-soi-mau-tl83",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-02-28T03:11:49.141Z",
+    "updated_at": "2024-03-07T03:01:27.149Z"
   },
   {
+    "id": 1053171172,
     "title": "Tủ đèn soi màu vải P120",
-    "url": "/products/buong-den-soi-mau-vai-p120"
+    "handle": "buong-den-soi-mau-vai-p120",
+    "url": "/products/buong-den-soi-mau-vai-p120",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-02-27T02:30:28.719Z",
+    "updated_at": "2024-04-11T07:09:54.54Z"
   },
   {
+    "id": 1053159103,
     "title": "Tủ đánh giá màu sắc TiLo M60",
-    "url": "/products/tu-danh-gia-mau-sac-tilo-m60"
+    "handle": "tu-danh-gia-mau-sac-tilo-m60",
+    "url": "/products/tu-danh-gia-mau-sac-tilo-m60",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-02-26T04:18:50.422Z",
+    "updated_at": "2024-03-08T01:48:57.775Z"
   },
   {
+    "id": 1053123601,
     "title": "Tủ soi màu Tilo T60(5)",
-    "url": "/products/tu-soi-mau-tilo-t60-5"
+    "handle": "tu-soi-mau-tilo-t60-5",
+    "url": "/products/tu-soi-mau-tilo-t60-5",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-02-23T09:16:53.621Z",
+    "updated_at": "2024-03-07T08:27:59.873Z"
   },
   {
+    "id": 1053117092,
     "title": "Bóng đèn UV",
-    "url": "/products/bong-den-uv"
+    "handle": "bong-den-uv",
+    "url": "/products/bong-den-uv",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-02-23T02:37:29.849Z",
+    "updated_at": "2024-03-07T02:28:07.832Z"
   },
   {
+    "id": 1053105094,
     "title": "Bóng đèn CWF Verivide(Cool White Lamp)",
-    "url": "/products/bong-den-cwf-verivide"
+    "handle": "bong-den-cwf-verivide",
+    "url": "/products/bong-den-cwf-verivide",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-02-22T04:42:32.895Z",
+    "updated_at": "2024-03-07T02:33:44.139Z"
   },
   {
+    "id": 1053103281,
     "title": "Bóng đèn TL84 Verivide",
-    "url": "/products/bong-den-tl84-verivide"
+    "handle": "bong-den-tl84-verivide",
+    "url": "/products/bong-den-tl84-verivide",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-02-22T02:57:42.582Z",
+    "updated_at": "2024-03-07T02:19:57.141Z"
   },
   {
+    "id": 1053098948,
     "title": "Bóng đèn F Verivide",
-    "url": "/products/bong-den-f-of-verivide"
+    "handle": "bong-den-f-of-verivide",
+    "url": "/products/bong-den-f-of-verivide",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-02-21T09:41:30.912Z",
+    "updated_at": "2024-03-07T02:56:27.525Z"
   },
   {
+    "id": 1053097915,
     "title": "Bóng đèn D65 soi màu Verivide",
-    "url": "/products/bong-den-d65-soi-mau-verivide"
+    "handle": "bong-den-d65-soi-mau-verivide",
+    "url": "/products/bong-den-d65-soi-mau-verivide",
+    "published": true,
+    "status_str": "ĐÃ ĐĂNG",
+    "variants_skus": [],
+    "created_at": "2024-02-21T08:53:15.364Z",
+    "updated_at": "2024-03-07T02:35:25.217Z"
+  },
+  {
+    "id": 1053097387,
+    "title": "Buồng đèn Led Ultraview Verivide",
+    "handle": "buong-den-led-ultraview-verivide",
+    "url": "/products/buong-den-led-ultraview-verivide",
+    "published": false,
+    "status_str": "ĐÃ ẨN",
+    "variants_skus": [],
+    "created_at": "2024-02-21T08:20:20.457Z",
+    "updated_at": "2024-07-17T02:42:40.894Z"
+  },
+  {
+    "id": 1053061961,
+    "title": "Tủ so màu VERIVIDE CAC150-4",
+    "handle": "tu-so-mau-verivide-cac150-4",
+    "url": "/products/tu-so-mau-verivide-cac150-4",
+    "published": false,
+    "status_str": "ĐÃ ẨN",
+    "variants_skus": [],
+    "created_at": "2024-02-20T04:45:21.684Z",
+    "updated_at": "2024-07-17T02:42:40.894Z"
+  },
+  {
+    "id": 1053061293,
+    "title": "Tủ đèn so màu Verivide  CAC120-5",
+    "handle": "tu-so-mau-verivide-cac120-5",
+    "url": "/products/tu-so-mau-verivide-cac120-5",
+    "published": false,
+    "status_str": "ĐÃ ẨN",
+    "variants_skus": [],
+    "created_at": "2024-02-20T03:50:10.194Z",
+    "updated_at": "2024-07-17T02:42:40.894Z"
+  },
+  {
+    "id": 1053060976,
+    "title": "Tủ so màu VERIVIDE CAC120-4",
+    "handle": "tu-soi-mau-verivide-cac120-4",
+    "url": "/products/tu-soi-mau-verivide-cac120-4",
+    "published": false,
+    "status_str": "ĐÃ ẨN",
+    "variants_skus": [],
+    "created_at": "2024-02-20T03:37:22.863Z",
+    "updated_at": "2024-07-17T02:42:40.894Z"
+  },
+  {
+    "id": 1053059721,
+    "title": "Tủ đánh giá màu sắc Verivide CAC 60-5",
+    "handle": "tu-so-mau-verivide-cac-60-5",
+    "url": "/products/tu-so-mau-verivide-cac-60-5",
+    "published": false,
+    "status_str": "ĐÃ ẨN",
+    "variants_skus": [],
+    "created_at": "2024-02-20T02:39:57.833Z",
+    "updated_at": "2024-07-17T02:42:40.894Z"
+  },
+  {
+    "id": 1053059676,
+    "title": "Tủ so màu Verivide CAC 60-4",
+    "handle": "tu-so-mau-verivide-cac-60-4",
+    "url": "/products/tu-so-mau-verivide-cac-60-4",
+    "published": false,
+    "status_str": "ĐÃ ẨN",
+    "variants_skus": [],
+    "created_at": "2024-02-20T02:29:07.064Z",
+    "updated_at": "2024-07-17T02:42:40.894Z"
   }
 ]

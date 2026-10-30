@@ -201,7 +201,7 @@
   },
   {
     "product_id": "2ae97717-7147-4f05-80a3-7fd08f3ef7b5",
-    "status": "EXTRACTED_UNVERIFIED",
+    "status": "REJECTED",
     "source_page": "9",
     "product_name": "Nhuộm màu dệt may cho chuỗi cung ứng bán lẻ",
     "product_name_en": "TEXTILE COLORATION FOR THE RETAIL SUPPLY CHAIN",
@@ -222,7 +222,9 @@
     "haravan_product_id": null,
     "created_at": "2026-10-29T04:25:39.109206Z",
     "updated_at": "2026-10-29T04:25:39.109206Z",
-    "notes": "Định dạng tải về PDF (PDF Download)"
+    "notes": "CẢNH BÁO: Đã có trên Haravan/Website (ĐÃ ĐĂNG - ID: 1077294670 - /products/sach-textile-coloration-for-the-retail-supply-chain-09616a)",
+    "haravan_matched_id": 1077294670,
+    "haravan_matched_status": "ĐÃ ĐĂNG"
   },
   {
     "product_id": "b6062972-4f15-4211-8653-2cca0cfb055d",
@@ -642,7 +644,7 @@
   },
   {
     "product_id": "44b24f9b-93fd-43c0-9c46-c35d5c948550",
-    "status": "EXTRACTED_UNVERIFIED",
+    "status": "REJECTED",
     "source_page": "15",
     "product_name": "Thang xám chuẩn đánh giá độ bền màu - Aatcc Gray Scale For Color Change",
     "product_name_en": "AATCC GRAY SCALE FOR COLOR CHANGE",
@@ -665,11 +667,13 @@
     "haravan_product_id": null,
     "created_at": "2026-10-29T14:49:55.083700Z",
     "updated_at": "2026-10-29T14:49:55.083700Z",
-    "notes": "Trích xuất trực tiếp từ Catalogue AATCC Trang 15. SKU: 28347A."
+    "notes": "CẢNH BÁO: Đã có trên Haravan/Website (ĐÃ ĐĂNG - ID: 1076589500 - /products/thang-chuyen-mau-9-cap-aatcc-28347a-aatcc)",
+    "haravan_matched_id": 1076589500,
+    "haravan_matched_status": "ĐÃ ĐĂNG"
   },
   {
     "product_id": "c7e06cc1-5444-439a-ba5e-1276c7ef53ad",
-    "status": "EXTRACTED_UNVERIFIED",
+    "status": "REJECTED",
     "source_page": "15",
     "product_name": "Thang xám chuẩn đánh giá độ bền màu - Aatcc Gray Scale For Color Change",
     "product_name_en": "AATCC GRAY SCALE FOR COLOR CHANGE",
@@ -692,11 +696,13 @@
     "haravan_product_id": null,
     "created_at": "2026-10-29T14:49:55.083700Z",
     "updated_at": "2026-10-29T14:49:55.083700Z",
-    "notes": "Trích xuất trực tiếp từ Catalogue AATCC Trang 15. SKU: 19129A."
+    "notes": "CẢNH BÁO: Đã có trên Haravan/Website (ĐÃ ĐĂNG - ID: 1076589524 - /products/thang-danh-gia-vet-ban-red-40-aatcc-19129a-aatcc)",
+    "haravan_matched_id": 1076589524,
+    "haravan_matched_status": "ĐÃ ĐĂNG"
   },
   {
     "product_id": "32fa8702-f427-4012-ab95-3d2a8fe97393",
-    "status": "EXTRACTED_UNVERIFIED",
+    "status": "REJECTED",
     "source_page": "16",
     "product_name": "Thiết bị / Vật tư thử nghiệm - Aatcc 3D Smoothness Appearance Replicas",
     "product_name_en": "AATCC 3D SMOOTHNESS APPEARANCE REPLICAS",
@@ -719,11 +725,13 @@
     "haravan_product_id": null,
     "created_at": "2026-10-29T14:49:55.083700Z",
     "updated_at": "2026-10-29T14:49:55.083700Z",
-    "notes": "Trích xuất trực tiếp từ Catalogue AATCC Trang 16. SKU: 68353A."
+    "notes": "CẢNH BÁO: Đã có trên Haravan/Website (ĐÃ ĐĂNG - ID: 1076589993 - /products/bo-mau-3d-danh-gia-do-phang-be-mat-aatcc-68353a-aatcc)",
+    "haravan_matched_id": 1076589993,
+    "haravan_matched_status": "ĐÃ ĐĂNG"
   },
   {
     "product_id": "ffff5563-6af2-4bf0-8088-7d619c5b99e8",
-    "status": "EXTRACTED_UNVERIFIED",
+    "status": "REJECTED",
     "source_page": "16",
     "product_name": "Thiết bị / Vật tư thử nghiệm - Aatcc 3D Smoothness Appearance Replicas",
     "product_name_en": "AATCC 3D SMOOTHNESS APPEARANCE REPLICAS",
@@ -746,11 +754,13 @@
     "haravan_product_id": null,
     "created_at": "2026-10-29T14:49:55.083700Z",
     "updated_at": "2026-10-29T14:49:55.083700Z",
-    "notes": "Trích xuất trực tiếp từ Catalogue AATCC Trang 16. SKU: 68373A."
+    "notes": "CẢNH BÁO: Đã có trên Haravan/Website (ĐÃ ĐĂNG - ID: 1076590084 - /products/thang-anh-danh-gia-do-phang-duong-may-aatcc-68373a-aatcc)",
+    "haravan_matched_id": 1076590084,
+    "haravan_matched_status": "ĐÃ ĐĂNG"
   },
   {
     "product_id": "65d3a763-255a-4430-a180-1f42698b7965",
-    "status": "EXTRACTED_UNVERIFIED",
+    "status": "REJECTED",
     "source_page": "16",
     "product_name": "Thiết bị / Vật tư thử nghiệm - Aatcc 3D Smoothness Appearance Replicas",
     "product_name_en": "AATCC 3D SMOOTHNESS APPEARANCE REPLICAS",
@@ -773,11 +783,13 @@
     "haravan_product_id": null,
     "created_at": "2026-10-29T14:49:55.083700Z",
     "updated_at": "2026-10-29T14:49:55.083700Z",
-    "notes": "Trích xuất trực tiếp từ Catalogue AATCC Trang 16. SKU: 68720A."
+    "notes": "CẢNH BÁO: Đã có trên Haravan/Website (ĐÃ ĐĂNG - ID: 1076604301 - /products/bo-mau-3d-danh-gia-giu-nep-gap-aatcc-68720a-aatcc)",
+    "haravan_matched_id": 1076604301,
+    "haravan_matched_status": "ĐÃ ĐĂNG"
   },
   {
     "product_id": "2f2f3604-e08b-441b-b69c-cd882ba13873",
-    "status": "EXTRACTED_UNVERIFIED",
+    "status": "REJECTED",
     "source_page": "16",
     "product_name": "Thiết bị / Vật tư thử nghiệm - Aatcc 3D Smoothness Appearance Replicas",
     "product_name_en": "AATCC 3D SMOOTHNESS APPEARANCE REPLICAS",
@@ -800,11 +812,13 @@
     "haravan_product_id": null,
     "created_at": "2026-10-29T14:49:55.083700Z",
     "updated_at": "2026-10-29T14:49:55.083700Z",
-    "notes": "Trích xuất trực tiếp từ Catalogue AATCC Trang 16. SKU: 68390A."
+    "notes": "CẢNH BÁO: Đã có trên Haravan/Website (ĐÃ ĐĂNG - ID: 1076604451 - /products/bo-mau-3d-danh-gia-phuc-hoi-nhan-aatcc-68390a-aatcc)",
+    "haravan_matched_id": 1076604451,
+    "haravan_matched_status": "ĐÃ ĐĂNG"
   },
   {
     "product_id": "b0ac7ead-716b-45a5-9e7a-6faebb96c959",
-    "status": "EXTRACTED_UNVERIFIED",
+    "status": "REJECTED",
     "source_page": "16",
     "product_name": "Thiết bị / Vật tư thử nghiệm - Aatcc 3D Smoothness Appearance Replicas",
     "product_name_en": "AATCC 3D SMOOTHNESS APPEARANCE REPLICAS",
@@ -827,11 +841,13 @@
     "haravan_product_id": null,
     "created_at": "2026-10-29T14:49:55.083700Z",
     "updated_at": "2026-10-29T14:49:55.083700Z",
-    "notes": "Trích xuất trực tiếp từ Catalogue AATCC Trang 16. SKU: 68379A."
+    "notes": "CẢNH BÁO: Đã có trên Haravan/Website (ĐÃ ĐĂNG - ID: 1076604559 - /products/thang-danh-gia-kha-nang-giai-phong-vet-ban-aatcc-68379a-aatcc)",
+    "haravan_matched_id": 1076604559,
+    "haravan_matched_status": "ĐÃ ĐĂNG"
   },
   {
     "product_id": "2a49b42d-61a2-4e69-b846-3efce9059fbe",
-    "status": "EXTRACTED_UNVERIFIED",
+    "status": "REJECTED",
     "source_page": "17",
     "product_name": "Thiết bị / Vật tư thử nghiệm - Aatcc Photographic Spray Test",
     "product_name_en": "AATCC PHOTOGRAPHIC SPRAY TEST",
@@ -854,11 +870,13 @@
     "haravan_product_id": null,
     "created_at": "2026-10-29T14:49:55.083700Z",
     "updated_at": "2026-10-29T14:49:55.083700Z",
-    "notes": "Trích xuất trực tiếp từ Catalogue AATCC Trang 17. SKU: 78387A."
+    "notes": "CẢNH BÁO: Đã có trên Haravan/Website (ĐÃ ĐĂNG - ID: 1076604647 - /products/thang-anh-danh-gia-thu-phun-nuoc-aatcc-78387a-aatcc)",
+    "haravan_matched_id": 1076604647,
+    "haravan_matched_status": "ĐÃ ĐĂNG"
   },
   {
     "product_id": "2550fae3-7159-46fe-ba89-acff0a37103e",
-    "status": "EXTRACTED_UNVERIFIED",
+    "status": "REJECTED",
     "source_page": "17",
     "product_name": "Thiết bị / Vật tư thử nghiệm - Aatcc Photographic Spray Test",
     "product_name_en": "AATCC PHOTOGRAPHIC SPRAY TEST",
@@ -881,11 +899,13 @@
     "haravan_product_id": null,
     "created_at": "2026-10-29T14:49:55.083700Z",
     "updated_at": "2026-10-29T14:49:55.083700Z",
-    "notes": "Trích xuất trực tiếp từ Catalogue AATCC Trang 17. SKU: 58335A."
+    "notes": "CẢNH BÁO: Đã có trên Haravan/Website (ĐÃ ĐĂNG - ID: 1076604823 - /products/thang-anh-danh-gia-can-loc-aatcc-58335a-aatcc)",
+    "haravan_matched_id": 1076604823,
+    "haravan_matched_status": "ĐÃ ĐĂNG"
   },
   {
     "product_id": "d83f20d5-9a59-48c3-aeb4-ced4903f6546",
-    "status": "EXTRACTED_UNVERIFIED",
+    "status": "REJECTED",
     "source_page": "17",
     "product_name": "Thiết bị / Vật tư thử nghiệm - Aatcc Photographic Spray Test",
     "product_name_en": "AATCC PHOTOGRAPHIC SPRAY TEST",
@@ -908,11 +928,13 @@
     "haravan_product_id": null,
     "created_at": "2026-10-29T14:49:55.083700Z",
     "updated_at": "2026-10-29T14:49:55.083700Z",
-    "notes": "Trích xuất trực tiếp từ Catalogue AATCC Trang 17. SKU: 58725A."
+    "notes": "CẢNH BÁO: Đã có trên Haravan/Website (ĐÃ ĐĂNG - ID: 1076636808 - /products/thang-anh-danh-gia-bui-thuoc-nhuom-aatcc-58725a-aatcc)",
+    "haravan_matched_id": 1076636808,
+    "haravan_matched_status": "ĐÃ ĐĂNG"
   },
   {
     "product_id": "7c74bc49-bec5-4b4c-a0b2-f65827a4edb9",
-    "status": "EXTRACTED_UNVERIFIED",
+    "status": "REJECTED",
     "source_page": "17",
     "product_name": "Thiết bị / Vật tư thử nghiệm - Aatcc Photographic Spray Test",
     "product_name_en": "AATCC PHOTOGRAPHIC SPRAY TEST",
@@ -935,11 +957,13 @@
     "haravan_product_id": null,
     "created_at": "2026-10-29T14:49:55.083700Z",
     "updated_at": "2026-10-29T14:49:55.083700Z",
-    "notes": "Trích xuất trực tiếp từ Catalogue AATCC Trang 17. SKU: 38362C."
+    "notes": "CẢNH BÁO: Đã có trên Haravan/Website (ĐÃ ĐĂNG - ID: 1076652167 - /products/mau-len-xanh-chuan-do-ben-anh-sang-aatcc-38362c-aatcc)",
+    "haravan_matched_id": 1076652167,
+    "haravan_matched_status": "ĐÃ ĐĂNG"
   },
   {
     "product_id": "c3949df0-6988-4e19-89d2-1a140beb97ca",
-    "status": "EXTRACTED_UNVERIFIED",
+    "status": "REJECTED",
     "source_page": "17",
     "product_name": "Thiết bị / Vật tư thử nghiệm - Aatcc Photographic Spray Test",
     "product_name_en": "AATCC PHOTOGRAPHIC SPRAY TEST",
@@ -962,11 +986,13 @@
     "haravan_product_id": null,
     "created_at": "2026-10-29T14:49:55.083700Z",
     "updated_at": "2026-10-29T14:49:55.083700Z",
-    "notes": "Trích xuất trực tiếp từ Catalogue AATCC Trang 17. SKU: 38610C."
+    "notes": "CẢNH BÁO: Đã có trên Haravan/Website (ĐÃ ĐĂNG - ID: 1076661120 - /products/chuan-phai-mau-cho-len-xanh-aatcc-38610c-aatcc)",
+    "haravan_matched_id": 1076661120,
+    "haravan_matched_status": "ĐÃ ĐĂNG"
   },
   {
     "product_id": "a6003932-09fc-460b-9722-bab3e770c71a",
-    "status": "EXTRACTED_UNVERIFIED",
+    "status": "REJECTED",
     "source_page": "17",
     "product_name": "Thiết bị / Vật tư thử nghiệm - Aatcc Photographic Spray Test",
     "product_name_en": "AATCC PHOTOGRAPHIC SPRAY TEST",
@@ -989,7 +1015,9 @@
     "haravan_product_id": null,
     "created_at": "2026-10-29T14:49:55.083700Z",
     "updated_at": "2026-10-29T14:49:55.083700Z",
-    "notes": "Trích xuất trực tiếp từ Catalogue AATCC Trang 17. SKU: 38611C."
+    "notes": "CẢNH BÁO: Đã có trên Haravan/Website (ĐÃ ĐĂNG - ID: 1076671211 - /products/chuan-phai-mau-cho-len-xanh-aatcc-38611c-aatcc)",
+    "haravan_matched_id": 1076671211,
+    "haravan_matched_status": "ĐÃ ĐĂNG"
   },
   {
     "product_id": "7040fda2-c92d-48da-ba8b-a4a1d4849a89",

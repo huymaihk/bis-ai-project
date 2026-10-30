@@ -35,7 +35,7 @@ from config import (
 )
 from sheets_manager import get_client, get_or_create_spreadsheet, init_products_sheet, append_products
 
-HARAVAN_API_BASE = "https://app.haravan.com/api/v1"
+HARAVAN_API_BASE = "https://apis.haravan.com/com"
 HARAVAN_SAFETY_CUTOFF_DATE = "2026-10-20"
 
 
@@ -252,6 +252,164 @@ class AgentOperations:
         }
         print(f"✓ [Agent_Operations] Hoàn tất đối soát: {len(clean_products)} SP hợp lệ, {len(website_dups_locked)} trùng web đã khóa, {sheet_dups_removed} dòng trùng Sheet đã lọc ({elapsed}s)")
         return summary
+
+    def scan_live_haravan_and_web(self, products_cache: List[dict] | None = None) -> dict:
+        """
+        Quét trực tiếp thời gian thực từ:
+        1. Haravan API: https://apis.haravan.com/com/products.json (Quét toàn bộ: Đã đăng, Đã ẩn)
+        2. Website công khai: https://bistextile.com/collections/all/products.json
+        -> Đối chiếu, phân loại chính xác: Đã đăng, Đã ẩn, hay Mới hoàn toàn.
+        -> Tự động cập nhật vào extracted_products_cache.json và bistextile_existing_products.json.
+        """
+        import re
+        start_time = time.time()
+        print("\n🌐 [Agent_Operations] Bắt đầu quét Live Haravan API & bistextile.com/collections/all...")
+
+        # 1. Quét Haravan API toàn bộ phân trang
+        haravan_products = []
+        page = 1
+        while True:
+            url = f"{HARAVAN_API_BASE}/products.json?page={page}&limit=50"
+            try:
+                r = requests.get(url, headers=self._haravan_headers(), timeout=15)
+                if r.status_code != 200:
+                    break
+                data = r.json().get("products", [])
+                if not data:
+                    break
+                haravan_products.extend(data)
+                if len(data) < 50:
+                    break
+                page += 1
+                time.sleep(0.2)
+            except Exception as e:
+                print(f"  ⚠ Lỗi kết nối Haravan API (page {page}): {e}")
+                break
+
+        # 2. Quét Website công khai bistextile.com/collections/all
+        web_products = []
+        page = 1
+        while True:
+            url = f"https://bistextile.com/collections/all/products.json?page={page}&limit=50"
+            try:
+                r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=15)
+                if r.status_code != 200:
+                    break
+                data = r.json().get("products", [])
+                if not data:
+                    break
+                web_products.extend(data)
+                if len(data) < 50:
+                    break
+                page += 1
+                time.sleep(0.2)
+            except Exception as e:
+                print(f"  ⚠ Lỗi kết nối collections/all (page {page}): {e}")
+                break
+
+        # Tổng hợp danh mục sàn
+        unified_store = []
+        for h in haravan_products:
+            v_skus = [str(v.get("sku", "")).replace("#", "").strip() for v in h.get("variants", []) if v.get("sku")]
+            is_pub = bool(h.get("published_at"))
+            unified_store.append({
+                "id": h.get("id"),
+                "title": h.get("title"),
+                "handle": h.get("handle"),
+                "url": f"/products/{h.get('handle')}",
+                "published": is_pub,
+                "status_str": "ĐÃ ĐĂNG" if is_pub else "ĐÃ ẨN",
+                "variants_skus": v_skus,
+                "created_at": h.get("created_at"),
+                "updated_at": h.get("updated_at")
+            })
+
+        # Lưu lại bản cập nhật mới nhất vào bistextile_existing_products.json
+        if unified_store:
+            store_file = self.storage_dir / "bistextile_existing_products.json"
+            try:
+                with open(store_file, "w", encoding="utf-8") as f:
+                    json.dump(unified_store, f, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
+
+        # 3. Đối soát với danh sách sản phẩm bóc tách
+        products = list(products_cache) if products_cache else []
+        cache_file = self.storage_dir / "extracted_products_cache.json"
+        if not products and cache_file.exists():
+            try:
+                with open(cache_file, "r", encoding="utf-8") as f:
+                    products = json.load(f)
+            except Exception:
+                products = []
+
+        matched = []
+        unmatched = []
+
+        for p in products:
+            sku = str(p.get("sku", "")).strip()
+            if not sku:
+                continue
+            sku_low = sku.lower()
+
+            match_h = None
+            for item in unified_store:
+                v_skus_low = [s.lower() for s in item.get("variants_skus", [])]
+                if sku_low in v_skus_low:
+                    match_h = item
+                    break
+                t_low = item.get("title", "").lower()
+                h_low = item.get("handle", "").lower()
+                if re.search(r'\b' + re.escape(sku_low) + r'\b', t_low) or sku_low in h_low:
+                    match_h = item
+                    break
+
+            if match_h:
+                p["status"] = STATUS_REJECTED
+                stt_txt = match_h.get("status_str", "ĐÃ ĐĂNG")
+                p["notes"] = f"CẢNH BÁO: Đã có trên Haravan/Website ({stt_txt} - ID: {match_h['id']} - {match_h['url']})"
+                p["haravan_matched_id"] = match_h["id"]
+                p["haravan_matched_status"] = stt_txt
+                matched.append({
+                    "sku": sku,
+                    "product_name": p.get("product_name"),
+                    "status_str": stt_txt,
+                    "url": match_h["url"],
+                    "haravan_id": match_h["id"]
+                })
+            else:
+                if p.get("status") == STATUS_REJECTED and "Haravan" in p.get("notes", ""):
+                    p["status"] = STATUS_EXTRACTED
+                    p["notes"] = ""
+                unmatched.append(sku)
+
+        # Lưu lại cache
+        with open(cache_file, "w", encoding="utf-8") as f:
+            json.dump(products, f, ensure_ascii=False, indent=2)
+
+        git_cache = Path("c:/Users/Dell/bis-ai-project/BIS_AI_PROJECT/extracted_products_cache.json")
+        if git_cache.parent.exists():
+            try:
+                with open(git_cache, "w", encoding="utf-8") as f:
+                    json.dump(products, f, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
+
+        elapsed = round(time.time() - start_time, 2)
+        res = {
+            "success": True,
+            "total_haravan": len(haravan_products),
+            "total_web": len(web_products),
+            "total_published": sum(1 for p in haravan_products if p.get("published_at")),
+            "total_hidden": sum(1 for p in haravan_products if not p.get("published_at")),
+            "matched_count": len(matched),
+            "unmatched_count": len(unmatched),
+            "matched_details": matched,
+            "clean_products": products,
+            "duration_seconds": elapsed
+        }
+        print(f"✓ [Agent_Operations] Live scan xong: {len(haravan_products)} SP Haravan, {len(matched)} trùng đã khóa REJECTED, {len(unmatched)} SP mới ({elapsed}s)")
+        return res
 
     # ── Haravan Guard & Synchronization ───────────────────────────────────────
     def _haravan_headers(self) -> dict:
