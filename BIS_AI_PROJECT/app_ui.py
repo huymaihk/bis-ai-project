@@ -2193,6 +2193,7 @@ with tab_ops:
     </div>
     """, unsafe_allow_html=True)
 
+    approved_count = len([item for item in products if item.get("status") == "APPROVED"])
     col_h1, col_h2, col_h3 = st.columns(3)
     with col_h1:
         st.info(f"🔒 **Rào chắn 2026-10-20:** Đang bật (Bảo vệ 100% dữ liệu gốc).")

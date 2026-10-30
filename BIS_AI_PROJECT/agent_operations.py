@@ -10,6 +10,7 @@ Responsible for:
 """
 import os
 import sys
+import re
 import json
 import time
 from datetime import datetime
@@ -460,9 +461,9 @@ class AgentOperations:
             title = p.get("product_name") or p.get("product_name_en")
             body_html = p.get("custom_html") or tech_agent.build_7_block_html(p)
 
-            # Đảm bảo handle không bị lỗi
-            raw_handle = re.sub(r"[^a-zA-Z0-9\s-]", "", title.lower()).strip()
-            handle = re.sub(r"[\s-]+", "-", raw_handle)[:80] if raw_handle else f"sp-{sku.lower()}"
+            # Đảm bảo handle không bị lỗi và an toàn
+            clean_sku = re.sub(r"[^a-zA-Z0-9_-]", "", str(sku).lower()).strip()
+            handle = f"sp-{clean_sku}" if clean_sku else f"sp-{int(time.time())}"
 
             payload = {
                 "product": {
@@ -475,7 +476,8 @@ class AgentOperations:
                     "tags": f"AATCC,Tài liệu tiêu chuẩn,{p.get('category', '')}",
                     "options": [
                         {
-                            "name": "Title"
+                            "name": "Title",
+                            "values": ["Default Title"]
                         }
                     ],
                     "variants": [
