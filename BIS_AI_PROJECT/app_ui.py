@@ -2277,9 +2277,6 @@ with tab_ops:
 
             if not sync_res:
                 st.info("Hiện không có sản phẩm nào ở trạng thái APPROVED cần đồng bộ. Hãy phê duyệt sản phẩm tại Bàn Kỹ thuật trước.")
-            else:
-                time.sleep(1.0)
-                st.rerun()
 
 
 # ── TAB 6: BỘ NHỚ TỰ HỌC (FEW-SHOT CONTINUOUS FEEDBACK) ────────────────────────
