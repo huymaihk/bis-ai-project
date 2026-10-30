@@ -468,10 +468,17 @@ class AgentOperations:
                     "product_type": p.get("category") or "Vật tư thử nghiệm",
                     "published": False,  # BẮT BUỘC LUÔN ẨN
                     "tags": f"AATCC,Tài liệu tiêu chuẩn,{p.get('category', '')}",
+                    "options": [
+                        {
+                            "name": "Title"
+                        }
+                    ],
                     "variants": [
                         {
                             "sku": sku,
-                            "price": "0",
+                            "price": 0,
+                            "title": "Default Title",
+                            "option1": "Default Title",
                             "inventory_quantity": 9999,
                             "fulfillment_service": "manual",
                         }

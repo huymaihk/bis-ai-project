@@ -2240,17 +2240,46 @@ with tab_ops:
     if st.button("🚀 BẮT ĐẦU ĐỒNG BỘ CÁC SẢN PHẨM APPROVED LÊN HARAVAN", type="primary", disabled=(len(approved_for_sync) == 0)):
         with st.spinner("Agent_Operations đang tiến hành đồng bộ an toàn..."):
             sync_res = operations_agent.sync_approved_to_haravan(approved_for_sync)
-            if sync_res:
+            success_items = [r for r in sync_res if r.get("status") == "SUCCESS"]
+            error_items = [r for r in sync_res if r.get("status") != "SUCCESS"]
+
+            if success_items:
+                # Đánh dấu PUSHED_TO_HARAVAN trong local cache
+                pushed_skus = {r.get("sku") for r in success_items}
+                for item in products:
+                    if item.get("sku") in pushed_skus:
+                        item["status"] = "PUSHED_TO_HARAVAN"
+                        item["haravan_id"] = next((r.get("haravan_id") for r in success_items if r.get("sku") == item.get("sku")), None)
+
+                with open(cache_file, "w", encoding="utf-8") as f:
+                    json.dump(products, f, ensure_ascii=False, indent=2)
+
+                git_cache = Path("c:/Users/Dell/bis-ai-project/BIS_AI_PROJECT/extracted_products_cache.json")
+                if git_cache.parent.exists():
+                    try:
+                        with open(git_cache, "w", encoding="utf-8") as f:
+                            json.dump(products, f, ensure_ascii=False, indent=2)
+                    except Exception:
+                        pass
+
+                st.session_state["cached_products"] = products
                 st.session_state.audit_logs.append({
                     "time": datetime.now().strftime("%H:%M:%S"),
                     "type": "SYNC",
-                    "text": f"Đồng bộ thành công {len(sync_res)} sản phẩm lên sàn Haravan."
+                    "text": f"Đồng bộ thành công {len(success_items)} sản phẩm lên sàn Haravan."
                 })
-                st.toast(f"✓ Đã hoàn tất đồng bộ {len(sync_res)} sản phẩm lên Haravan ở chế độ ẩn!", icon="🚀")
-                st.json(sync_res)
-                st.rerun()
-            else:
+                st.success(f"✓ ĐÃ TẠO THÀNH CÔNG {len(success_items)} SẢN PHẨM TRÊN HARAVAN (CHẾ ĐỘ ẨN)!")
+                st.json(success_items)
+
+            if error_items:
+                st.error(f"⚠️ Có {len(error_items)} sản phẩm gặp lỗi phản hồi từ Haravan API:")
+                st.json(error_items)
+
+            if not sync_res:
                 st.info("Hiện không có sản phẩm nào ở trạng thái APPROVED cần đồng bộ. Hãy phê duyệt sản phẩm tại Bàn Kỹ thuật trước.")
+            else:
+                time.sleep(1.0)
+                st.rerun()
 
 
 # ── TAB 6: BỘ NHỚ TỰ HỌC (FEW-SHOT CONTINUOUS FEEDBACK) ────────────────────────
