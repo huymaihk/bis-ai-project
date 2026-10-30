@@ -675,6 +675,18 @@ technical_agent = getattr(leader, "technical_agent", None)
 operations_agent = getattr(leader, "operations_agent", None)
 learning_engine = getattr(leader, "learning_engine", None)
 marketing_agent = getattr(leader, "marketing_agent", None)
+if marketing_agent is None or not hasattr(marketing_agent, "load_marketing_knowledge"):
+    try:
+        import importlib
+        import agent_marketing
+        importlib.reload(agent_marketing)
+        marketing_agent = agent_marketing.AgentMarketing(PROJECT_DIR)
+        if leader:
+            leader.marketing_agent = marketing_agent
+            if hasattr(leader, "departments"):
+                leader.departments["marketing"] = marketing_agent
+    except Exception:
+        pass
 knowledge_agent = getattr(leader, "knowledge_agent", None)
 media_agent = getattr(leader, "media_agent", None)
 
@@ -1574,13 +1586,37 @@ with tab_mkt:
     with c_crawl_btn:
         if st.button("🚀 KÍCH HOẠT AI NGHIÊN CỨU 4 WEBSITE", key="btn_crawl_industry_sites", type="primary", use_container_width=True):
             if marketing_agent:
-                with st.spinner("Agent_Marketing đang quét dữ liệu trực tiếp từ bistextile, qclabtex, labgartex, bisvn..."):
-                    k_res = marketing_agent.research_industry_websites()
-                    st.toast("✓ Đã hoàn tất nghiên cứu 4 website & nạp vào Bộ Nhớ Tự Học!", icon="🧠")
+                if not hasattr(marketing_agent, "research_industry_websites"):
+                    try:
+                        import importlib, agent_marketing
+                        importlib.reload(agent_marketing)
+                        marketing_agent = agent_marketing.AgentMarketing(PROJECT_DIR)
+                    except Exception:
+                        pass
+                if hasattr(marketing_agent, "research_industry_websites"):
+                    with st.spinner("Agent_Marketing đang quét dữ liệu trực tiếp từ bistextile, qclabtex, labgartex, bisvn..."):
+                        k_res = marketing_agent.research_industry_websites()
+                        st.toast("✓ Đã hoàn tất nghiên cứu 4 website & nạp vào Bộ Nhớ Tự Học!", icon="🧠")
+                        st.rerun()
+                else:
+                    st.info("Đang nạp module nghiên cứu...")
                     st.rerun()
 
-    # Tải tri thức đã học được
-    mkt_knowledge = marketing_agent.load_marketing_knowledge() if marketing_agent else {}
+    # Tải tri thức đã học được (Tự động chống lỗi cache RAM)
+    mkt_knowledge = {}
+    if marketing_agent and hasattr(marketing_agent, "load_marketing_knowledge"):
+        try:
+            mkt_knowledge = marketing_agent.load_marketing_knowledge()
+        except Exception:
+            mkt_knowledge = {}
+    if not mkt_knowledge:
+        know_file = PROJECT_DIR / "marketing_knowledge.json"
+        if know_file.exists():
+            try:
+                with open(know_file, "r", encoding="utf-8") as f:
+                    mkt_knowledge = json.load(f)
+            except Exception:
+                mkt_knowledge = {}
     if mkt_knowledge:
         with st.expander("📚 XEM CHI TIẾT BỘ TRI THỨC VÀ QUY TẮC TRÌNH BÀY AI ĐÃ HỌC ĐƯỢC", expanded=True):
             col_kno1, col_kno2 = st.columns(2)
