@@ -2236,10 +2236,11 @@ with tab_ops:
     st.markdown("---")
     st.markdown("#### Thực thi đồng bộ an toàn lên Haravan:")
     approved_for_sync = [item for item in products if item.get("status") == "APPROVED"]
-    st.info(f"Hiện có **{len(approved_for_sync)} sản phẩm** đã APPROVED sẵn sàng đẩy lên Haravan.")
+    st.info(f"Hiện có **{len(approved_for_sync)} sản phẩm** đã APPROVED sẵn sàng đẩy lên Haravan: {[x.get('sku') for x in approved_for_sync]}")
     if st.button("🚀 BẮT ĐẦU ĐỒNG BỘ CÁC SẢN PHẨM APPROVED LÊN HARAVAN", type="primary", disabled=(len(approved_for_sync) == 0)):
-        with st.spinner("Agent_Operations đang tiến hành đồng bộ an toàn..."):
+        with st.spinner("Agent_Operations đang tiến hành kết nối Haravan API..."):
             sync_res = operations_agent.sync_approved_to_haravan(approved_for_sync)
+            st.write("📊 Kết quả phản hồi từ Haravan API:", sync_res)
             success_items = [r for r in sync_res if r.get("status") == "SUCCESS"]
             error_items = [r for r in sync_res if r.get("status") != "SUCCESS"]
 
@@ -2269,7 +2270,6 @@ with tab_ops:
                     "text": f"Đồng bộ thành công {len(success_items)} sản phẩm lên sàn Haravan."
                 })
                 st.success(f"✓ ĐÃ TẠO THÀNH CÔNG {len(success_items)} SẢN PHẨM TRÊN HARAVAN (CHẾ ĐỘ ẨN)!")
-                st.json(success_items)
 
             if error_items:
                 st.error(f"⚠️ Có {len(error_items)} sản phẩm gặp lỗi phản hồi từ Haravan API:")
