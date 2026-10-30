@@ -892,6 +892,8 @@ total_sp = len(products)
 dups_sp = len([item for item in products if item.get("status") == "REJECTED"])
 valid_sp = len([item for item in products if item.get("status") != "REJECTED"])
 approved_sp = len([item for item in products if item.get("status") == "APPROVED"])
+approved_count = approved_sp
+rejected_count = dups_sp
 
 st.markdown(f"""
 <div class="top-command-bar">
