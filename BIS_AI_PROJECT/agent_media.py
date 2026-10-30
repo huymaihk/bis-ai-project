@@ -122,12 +122,24 @@ class AgentMedia:
         return None
 
     def search_web_images(self, query: str, max_results: int = 8) -> list[dict]:
-        """Tìm kiếm ảnh sản phẩm chất lượng cao trên web thông qua Bing Image Engine (curl_cffi)."""
+        """Tìm kiếm ảnh sản phẩm chất lượng cao trên web thông qua Bing Image Engine."""
         import urllib.parse
         import json
         import re
-        from curl_cffi import requests
-        from bs4 import BeautifulSoup
+
+        # Import thư viện HTTP linh hoạt (ưu tiên curl_cffi, fallback requests)
+        try:
+            from curl_cffi import requests as http_client
+            use_cffi = True
+        except ImportError:
+            import requests as http_client
+            use_cffi = False
+
+        try:
+            from bs4 import BeautifulSoup
+        except ImportError:
+            print("⚠️ beautifulsoup4 chưa cài. Đang dùng regex fallback.")
+            BeautifulSoup = None
 
         clean_q = query.strip()
         encoded = urllib.parse.quote_plus(clean_q)
@@ -138,46 +150,70 @@ class AgentMedia:
         }
         results = []
         try:
-            r = requests.get(url, headers=headers, impersonate="chrome", timeout=15)
+            if use_cffi:
+                r = http_client.get(url, headers=headers, impersonate="chrome", timeout=15)
+            else:
+                r = http_client.get(url, headers=headers, timeout=15)
+
             if r.status_code == 200:
-                soup = BeautifulSoup(r.text, "html.parser")
-                for a in soup.find_all("a", class_="iusc"):
-                    m_attr = a.get("m")
-                    if m_attr:
-                        try:
-                            m_data = json.loads(m_attr)
-                            murl = m_data.get("murl")
-                            turl = m_data.get("turl")
-                            desc = m_data.get("desc", "")
-                            purl = m_data.get("purl", "")
-                            if murl and any(ext in murl.lower() for ext in [".jpg", ".jpeg", ".png", ".webp"]):
-                                # Lọc bỏ logo, icon nhỏ hoặc banner chung chung
-                                if not any(skip in murl.lower() for skip in ["logo", "icon", "banner", "avatar", "favicon", "pixel"]):
-                                    domain = re.sub(r"https?://(www\.)?", "", purl or murl).split("/")[0]
-                                    results.append({
-                                        "image_url": murl,
-                                        "thumb_url": turl or murl,
-                                        "title": desc or clean_q,
-                                        "domain": domain
-                                    })
-                                    if len(results) >= max_results:
-                                        break
-                        except Exception:
-                            continue
+                html_text = r.text
+
+                if BeautifulSoup:
+                    soup = BeautifulSoup(html_text, "html.parser")
+                    for a in soup.find_all("a", class_="iusc"):
+                        m_attr = a.get("m")
+                        if m_attr:
+                            try:
+                                m_data = json.loads(m_attr)
+                                murl = m_data.get("murl")
+                                turl = m_data.get("turl")
+                                desc = m_data.get("desc", "")
+                                purl = m_data.get("purl", "")
+                                if murl and any(ext in murl.lower() for ext in [".jpg", ".jpeg", ".png", ".webp"]):
+                                    if not any(skip in murl.lower() for skip in ["logo", "icon", "banner", "avatar", "favicon", "pixel"]):
+                                        domain = re.sub(r"https?://(www\.)?", "", purl or murl).split("/")[0]
+                                        results.append({
+                                            "image_url": murl,
+                                            "thumb_url": turl or murl,
+                                            "title": desc or clean_q,
+                                            "domain": domain
+                                        })
+                                        if len(results) >= max_results:
+                                            break
+                            except Exception:
+                                continue
+                else:
+                    # Regex fallback khi không có bs4
+                    pattern = r'"murl"\s*:\s*"(https?://[^"]+?\.(?:jpg|jpeg|png|webp))"'
+                    for match in re.finditer(pattern, html_text, re.IGNORECASE):
+                        murl = match.group(1)
+                        if not any(skip in murl.lower() for skip in ["logo", "icon", "banner", "avatar", "favicon", "pixel"]):
+                            results.append({
+                                "image_url": murl,
+                                "thumb_url": murl,
+                                "title": clean_q,
+                                "domain": re.sub(r"https?://(www\.)?", "", murl).split("/")[0]
+                            })
+                            if len(results) >= max_results:
+                                break
         except Exception as e:
             print(f"Error searching web images for '{query}': {e}")
         return results
 
     def download_and_save_brand_image(self, sku: str, image_url: str) -> Optional[Path]:
         """Tải ảnh từ URL đã chọn và lưu vào thư mục ảnh hãng của SKU trên Google Drive."""
-        from curl_cffi import requests
         clean_sku = sku.strip().replace(" ", "_")
         target_path = self.brand_dir / f"{clean_sku}_brand_1.jpg"
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
         }
         try:
-            r = requests.get(image_url, headers=headers, impersonate="chrome", timeout=20)
+            try:
+                from curl_cffi import requests as http_client
+                r = http_client.get(image_url, headers=headers, impersonate="chrome", timeout=20)
+            except ImportError:
+                import requests as http_client
+                r = http_client.get(image_url, headers=headers, timeout=20)
             if r.status_code == 200 and len(r.content) > 5000:
                 with open(target_path, "wb") as f:
                     f.write(r.content)
