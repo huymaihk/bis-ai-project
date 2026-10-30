@@ -2235,9 +2235,11 @@ with tab_ops:
 
     st.markdown("---")
     st.markdown("#### Thực thi đồng bộ an toàn lên Haravan:")
-    if st.button("🚀 BẮT ĐẦU ĐỒNG BỘ CÁC SẢN PHẨM APPROVED LÊN HARAVAN", type="primary"):
+    approved_for_sync = [item for item in products if item.get("status") == "APPROVED"]
+    st.info(f"Hiện có **{len(approved_for_sync)} sản phẩm** đã APPROVED sẵn sàng đẩy lên Haravan.")
+    if st.button("🚀 BẮT ĐẦU ĐỒNG BỘ CÁC SẢN PHẨM APPROVED LÊN HARAVAN", type="primary", disabled=(len(approved_for_sync) == 0)):
         with st.spinner("Agent_Operations đang tiến hành đồng bộ an toàn..."):
-            sync_res = operations_agent.sync_approved_to_haravan()
+            sync_res = operations_agent.sync_approved_to_haravan(approved_for_sync)
             if sync_res:
                 st.session_state.audit_logs.append({
                     "time": datetime.now().strftime("%H:%M:%S"),
@@ -2246,6 +2248,7 @@ with tab_ops:
                 })
                 st.toast(f"✓ Đã hoàn tất đồng bộ {len(sync_res)} sản phẩm lên Haravan ở chế độ ẩn!", icon="🚀")
                 st.json(sync_res)
+                st.rerun()
             else:
                 st.info("Hiện không có sản phẩm nào ở trạng thái APPROVED cần đồng bộ. Hãy phê duyệt sản phẩm tại Bàn Kỹ thuật trước.")
 
