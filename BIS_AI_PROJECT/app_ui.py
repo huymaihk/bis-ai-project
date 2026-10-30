@@ -1549,7 +1549,59 @@ with tab_tech:
 # ── TAB 2: PHÒNG NGHIÊN CỨU SEO & MARKETING ──────────────────────────────────
 with tab_mkt:
     st.markdown("### 📢 Phòng Nghiên Cứu SEO & Nội Dung (Agent_Marketing)")
-    st.write("Nghiên cứu từ khóa ngành dệt may (AATCC, ISO, ASTM), soạn Meta Title, Meta Description chuẩn SEO, tạo URL Slug thân thiện và xây dựng kịch bản bán hàng cho phòng lab QA/QC.")
+    st.write("Nghiên cứu từ khóa ngành dệt may (AATCC, ISO, ASTM), học hỏi phong cách trình bày từ các website đầu ngành, soạn Meta Title, Meta Description chuẩn SEO, tạo URL Slug thân thiện và xây dựng kịch bản bán hàng cho phòng lab QA/QC.")
+
+    # ── MỤC NGHIÊN CỨU & HỌC HỎI ĐỐI CHUẨN TỪ 4 WEBSITE ĐẦU NGÀNH ────────────────
+    st.markdown("""
+    <div style='background: linear-gradient(135deg, #090e1a 0%, #0c1a2e 100%); border: 1.5px solid #0284c7; border-radius: 10px; padding: 16px; margin-bottom: 16px;'>
+      <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;'>
+        <div style='font-size: 15px; font-weight: 800; color: #38bdf8;'>
+          🌐 BỘ NÃO NGHIÊN CỨU THỊ TRƯỜNG & HỌC HỎI ĐỐI CHUẨN TỰ ĐỘNG (Competitive Intelligence)
+        </div>
+        <span class='node-badge badge-active'>CRAWLER LIVE</span>
+      </div>
+      <div style='font-size: 12.5px; color: #cbd5e1; line-height: 1.6;'>
+        AI tự động quét, bóc tách cấu trúc và học hỏi phong cách trình bày nội dung chuẩn thương mại điện tử dệt may từ <strong>4 Website hàng đầu ngành</strong>:<br>
+        &bull; <code>https://bistextile.com/collections/all</code> (Sàn Haravan BIS Textile)<br>
+        &bull; <code>https://qclabtex.com/</code> (Thiết bị &amp; vật tư kiểm nghiệm QC dệt may)<br>
+        &bull; <code>https://labgartex.com/</code> (Thiết bị phòng thí nghiệm may mặc)<br>
+        &bull; <code>https://bisvn.net/</code> (Hệ sinh thái giải pháp dệt may BIS VN)
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    c_crawl_btn, c_crawl_status = st.columns([4, 8])
+    with c_crawl_btn:
+        if st.button("🚀 KÍCH HOẠT AI NGHIÊN CỨU 4 WEBSITE", key="btn_crawl_industry_sites", type="primary", use_container_width=True):
+            if marketing_agent:
+                with st.spinner("Agent_Marketing đang quét dữ liệu trực tiếp từ bistextile, qclabtex, labgartex, bisvn..."):
+                    k_res = marketing_agent.research_industry_websites()
+                    st.toast("✓ Đã hoàn tất nghiên cứu 4 website & nạp vào Bộ Nhớ Tự Học!", icon="🧠")
+                    st.rerun()
+
+    # Tải tri thức đã học được
+    mkt_knowledge = marketing_agent.load_marketing_knowledge() if marketing_agent else {}
+    if mkt_knowledge:
+        with st.expander("📚 XEM CHI TIẾT BỘ TRI THỨC VÀ QUY TẮC TRÌNH BÀY AI ĐÃ HỌC ĐƯỢC", expanded=True):
+            col_kno1, col_kno2 = st.columns(2)
+            with col_kno1:
+                st.markdown("##### 📌 Quy Chuẩn Trình Bày Nội Dung Haravan Học Được:")
+                for r in mkt_knowledge.get("presentation_style_rules", []):
+                    st.markdown(f"- 💡 {r}")
+
+                st.markdown("##### 🎯 Top Từ Khóa SEO Ngành Dệt May Được Đúc Kết:")
+                st.markdown(" • ".join([f"`{k}`" for k in mkt_knowledge.get("top_seo_keywords", [])]))
+
+            with col_kno2:
+                st.markdown("##### 🏛️ Cấu Trúc Khung Bài Viết 7 Khối Chuẩn Haravan:")
+                for idx, b in enumerate(mkt_knowledge.get("haravan_layout_blueprint", {}).get("block_structure", [])):
+                    st.markdown(f"**{idx+1}.** {b}")
+
+                st.markdown("##### 🧠 Các Luật Kinh Doanh Đã Nạp Vào Learning Engine:")
+                for lr in mkt_knowledge.get("learned_business_rules", []):
+                    st.markdown(f"- 📌 *{lr}*")
+
+    st.markdown("---")
 
     if not marketing_agent:
         st.warning("⚠️ Đang chờ đồng bộ file `agent_marketing.py` trên GitHub. Hãy tải file lên để kích hoạt.")

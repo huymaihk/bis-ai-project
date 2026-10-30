@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-10-29T12:43:46.470685Z",
+  "last_updated": "2026-10-30T02:16:59.731492Z",
   "field_corrections": {
     "unit": {
       "cuon": "cuốn",
@@ -48,5 +48,10 @@
       "human_corrected": "bộ",
       "context": "Trang 99"
     }
+  ],
+  "custom_rules": [
+    "Luôn ghi rõ tổ chức tiêu chuẩn (AATCC, ISO, ASTM) trong tiêu đề và mô tả",
+    "Bảng thông số kỹ thuật bắt buộc có đơn vị tính, phạm vi áp dụng và trang nguồn",
+    "Cung cấp chính ngạch bởi BIS Textile kèm hỗ trợ kỹ thuật chuyên sâu"
   ]
 }

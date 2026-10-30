@@ -1,0 +1,43 @@
+{
+  "analyzed_sites": [
+    "bistextile.com",
+    "qclabtex.com",
+    "labgartex.com",
+    "bisvn.net"
+  ],
+  "presentation_style_rules": [
+    "Tiêu đề chuẩn song ngữ: [Tên tiếng Việt chuẩn ngành] - [Tên tiếng Anh theo tài liệu hãng] ([Mã SKU])",
+    "Khối giới thiệu: Nhấn mạnh công năng kiểm tra độ bền màu, độ mài mòn, độ xù lông hoặc độ bền kéo vải",
+    "Đặc điểm nổi bật: Liệt kê các tiêu chuẩn tương thích (AATCC, ISO 105, ASTM, GB/T, JIS L)",
+    "Bảng thông số: Tỷ lệ 39% thuộc tính và 61% giá trị chi tiết, rõ ràng xuất xứ và quy cách đóng gói",
+    "Cam kết phân phối: Cung cấp chính ngạch bởi BIS Textile Việt Nam, đầy đủ CO/CQ và hóa đơn VAT"
+  ],
+  "top_seo_keywords": [
+    "thiết bị kiểm nghiệm dệt may",
+    "vật tư thử nghiệm vải",
+    "tiêu chuẩn AATCC",
+    "độ bền màu",
+    "tủ so màu vải",
+    "thang xám chuyển màu",
+    "vải thử độ bền ma sát",
+    "tiêu chuẩn ISO 105",
+    "BIS Textile"
+  ],
+  "haravan_layout_blueprint": {
+    "font_family": "Segoe UI, sans-serif",
+    "block_structure": [
+      "Khối 1: Tên tiếng Việt chuẩn ngành",
+      "Khối 2: Tên tiếng Anh đối chuẩn",
+      "Khối 3: Hãng xuất xứ & Đơn vị phân phối",
+      "Khối 4: Giới thiệu súc tích nguyên lý",
+      "Khối 5: Đặc điểm nổi bật",
+      "Khối 6: Bảng thông số 2 cột chuẩn 39%-61%",
+      "Khối 7: Tài liệu & Tiêu chuẩn tra cứu liên quan"
+    ]
+  },
+  "learned_business_rules": [
+    "Luôn ghi rõ tổ chức tiêu chuẩn (AATCC, ISO, ASTM) trong tiêu đề và mô tả",
+    "Bảng thông số kỹ thuật bắt buộc có đơn vị tính, phạm vi áp dụng và trang nguồn",
+    "Cung cấp chính ngạch bởi BIS Textile kèm hỗ trợ kỹ thuật chuyên sâu"
+  ]
+}
