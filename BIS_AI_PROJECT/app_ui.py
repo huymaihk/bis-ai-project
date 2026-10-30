@@ -1757,15 +1757,21 @@ with tab_media:
                             st.warning("Chưa tải được ảnh tự động. Hãy bấm 'Xem trước nhiều ảnh' để chọn thủ công.")
 
             with c_act3:
-                if st.button("✂️ Trích từ PDF", key=f"btn_ext_pdf_{clean_sku}", help="Tự động bóc tách ảnh máy dệt từ trang Catalogue PDF", use_container_width=True):
-                    with st.spinner(f"Đang trích xuất ảnh từ trang {page_num_media}..."):
+                if st.button("✂️ Trích từ PDF", key=f"btn_ext_pdf_{clean_sku}", help="Bóc tách ảnh thiết bị từ Catalogue PDF — tự quét tìm trang chứa mã SKU/tên sản phẩm nếu trang gốc không đúng", use_container_width=True):
+                    with st.spinner(f"Đang quét toàn bộ Catalogue tìm ảnh {clean_sku} ({name_en_media or name_vi_media})..."):
                         active_pdf_for_media = active_pdf if 'active_pdf' in locals() and active_pdf else pdf_file
-                        ext_path = media_agent.extract_image_from_pdf(clean_sku, active_pdf_for_media, page_num_media)
+                        ext_path = media_agent.extract_image_from_pdf(
+                            clean_sku,
+                            active_pdf_for_media,
+                            page_num_media,
+                            product_name=name_en_media or name_vi_media or "",
+                            scan_all=True
+                        )
                         if ext_path and ext_path.exists():
-                            st.success(f"✓ Đã trích xuất ảnh thiết bị từ trang {page_num_media}!")
+                            st.success(f"✓ Đã trích xuất ảnh thiết bị cho mã {clean_sku}!")
                             st.rerun()
                         else:
-                            st.warning(f"Không tìm thấy ảnh nhúng trong trang {page_num_media} của Catalogue.")
+                            st.warning(f"Không tìm thấy ảnh phù hợp trong Catalogue PDF. Hãy thử 'Xem trước nhiều ảnh' trên Web.")
 
             # Hiển thị Lưới chọn ảnh nếu người dùng vừa tìm kiếm
             web_results = st.session_state.get(f"web_img_results_{clean_sku}")

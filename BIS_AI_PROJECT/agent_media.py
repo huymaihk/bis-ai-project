@@ -68,8 +68,12 @@ class AgentMedia:
             draw.line([(0, 750), (1000, 750)], fill="#e2e8f0", width=1)
             img.save(studio_bg, quality=95)
 
-    def extract_image_from_pdf(self, sku: str, pdf_path: str | Path, page_num: int) -> Optional[Path]:
-        """Extract highest-res equipment photo directly from the PDF catalogue page with smart fallbacks."""
+    def extract_image_from_pdf(self, sku: str, pdf_path: str | Path, page_num: int, product_name: str = "", scan_all: bool = False) -> Optional[Path]:
+        """
+        Extract highest-res equipment photo from PDF catalogue.
+        - Nếu scan_all=True hoặc page_num không trả kết quả: quét toàn bộ PDF, tìm trang chứa tên/mã SKU rồi bóc ảnh lớn nhất.
+        - Trả về ảnh có dung lượng lớn nhất (nét nhất) tìm được.
+        """
         import pymupdf
         clean_sku = sku.strip().replace(" ", "_")
         target_path = self.brand_dir / f"{clean_sku}_brand_1.jpg"
@@ -89,34 +93,84 @@ class AgentMedia:
 
         try:
             doc = pymupdf.open(str(pdf_path))
-            if 1 <= page_num <= len(doc):
-                page = doc[page_num - 1]
+            total_pages = len(doc)
+
+            # Xây dựng danh sách trang cần quét theo thứ tự ưu tiên
+            pages_to_scan = []
+
+            if not scan_all and 1 <= page_num <= total_pages:
+                # Ưu tiên trang ghi nhận source_page trước
+                pages_to_scan.append(page_num - 1)
+
+            if scan_all or not pages_to_scan:
+                # Quét toàn bộ: tìm trang chứa SKU hoặc tên sản phẩm
+                sku_lower = sku.strip().lower()
+                name_words = [w.lower() for w in (product_name or "").split() if len(w) > 3]
+
+                matched_pages = []
+                other_pages = []
+                for i in range(total_pages):
+                    if i in [p for p in pages_to_scan]:
+                        continue
+                    page = doc[i]
+                    page_text = page.get_text().lower()
+                    # Kiểm tra SKU hoặc tên sản phẩm có trong nội dung trang
+                    if sku_lower in page_text:
+                        matched_pages.insert(0, i)  # SKU match = ưu tiên cao nhất
+                    elif name_words and sum(1 for w in name_words if w in page_text) >= max(1, len(name_words) // 2):
+                        matched_pages.append(i)
+                    else:
+                        other_pages.append(i)
+
+                pages_to_scan.extend(matched_pages)
+                # Nếu scan_all mà không match tên/SKU nào, quét luôn các trang còn lại
+                if scan_all and not matched_pages:
+                    pages_to_scan.extend(other_pages)
+
+            # Bóc ảnh lớn nhất từ danh sách trang đã sắp xếp
+            best_img = None  # (size, bytes)
+            best_page = -1
+            for page_idx in pages_to_scan:
+                if page_idx < 0 or page_idx >= total_pages:
+                    continue
+                page = doc[page_idx]
                 img_list = page.get_images(full=True)
-                
-                candidates = []
+
                 for img_info in img_list:
                     xref = img_info[0]
-                    base_img = doc.extract_image(xref)
-                    img_bytes = base_img["image"]
-                    w, h = base_img["width"], base_img["height"]
-                    if len(img_bytes) >= 2000 and w >= 60 and h >= 60:
-                        candidates.append((len(img_bytes), img_bytes))
+                    try:
+                        base_img = doc.extract_image(xref)
+                        img_bytes = base_img["image"]
+                        w, h = base_img["width"], base_img["height"]
+                        # Chỉ lấy ảnh có kích thước hợp lý (loại bỏ icon nhỏ < 60px)
+                        if len(img_bytes) >= 3000 and w >= 80 and h >= 80:
+                            if best_img is None or len(img_bytes) > best_img[0]:
+                                best_img = (len(img_bytes), img_bytes)
+                                best_page = page_idx + 1
+                    except Exception:
+                        continue
 
-                # Lấy ảnh có dung lượng lớn nhất (ảnh nét nhất)
-                if candidates:
-                    candidates.sort(key=lambda x: x[0], reverse=True)
-                    with open(target_path, "wb") as f:
-                        f.write(candidates[0][1])
-                    doc.close()
-                    return target_path
+                # Nếu đã tìm thấy ảnh tốt trên trang ưu tiên (match SKU/tên) → dừng ngay
+                if best_img and page_idx in pages_to_scan[:len(pages_to_scan) // 2 + 1]:
+                    # Chỉ dừng sớm nếu ảnh đủ lớn (> 10 KB)
+                    if best_img[0] > 10000:
+                        break
 
-                # Fallback: Nếu là tài liệu vector, xuất ảnh chụp trang PDF
-                pix = page.get_pixmap(matrix=pymupdf.Matrix(1.8, 1.8))
-                pix.save(str(target_path))
+            if best_img:
+                with open(target_path, "wb") as f:
+                    f.write(best_img[1])
+                print(f"✓ Trích xuất ảnh {clean_sku} từ trang {best_page}/{total_pages} ({best_img[0]:,} bytes)")
                 doc.close()
                 return target_path
 
+            # Fallback cuối: chụp nguyên trang PDF thành ảnh bitmap
+            fallback_page = page_num - 1 if 1 <= page_num <= total_pages else 0
+            pix = doc[fallback_page].get_pixmap(matrix=pymupdf.Matrix(1.8, 1.8))
+            pix.save(str(target_path))
+            print(f"⚠️ Fallback: Chụp nguyên trang {fallback_page + 1} làm ảnh cho {clean_sku}")
             doc.close()
+            return target_path
+
         except Exception as e:
             print(f"Error extracting image from PDF: {e}")
         return None
