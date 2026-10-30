@@ -1132,11 +1132,106 @@ with tab_tech:
     if not products:
         st.warning("Chưa có dữ liệu sản phẩm trong cache. Vui lòng bấm 'Khởi động trích xuất' bên dưới.")
     else:
-        col_f1, col_f2, col_f3 = st.columns([4, 3, 5])
-        with col_f1:
-            skus = [p.get("sku") for p in products]
-            selected_sku = st.selectbox(f"Chọn mã SKU kiểm duyệt ({len(products)} SP hiện có):", skus, key="tech_sku_select")
-        with col_f2:
+        # Phân loại danh sách sản phẩm trùng và không trùng
+        dups_products = [item for item in products if item.get("status") == "REJECTED"]
+        valid_products = [item for item in products if item.get("status") != "REJECTED"]
+        approved_products = [item for item in products if item.get("status") == "APPROVED"]
+
+        # ── 1. BẢNG TỔNG HỢP & TÁCH RIÊNG 2 DANH SÁCH: TRÙNG & KHÔNG TRÙNG ──────────────
+        with st.expander(f"📊 BẢNG TỔNG HỢP: TÁCH RIÊNG DANH SÁCH TRÙNG ({len(dups_products)} SP) & KHÔNG TRÙNG ({len(valid_products)} SP)", expanded=False):
+            tab_dup_view, tab_valid_view = st.tabs([
+                f"🚫 1. Danh Sách {len(dups_products)} Sản Phẩm Bị Trùng Web (Đã Khóa Bảo Vệ)",
+                f"✅ 2. Danh Sách {len(valid_products)} Sản Phẩm Hợp Lệ (Mới - Sẵn Sàng Duyệt)"
+            ])
+            with tab_dup_view:
+                st.markdown("""
+                <div style='background: #1a0b12; border: 1px solid #f43f5e; padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #fecdd3; margin-bottom: 10px;'>
+                  🛡️ <strong>Rào chắn chống trùng Haravan Guard:</strong> Các sản phẩm dưới đây có mã SKU hoặc tên đã tồn tại thực tế trên website <code>bistextile.com</code>. Hệ thống tự động khóa trạng thái <strong>REJECTED</strong> để bảo vệ dữ liệu cũ, không bao giờ tự ý đẩy đè lên sàn!
+                </div>
+                """, unsafe_allow_html=True)
+                dup_table_data = []
+                for d in dups_products:
+                    dup_table_data.append({
+                        "Mã SKU": d.get("sku"),
+                        "Tên sản phẩm tiếng Việt": d.get("product_name"),
+                        "Trang PDF": d.get("source_page"),
+                        "Trạng thái": "🚫 REJECTED (ĐÃ KHÓA)",
+                        "Lý do đối soát": d.get("notes") or "Đã có trên bistextile.com"
+                    })
+                if dup_table_data:
+                    st.dataframe(dup_table_data, use_container_width=True, hide_index=True)
+                else:
+                    st.success("Không có sản phẩm nào bị trùng với website!")
+
+            with tab_valid_view:
+                st.markdown("""
+                <div style='background: #091a14; border: 1px solid #10b981; padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #a7f3d0; margin-bottom: 10px;'>
+                  ✅ <strong>Sản phẩm mới sẵn sàng duyệt:</strong> Các sản phẩm dưới đây là mới 100%, chưa từng có trên website bistextile.com. Bạn có thể kiểm tra từng mã bên dưới và bấm <strong>PHÊ DUYỆT (APPROVE)</strong> để xuất bản.
+                </div>
+                """, unsafe_allow_html=True)
+                valid_table_data = []
+                for v in valid_products:
+                    valid_table_data.append({
+                        "Mã SKU": v.get("sku"),
+                        "Tên sản phẩm tiếng Việt": v.get("product_name"),
+                        "Tên tiếng Anh": v.get("product_name_en"),
+                        "Hãng sản xuất": v.get("brand") or "AATCC",
+                        "Đơn vị tính": v.get("unit") or "cuốn",
+                        "Trang PDF": v.get("source_page"),
+                        "Trạng thái": v.get("status")
+                    })
+                if valid_table_data:
+                    st.dataframe(valid_table_data, use_container_width=True, hide_index=True)
+
+        st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
+
+        # ── 2. BỘ LỌC TÁCH RIÊNG TRONG Ô CHỌN SKU DUYỆT ────────────────────────────
+        col_fil, col_sel, col_stat = st.columns([4.8, 4.2, 3.0])
+        with col_fil:
+            filter_mode = st.radio(
+                "Lọc danh sách kiểm duyệt:",
+                [
+                    f"✅ Hợp lệ / Chưa trùng ({len(valid_products)} SP)",
+                    f"🚫 Bị trùng website ({len(dups_products)} SP)",
+                    f"🎉 Đã duyệt ({len(approved_products)} SP)",
+                    f"🌐 Toàn bộ ({len(products)} SP)"
+                ],
+                horizontal=True,
+                key="sku_filter_radio"
+            )
+
+        if filter_mode.startswith("✅"):
+            active_list = valid_products if valid_products else products
+        elif filter_mode.startswith("🚫"):
+            active_list = dups_products if dups_products else products
+        elif filter_mode.startswith("🎉"):
+            active_list = approved_products if approved_products else products
+        else:
+            active_list = products
+
+        active_skus = [x.get("sku") for x in active_list]
+
+        def get_sku_display_label(sku_code):
+            item = next((it for it in products if it.get("sku") == sku_code), None)
+            if not item:
+                return sku_code
+            stt = item.get("status")
+            if stt == "REJECTED":
+                return f"🚫 {sku_code} [TRÙNG WEB - ĐÃ KHÓA]"
+            elif stt == "APPROVED":
+                return f"✅ {sku_code} [ĐÃ PHÊ DUYỆT]"
+            else:
+                return f"📝 {sku_code} (Mới - Chờ duyệt)"
+
+        with col_sel:
+            selected_sku = st.selectbox(
+                f"Chọn mã SKU ({len(active_skus)} SP trong danh sách này):",
+                active_skus,
+                format_func=get_sku_display_label,
+                key="tech_sku_select"
+            )
+
+        with col_stat:
             p = next((item for item in products if item.get("sku") == selected_sku), products[0])
             status_color = "#10b981" if p.get("status") == "APPROVED" else ("#f43f5e" if p.get("status") == "REJECTED" else "#f59e0b")
             st.markdown(f"""
@@ -1144,10 +1239,12 @@ with tab_tech:
               Trạng thái: <span style='color: {status_color}; font-weight: 800;'>{p.get('status')}</span>
             </div>
             """, unsafe_allow_html=True)
-        with col_f3:
-            st.markdown("""
-            <div style='padding-top: 20px; font-size: 11.5px; color: #94a3b8; line-height: 1.4;'>
-              💡 <em>Muốn bóc tách đầy đủ toàn bộ sản phẩm:</em> Hãy mở rộng mục <strong>1. THIẾT LẬP FILE CATALOGUE</strong> bên trên, tích chọn <strong>'Toàn bộ tài liệu'</strong> và bấm <strong>'🚀 BẮT ĐẦU PHÂN TÍCH CATALOGUE'</strong>.
+
+        if p.get("status") == "REJECTED":
+            st.markdown(f"""
+            <div style='background: #1a0b12; border: 1.5px solid #f43f5e; border-radius: 8px; padding: 10px 14px; margin-top: 6px; margin-bottom: 10px; font-size: 12.5px; color: #fecdd3;'>
+              🚫 <strong>CẢNH BÁO: SẢN PHẨM NÀY ĐÃ BỊ KHÓA TRÙNG (REJECTED)</strong><br>
+              {p.get('notes') or 'Sản phẩm đã tồn tại thực tế trên website bistextile.com. Haravan Guard bảo vệ an toàn, không tự động đẩy đè lên website.'}
             </div>
             """, unsafe_allow_html=True)
 
