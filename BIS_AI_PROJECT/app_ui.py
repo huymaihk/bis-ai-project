@@ -1525,7 +1525,7 @@ with tab_tech:
                 else:
                     default_hl_str = str(default_hl)
             else:
-                default_hl_str = "Tiêu chuẩn thử nghiệm chính hãng được chuẩn hóa áp dụng toàn cầu trong ngành dệt may.\nĐầy đủ tài liệu hướng dẫn và quy trình thực hành phòng lab QA/QC.\nCung cấp chính ngạch bởi BIS Textile kèm hỗ trợ kỹ thuật chuyên sâu."
+                default_hl_str = "Tiêu chuẩn thử nghiệm chính hãng được chuẩn hóa áp dụng toàn cầu trong ngành dệt may.\nĐầy đủ tài liệu hướng dẫn và quy trình thực hành phòng lab QA/QC."
 
             default_scope = p.get("application_scope") or "Phương pháp kiểm nghiệm dệt may quốc tế"
             default_doc_title = p.get("related_doc_title") or f"Tra cứu sản phẩm mã {p.get('sku')} trên cổng BIS Textile"

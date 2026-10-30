@@ -8,10 +8,14 @@ Responsible for:
 """
 import os
 import sys
+import re
 import json
 import uuid
 import time
 import io
+import html as html_lib
+import urllib.request
+import urllib.parse
 import concurrent.futures
 import threading
 from datetime import datetime
@@ -33,6 +37,48 @@ from config import (
     PRODUCT_COLUMNS,
 )
 from learning_engine import LearningEngine
+
+def translate_to_vi(text: str) -> str:
+    """Tự động dịch văn bản mô tả sang tiếng Việt mượt mà, chuyên ngành dệt may."""
+    if not text or not str(text).strip():
+        return ""
+    text_str = str(text).strip()
+    vi_chars = set('àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ')
+    # Nếu đã có tiếng Việt có dấu đầy đủ thì giữ nguyên
+    if sum(1 for c in text_str.lower() if c in vi_chars) >= 4:
+        return text_str
+
+    sentences = re.split(r'(\. |\n+)', text_str)
+    chunks = []
+    curr = ""
+    for s in sentences:
+        if len(curr) + len(s) < 320:
+            curr += s
+        else:
+            if curr:
+                chunks.append(curr)
+            curr = s
+    if curr:
+        chunks.append(curr)
+
+    out = []
+    for c in chunks:
+        if not c.strip() or c in ['. ', '\n']:
+            out.append(c)
+            continue
+        try:
+            q = urllib.parse.quote(c)
+            url = f"https://api.mymemory.translated.net/get?q={q}&langpair=en|vi"
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=8) as res:
+                data = json.loads(res.read().decode('utf-8'))
+                trans = data.get('responseData', {}).get('translatedText', c)
+                out.append(html_lib.unescape(trans))
+            time.sleep(0.12)
+        except Exception:
+            out.append(c)
+    result = "".join(out).strip()
+    return result if result else text_str
 
 # ── Pydantic Schemas for Strict Structured Extraction ─────────────────────────
 class ExtractedProductFact(BaseModel):
@@ -75,7 +121,8 @@ Nhiệm vụ: Trích xuất TOÀN BỘ sản phẩm/tài liệu tiêu chuẩn d�
 {few_shot_context}
 
 QUY TẮC BẮT BUỘC (6 BƯỚC THẨM ĐỊNH KỸ THUẬT):
-1. B3 (Facts & Quotes): Mỗi sản phẩm bắt buộc phải có 'sku', 'product_name', 'product_name_en', 'description', 'source_page' ({page_num}) và 'evidence_quote' (câu trích dẫn tiếng Anh nguyên văn từ trang). Tuyệt đối không bịa đặt.
+1. B3 (Facts & Quotes): Mỗi sản phẩm bắt buộc phải có 'sku', 'product_name' (tiếng Việt), 'product_name_en' (tiếng Anh nguyên bản), 'description' (BẮT BUỘC PHẢI DỊCH SANG TIẾNG VIỆT CHUẨN XÁC, CHUYÊN NGÀNH DỆT MAY, TUYỆT ĐỐI KHÔNG ĐỂ TIẾNG ANH), 'source_page' ({page_num}) và 'evidence_quote' (câu trích dẫn tiếng Anh nguyên văn từ trang chứng minh).
+2. Bảng thông số kỹ thuật và mô tả: TUYỆT ĐỐI KHÔNG chứa thông tin 'Đơn vị tính' và 'Trang nguồn tài liệu', TUYỆT ĐỐI KHÔNG thêm câu 'Cung cấp chính ngạch...'.
 2. B5 (Thương hiệu & Xuất xứ): Nếu trang có nêu rõ hãng (như AATCC, SDC, SDL Atlas) hoặc vai trò (Published by / Manufactured in), hãy ghi vào 'brand_evidence'. Nếu thiếu thông tin thương hiệu/xuất xứ thì để null (hệ thống sẽ tự động gắn nhãn MISSING_BRAND_EVIDENCE để người dùng xem xét, tuyệt đối không suy diễn từ trụ sở và không làm nghẽn luồng).
 3. Các trường số (width_cm, weight_gsm, price, min_order_qty) chỉ ghi số thuần hoặc null nếu không có.
 4. Trả về đúng định dạng JSON danh sách các sản phẩm:
@@ -243,16 +290,18 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
 
     def build_7_block_html(self, record: dict) -> str:
         """Generate standard BIS 7-block product description HTML with high contrast & pristine styling."""
-        if record.get("custom_html"):
-            return record["custom_html"]
+        # Nếu custom_html chứa các thông tin cũ bị cấm (Đơn vị tính, Trang nguồn, chính ngạch), bỏ qua để tạo mới chuẩn
+        c_html = record.get("custom_html", "")
+        if c_html and "Trang nguồn tài liệu" not in c_html and "Đơn vị tính" not in c_html and "chính ngạch" not in c_html:
+            return c_html
 
         title_vi = record.get("product_name") or ""
         title_en = record.get("product_name_en") or ""
         sku = record.get("sku") or ""
         desc = record.get("description") or ""
+        # Đảm bảo phần mô tả dịch sang tiếng Việt
+        desc = translate_to_vi(desc)
         vendor = record.get("brand") or record.get("brand_evidence") or "AATCC (Hoa Kỳ)"
-        unit = record.get("unit") or "cuốn"
-        source_p = record.get("source_page") or "1"
 
         # KHỐI 5: Đặc điểm nổi bật tùy biến theo người dùng
         highlights_raw = record.get("highlights")
@@ -264,8 +313,15 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
         else:
             hl_items = [
                 "Tiêu chuẩn thử nghiệm chính hãng được chuẩn hóa áp dụng toàn cầu trong ngành dệt may.",
-                "Đầy đủ tài liệu hướng dẫn và quy trình thực hành phòng lab QA/QC.",
-                "Cung cấp chính ngạch bởi BIS Textile kèm hỗ trợ kỹ thuật chuyên sâu."
+                "Đầy đủ tài liệu hướng dẫn và quy trình thực hành phòng lab QA/QC."
+            ]
+
+        # BỎ HOÀN TOÀN DÒNG THÔNG BÁO CHÍNH NGẠCH THEO QUY CHUẨN CÔNG TY
+        hl_items = [it for it in hl_items if "chính ngạch" not in it.lower()]
+        if not hl_items:
+            hl_items = [
+                "Tiêu chuẩn thử nghiệm chính hãng được chuẩn hóa áp dụng toàn cầu trong ngành dệt may.",
+                "Đầy đủ tài liệu hướng dẫn và quy trình thực hành phòng lab QA/QC."
             ]
         hl_html = "".join([f'<li style="margin-bottom: 6px;">{it}</li>' for it in hl_items])
 
@@ -306,7 +362,7 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
     </ul>
   </div>
 
-  <!-- KHỐI 6: Bảng thông số kỹ thuật 2 cột chuẩn 39%-61% -->
+  <!-- KHỐI 6: Bảng thông số kỹ thuật 2 cột chuẩn 39%-61% (Đã bỏ Đơn vị tính & Trang nguồn tài liệu) -->
   <div style="margin-bottom: 20px;">
     <div style="font-weight: 800; font-size: 14px; margin-bottom: 8px; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.02em;">
       ⚙️ Thông số kỹ thuật chính:
@@ -317,17 +373,9 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
           <td style="width: 39%; background: #f8fafc !important; font-weight: 700; color: #0f172a !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">Mã sản phẩm (SKU)</td>
           <td style="width: 61%; background: #ffffff !important; font-weight: 700; color: #0284c7 !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px; font-family: monospace;">{sku}</td>
         </tr>
-        <tr style="border-bottom: 1px solid #e2e8f0;">
-          <td style="width: 39%; background: #f8fafc !important; font-weight: 700; color: #0f172a !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">Đơn vị tính</td>
-          <td style="width: 61%; background: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">{unit}</td>
-        </tr>
-        <tr style="border-bottom: 1px solid #e2e8f0;">
+        <tr>
           <td style="width: 39%; background: #f8fafc !important; font-weight: 700; color: #0f172a !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">Phạm vi áp dụng</td>
           <td style="width: 61%; background: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">{app_scope}</td>
-        </tr>
-        <tr>
-          <td style="width: 39%; background: #f8fafc !important; font-weight: 700; color: #0f172a !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">Trang nguồn tài liệu</td>
-          <td style="width: 61%; background: #ffffff !important; color: #64748b !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">Trang {source_p} trong Catalogue</td>
         </tr>
       </tbody>
     </table>

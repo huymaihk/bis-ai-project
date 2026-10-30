@@ -89,7 +89,7 @@ Chỉ trả về JSON thuần túy, không có thẻ markdown ```json.
             slug = "".join(c for c in slug if c.isalnum() or c == "-")[:50]
             data = {
                 "meta_title": f"{name_vi} ({sku}) | BIS Textile Việt Nam",
-                "meta_description": f"Cung cấp chính ngạch {name_vi} mã {sku} từ {brand}. Tiêu chuẩn kiểm nghiệm dệt may quốc tế, đầy đủ CO/CQ và hỗ trợ kỹ thuật tại BIS Textile.",
+                "meta_description": f"Phân phối chính hãng {name_vi} mã {sku} từ {brand}. Tiêu chuẩn kiểm nghiệm dệt may quốc tế, đầy đủ CO/CQ và hỗ trợ kỹ thuật tại BIS Textile.",
                 "url_slug": f"{slug}-{sku.lower()}",
                 "focus_keywords": [name_vi, sku, f"tiêu chuẩn {brand}", "kiểm nghiệm dệt may"],
                 "secondary_keywords": ["AATCC manual", "tài liệu QA dệt may", "BIS Textile"],

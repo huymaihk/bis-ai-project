@@ -51,7 +51,8 @@
   ],
   "custom_rules": [
     "Luôn ghi rõ tổ chức tiêu chuẩn (AATCC, ISO, ASTM) trong tiêu đề và mô tả",
-    "Bảng thông số kỹ thuật bắt buộc có đơn vị tính, phạm vi áp dụng và trang nguồn",
-    "Cung cấp chính ngạch bởi BIS Textile kèm hỗ trợ kỹ thuật chuyên sâu"
+    "Phần mô tả sản phẩm (Khối 4) bắt buộc phải dịch 100% sang tiếng Việt chuẩn chuyên ngành dệt may, không để tiếng Anh",
+    "Bảng thông số kỹ thuật (Khối 6) chỉ hiển thị SKU và Phạm vi áp dụng (tuyệt đối bỏ hàng Đơn vị tính và Trang nguồn tài liệu)",
+    "Đặc điểm nổi bật (Khối 5): Tuyệt đối không để dòng 'Cung cấp chính ngạch bởi BIS Textile...'"
   ]
 }
