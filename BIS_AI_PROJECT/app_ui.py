@@ -49,32 +49,160 @@ st.set_page_config(
 # ── Custom Cyberpunk & Sci-Fi Dark HUD CSS ────────────────────────────────────
 HUD_CSS = """
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
   :root {
-    --bg-main: #07090e;
-    --bg-card: #0d121f;
-    --bg-card-hover: #131a2c;
-    --border-color: #1e293b;
+    --bg-main: #0b0f19;
+    --bg-card: rgba(17, 24, 39, 0.72);
+    --bg-card-hover: rgba(30, 41, 59, 0.82);
+    --border-color: rgba(255, 255, 255, 0.08);
     --border-glow: #0284c7;
     --neon-blue: #38bdf8;
     --neon-cyan: #06b6d4;
     --neon-green: #10b981;
+    --neon-emerald: #10b981;
+    --neon-indigo: #818cf8;
     --neon-amber: #f59e0b;
     --neon-rose: #f43f5e;
     --text-primary: #f8fafc;
     --text-muted: #94a3b8;
   }
 
+  /* Nền tổng thể với hiệu ứng quầng sáng Ambient Mesh (Dark Modern Glassmorphism) */
   .stApp {
     background-color: var(--bg-main);
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.09) 0px, transparent 45%),
+      radial-gradient(at 100% 0%, rgba(129, 140, 248, 0.09) 0px, transparent 45%),
+      radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.06) 0px, transparent 50%);
     color: var(--text-primary);
     font-family: 'Plus Jakarta Sans', sans-serif;
   }
 
   header[data-testid="stHeader"] {
-    background: transparent;
+    background: rgba(11, 15, 25, 0.75) !important;
+    backdrop-filter: blur(12px);
   }
+
+  /* Glassmorphism Card cơ bản */
+  .glass-card {
+    background: rgba(17, 24, 39, 0.68);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 18px 22px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+    transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 16px;
+  }
+  .glass-card:hover {
+    border-color: rgba(56, 189, 248, 0.4);
+    box-shadow: 0 12px 36px 0 rgba(56, 189, 248, 0.12);
+  }
+  .glass-card-emerald { border-left: 4px solid var(--neon-emerald) !important; }
+  .glass-card-blue { border-left: 4px solid var(--neon-blue) !important; }
+  .glass-card-indigo { border-left: 4px solid var(--neon-indigo) !important; }
+
+  /* Top Command Header Bar */
+  .top-command-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.88) 0%, rgba(11, 15, 25, 0.94) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-left: 4px solid var(--neon-blue);
+    border-radius: 14px;
+    padding: 16px 24px;
+    margin-bottom: 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 20px rgba(56, 189, 248, 0.08);
+  }
+
+  .brand-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #f8fafc, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.3px;
+  }
+
+  .brand-subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+
+  /* Metric Box Cards */
+  .metric-box {
+    background: rgba(15, 23, 42, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px 16px;
+    text-align: left;
+    backdrop-filter: blur(12px);
+    transition: all 0.25s ease;
+  }
+  .metric-box:hover {
+    border-color: rgba(56, 189, 248, 0.35);
+    transform: translateY(-2px);
+  }
+  .metric-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: var(--neon-blue);
+  }
+  .metric-label {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+
+  /* Sticky Action Toolbar cho Tab Kiểm Duyệt */
+  .sticky-action-bar {
+    position: sticky;
+    top: 2.8rem;
+    z-index: 99;
+    background: rgba(11, 15, 25, 0.92);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.55);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* Hệ thống Badge & Pulse Micro-animations */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .pill-blue { background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); color: var(--neon-blue); }
+  .pill-emerald { background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); color: var(--neon-emerald); }
+  .pill-indigo { background: rgba(129, 140, 248, 0.12); border: 1px solid rgba(129, 140, 248, 0.35); color: var(--neon-indigo); }
+  .pill-amber { background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); color: var(--neon-amber); }
+  .pill-rose { background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.35); color: var(--neon-rose); }
 
   .login-container {
     max-width: 480px;
@@ -759,67 +887,82 @@ if not st.session_state.authenticated:
 # GIAO DIỆN CHÍNH: HUD CANVAS & MULTI-AGENT TOPOLOGY (KHI ĐÃ ĐĂNG NHẬP)
 # ══════════════════════════════════════════════════════════════════════════════
 
-# ── 1. Top HUD Bar ────────────────────────────────────────────────────────────
-approved_count = len([x for x in products if x.get("status") == "APPROVED"])
-rejected_count = len([x for x in products if x.get("status") == "REJECTED"])
+# ── 1. Top HUD Bar & Metrics ──────────────────────────────────────────────────
+total_sp = len(products)
+dups_sp = len([item for item in products if item.get("status") == "REJECTED"])
+valid_sp = len([item for item in products if item.get("status") != "REJECTED"])
+approved_sp = len([item for item in products if item.get("status") == "APPROVED"])
 
-col_top_left, col_top_right = st.columns([4.2, 7.8])
-with col_top_left:
-    st.markdown(f"""
-    <div class='top-hud-bar'>
-      <div>
-        <div class='top-title'>PROJECT TOPIC • BIS Multi-Agent Autonomous Command Center</div>
-        <div style='font-size: 11px; color: #94a3b8; margin-top: 4px; font-family: "JetBrains Mono", monospace;'>
-          Quyền vận hành: <span style='color: #38bdf8;'>{st.session_state.username}</span> &bull; 5 Phòng ban liên kết tự vận hành
-        </div>
-      </div>
-      <div class='top-stage-badge'>
-        <span class='pulse-dot'></span>
-        <span>CURRENT STAGE: Autonomous Ops</span>
-      </div>
+st.markdown(f"""
+<div class="top-command-bar">
+  <div>
+    <div class="brand-title">BIS TEXTILE • MULTI-AGENT COMMAND CENTER (v3.0 Pro)</div>
+    <div class="brand-subtitle">
+      USER: <span style='color: #38bdf8;'>{st.session_state.username}</span> &bull; GOOGLE DRIVE: My Drive\\BIS_AI_PROJECT &bull; HARAVAN GUARD 20/10 ACTIVE &bull; HOTLINE: 0344659891 (Mr. Huy)
     </div>
-    """, unsafe_allow_html=True)
+  </div>
+  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <span class="status-pill pill-blue"><span class="pulse-dot"></span> AUTONOMOUS OPS</span>
+    <span class="status-pill pill-emerald">🛡️ HARAVAN GUARD: LOCKED &lt; 20/10</span>
+    <span class="status-pill pill-indigo">🧠 FEW-SHOT ENGINE: ACTIVE</span>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
-with col_top_right:
-    col_reset, col_sync, col_stat, col_logout = st.columns([3.5, 3.2, 2.8, 1.8])
-    with col_reset:
-        if st.button("⚡ Reset Hệ Thống", key="btn_top_reset_all", help="Xóa bộ nhớ đệm, quét lại Google Drive và TỰ ĐỘNG ĐỐI SOÁT TRÙNG TRÊN GOOGLE SHEETS & BISTEXTILE.COM", use_container_width=True):
-            st.cache_data.clear()
-            st.cache_resource.clear()
-            if "chosen_sku" in st.session_state:
-                del st.session_state["chosen_sku"]
-            if knowledge_agent:
-                knowledge_agent.scan_and_sync_drive_files()
-            if operations_agent:
-                dedup_res = operations_agent.scan_live_haravan_and_web(products)
-                clean_list = dedup_res.get("clean_products", [])
-                if clean_list:
-                    products = clean_list
-                    st.session_state["cached_products"] = products
-                web_locked = dedup_res.get("matched_count", 0)
-                st.session_state.audit_logs.append({
-                    "time": datetime.now().strftime("%H:%M:%S"),
-                    "type": "RESET_HARAVAN",
-                    "text": f"Reset hệ thống: Đã quét Live Haravan ({dedup_res.get('total_haravan', 0)} SP) -> Khóa {web_locked} mã trùng, {dedup_res.get('unmatched_count', 0)} SP mới."
-                })
-                st.toast(f"⚡ ĐÃ RESET & QUÉT LIVE HARAVAN! {len(products)} SP sạch, đã khóa {web_locked} mã trùng web!", icon="🛡️")
-            else:
-                st.toast(f"⚡ ĐÃ RESET TOÀN BỘ HỆ THỐNG! ({len(products)} Sản phẩm)", icon="🚀")
-            st.rerun()
-    with col_sync:
-        if st.button("🔄 Quét G-Drive", key="btn_top_scan_gdrive", help="Tự động quét và cập nhật các file mới bỏ vào Google Drive", use_container_width=True):
-            if knowledge_agent:
-                scan_res = knowledge_agent.scan_and_sync_drive_files()
-                st.toast(f"✓ Đã quét: {len(scan_res.get('catalogues', []))} catalogue, {len(scan_res.get('backgrounds', []))} ảnh.")
-            st.rerun()
-    with col_stat:
-        st.markdown(f"""
-        <div style='padding-top: 8px; text-align: center; font-family: "JetBrains Mono", monospace; font-size: 11px; color: #94a3b8; white-space: nowrap;'>
-          Đã duyệt: <span style='color: #10b981; font-weight: 700;'>{approved_count}</span> | Khóa: <span style='color: #f43f5e; font-weight: 700;'>{rejected_count}</span>
-        </div>
-        """, unsafe_allow_html=True)
-    with col_logout:
-        if st.button("🚪 Thoát", key="logout_btn", use_container_width=True):
+# 4 Thẻ chỉ số Glassmorphism
+c_met1, c_met2, c_met3, c_met4 = st.columns(4)
+with c_met1:
+    st.markdown(f'<div class="metric-box"><div class="metric-label">Tổng SKU Catalogue</div><div class="metric-value">{total_sp}</div></div>', unsafe_allow_html=True)
+with c_met2:
+    st.markdown(f'<div class="metric-box"><div class="metric-label">Hợp Lệ (Mới 100%)</div><div class="metric-value" style="color:#10b981;">{valid_sp}</div></div>', unsafe_allow_html=True)
+with c_met3:
+    st.markdown(f'<div class="metric-box"><div class="metric-label">Bị Trùng Web (Đã Khóa)</div><div class="metric-value" style="color:#f43f5e;">{dups_sp}</div></div>', unsafe_allow_html=True)
+with c_met4:
+    st.markdown(f'<div class="metric-box"><div class="metric-label">Đã Phê Duyệt</div><div class="metric-value" style="color:#38bdf8;">{approved_sp}</div></div>', unsafe_allow_html=True)
+
+st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+
+col_reset, col_sync, col_stat, col_logout = st.columns([3.5, 3.2, 3.5, 1.8])
+with col_reset:
+    if st.button("⚡ Reset Hệ Thống", key="btn_top_reset_all", help="Xóa bộ nhớ đệm, quét lại Google Drive và TỰ ĐỘNG ĐỐI SOÁT TRÙNG TRÊN GOOGLE SHEETS & BISTEXTILE.COM", use_container_width=True):
+        st.cache_data.clear()
+        st.cache_resource.clear()
+        if "chosen_sku" in st.session_state:
+            del st.session_state["chosen_sku"]
+        if knowledge_agent:
+            knowledge_agent.scan_and_sync_drive_files()
+        if operations_agent:
+            dedup_res = operations_agent.scan_live_haravan_and_web(products)
+            clean_list = dedup_res.get("clean_products", [])
+            if clean_list:
+                products = clean_list
+                st.session_state["cached_products"] = products
+            web_locked = dedup_res.get("matched_count", 0)
+            st.session_state.audit_logs.append({
+                "time": datetime.now().strftime("%H:%M:%S"),
+                "type": "RESET_HARAVAN",
+                "text": f"Reset hệ thống: Đã quét Live Haravan ({dedup_res.get('total_haravan', 0)} SP) -> Khóa {web_locked} mã trùng, {dedup_res.get('unmatched_count', 0)} SP mới."
+            })
+            st.toast(f"⚡ ĐÃ RESET & QUÉT LIVE HARAVAN! {len(products)} SP sạch, đã khóa {web_locked} mã trùng web!", icon="🛡️")
+        else:
+            st.toast(f"⚡ ĐÃ RESET TOÀN BỘ HỆ THỐNG! ({len(products)} Sản phẩm)", icon="🚀")
+        st.rerun()
+with col_sync:
+    if st.button("🔄 Quét G-Drive", key="btn_top_scan_gdrive", help="Tự động quét và cập nhật các file mới bỏ vào Google Drive", use_container_width=True):
+        if knowledge_agent:
+            scan_res = knowledge_agent.scan_and_sync_drive_files()
+            st.toast(f"✓ Đã quét: {len(scan_res.get('catalogues', []))} catalogue, {len(scan_res.get('backgrounds', []))} ảnh.")
+        st.rerun()
+with col_stat:
+    sheet_url = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID_OR_URL}" if SPREADSHEET_ID_OR_URL and not SPREADSHEET_ID_OR_URL.startswith("http") else SPREADSHEET_ID_OR_URL
+    if sheet_url:
+        st.link_button("📊 Mở Google Sheet Master", sheet_url, use_container_width=True)
+    else:
+        st.button("📊 Google Sheet Master", disabled=True, use_container_width=True)
+with col_logout:
+    if st.button("🚪 Thoát", key="logout_btn", use_container_width=True):
+        st.session_state.authenticated = False
+        st.rerun()
             st.session_state.authenticated = False
             st.rerun()
 
@@ -1348,6 +1491,24 @@ with tab_tech:
             </div>
             """, unsafe_allow_html=True)
 
+            # ── THANH STICKY ACTION TOOLBAR TIỆN ÍCH ────────────────────────────────
+            is_dup_item = p.get("status") == "REJECTED"
+            sku_name_str = (p.get("product_name") or p.get("product_name_en") or "")[:50]
+            st.markdown(f"""
+            <div class="sticky-action-bar">
+              <div>
+                <span class="status-pill pill-blue">SKU: {p.get('sku')}</span>
+                <span class="status-pill {'pill-rose' if is_dup_item else 'pill-emerald'}" style="margin-left:6px;">
+                  {'🚫 BỊ TRÙNG HARAVAN (ĐÃ KHÓA)' if is_dup_item else '✅ HỢP LỆ (MỚI 100%)'}
+                </span>
+                <span style="margin-left:12px; font-weight:700; color:#f8fafc; font-size:13px;">{sku_name_str}...</span>
+              </div>
+              <div style="font-family:'JetBrains Mono', monospace; font-size:11.5px; color:#38bdf8;">
+                TRẠNG THÁI: <strong style='color:{'#f43f5e' if is_dup_item else '#10b981'};'>{p.get('status')}</strong> &bull; TRANG: <strong>{p.get('source_page') or page_num}</strong>
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
             # ── GIAO DIỆN KIỂM DUYỆT & XEM TRƯỚC TRỰC QUAN (UNIFIED WORKSPACE) ───────
             st.markdown("#### 👁️ Bàn Kiểm Duyệt & Xem Trước Trực Quan Chuẩn Haravan")
 
@@ -1521,8 +1682,13 @@ with tab_tech:
                     st.rerun()
 
                 # KHUNG XEM TRƯỚC DUY NHẤT (GỘP THÀNH 1 MỤC XEM TRƯỚC RỰC RỠ, NỀN TRẮNG CHUẨN WEBSITE)
-                st.markdown("---")
-                st.markdown("##### 📄 Bản Xem Trước Chuẩn Website Haravan / bistextile.com (Nền trắng sắc nét):")
+                st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+                st.markdown("<div class='glass-card glass-card-emerald'>", unsafe_allow_html=True)
+                c_prev_h1, c_prev_h2 = st.columns([8, 4])
+                with c_prev_h1:
+                    st.markdown("##### 📄 Bản Xem Trước Chuẩn Website Haravan / bistextile.com (Nền trắng sắc nét):")
+                with c_prev_h2:
+                    st.markdown("<div style='text-align:right; font-family:\"JetBrains Mono\",monospace; font-size:11px; color:#10b981; padding-top:4px;'>HARAVAN CONTAINER ACTIVE ✓</div>", unsafe_allow_html=True)
                 live_preview_code = p.get("custom_html") or technical_agent.build_7_block_html(p)
                 import hashlib
                 preview_hash = hashlib.md5((str(live_preview_code) + str(p.get("status")) + str(p.get("updated_at", ""))).encode("utf-8")).hexdigest()[:8]
@@ -1548,6 +1714,7 @@ with tab_tech:
 </body>
 </html>"""
                 components.html(full_preview_html, height=580, scrolling=True)
+                st.markdown("</div>", unsafe_allow_html=True)
 
             with tab_memory_quick:
                 st.markdown("##### 🧠 Các Quy Tắc AI Đã Tự Học Được (Learning Engine Rules):")
