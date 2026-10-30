@@ -473,6 +473,7 @@ class AgentOperations:
                     "vendor": p.get("brand") or p.get("vendor") or "BIS Textile",
                     "product_type": p.get("category") or "Vật tư thử nghiệm",
                     "published": False,  # BẮT BUỘC LUÔN ẨN
+                    "published_scope": "global",
                     "tags": f"AATCC,Tài liệu tiêu chuẩn,{p.get('category', '')}",
                     "options": [
                         {
