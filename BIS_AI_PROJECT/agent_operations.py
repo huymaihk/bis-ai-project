@@ -458,13 +458,18 @@ class AgentOperations:
         for p in approved_products:
             sku = p.get("sku")
             title = p.get("product_name") or p.get("product_name_en")
-            body_html = tech_agent.build_7_block_html(p)
+            body_html = p.get("custom_html") or tech_agent.build_7_block_html(p)
+
+            # Đảm bảo handle không bị lỗi
+            raw_handle = re.sub(r"[^a-zA-Z0-9\s-]", "", title.lower()).strip()
+            handle = re.sub(r"[\s-]+", "-", raw_handle)[:80] if raw_handle else f"sp-{sku.lower()}"
 
             payload = {
                 "product": {
                     "title": title,
+                    "handle": handle,
                     "body_html": body_html,
-                    "vendor": p.get("vendor") or "BIS Textile",
+                    "vendor": p.get("brand") or p.get("vendor") or "BIS Textile",
                     "product_type": p.get("category") or "Vật tư thử nghiệm",
                     "published": False,  # BẮT BUỘC LUÔN ẨN
                     "tags": f"AATCC,Tài liệu tiêu chuẩn,{p.get('category', '')}",
