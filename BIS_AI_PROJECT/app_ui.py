@@ -689,6 +689,18 @@ if marketing_agent is None or not hasattr(marketing_agent, "load_marketing_knowl
         pass
 knowledge_agent = getattr(leader, "knowledge_agent", None)
 media_agent = getattr(leader, "media_agent", None)
+if media_agent is None or not hasattr(media_agent, "search_web_images"):
+    try:
+        import importlib
+        import agent_media
+        importlib.reload(agent_media)
+        media_agent = agent_media.AgentMedia(PROJECT_DIR)
+        if leader:
+            leader.media_agent = media_agent
+            if hasattr(leader, "departments"):
+                leader.departments["media"] = media_agent
+    except Exception:
+        pass
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1707,20 +1719,45 @@ with tab_media:
             
             page_num_media = int(p_media.get("source_page") or 1)
             brand_name_media = p_media.get("brand") or "AATCC"
-            title_media = p_media.get("product_name_en") or p_media.get("product_name") or ""
+            name_en_media = p_media.get("product_name_en") or ""
+            name_vi_media = p_media.get("product_name") or ""
+            title_media = name_en_media or name_vi_media or ""
 
-            c_act1, c_act2 = st.columns(2)
+            # Ô nhập từ khóa tìm ảnh (Tự động kết hợp Tên hãng + Mã SKU + Tên sản phẩm)
+            default_search_query = f"{brand_name_media} {clean_sku} {title_media}".strip()
+            custom_img_query = st.text_input(
+                "🔍 Từ khóa tìm ảnh trên Web (Tên hãng + Mã SKU + Tên SP):",
+                value=default_search_query,
+                key=f"inp_kw_img_{clean_sku}",
+                help="Hệ thống tự động kết hợp Tên hãng + Mã SKU + Tên sản phẩm để tìm ảnh chính xác nhất. Bạn có thể chỉnh sửa từ khóa này theo ý muốn."
+            )
+
+            c_act1, c_act2, c_act3 = st.columns([3.5, 3.5, 3.0])
             with c_act1:
-                if st.button("🌐 Tìm ảnh hãng trên Web", key=f"btn_fetch_web_{clean_sku}", help="Dùng AI & curl_cffi tìm ảnh chính hãng trên website của thương hiệu"):
-                    with st.spinner("Đang tìm ảnh trên website chính hãng..."):
-                        fetched = media_agent.fetch_brand_image_from_web(clean_sku, brand_name_media, title_media)
+                if st.button("🌐 Xem trước nhiều ảnh", key=f"btn_preview_web_{clean_sku}", help="Tìm và hiển thị lưới các ảnh thực tế tìm được để bạn chọn ảnh đẹp nhất", use_container_width=True):
+                    with st.spinner(f"Đang tìm ảnh '{custom_img_query}' trên Web..."):
+                        if hasattr(media_agent, "search_web_images"):
+                            img_results = media_agent.search_web_images(custom_img_query, max_results=6)
+                        else:
+                            img_results = []
+                        st.session_state[f"web_img_results_{clean_sku}"] = img_results
+                        if not img_results:
+                            st.warning("Không tìm thấy ảnh phù hợp với từ khóa này. Hãy thử đổi từ khóa.")
+                        else:
+                            st.rerun()
+
+            with c_act2:
+                if st.button("⚡ Tự lưu ảnh đầu tiên", key=f"btn_auto_save_{clean_sku}", help="Tìm và tự động tải lưu ngay ảnh đẹp nhất vào Drive", use_container_width=True):
+                    with st.spinner(f"Đang tìm và tải ảnh '{custom_img_query}'..."):
+                        fetched = media_agent.fetch_brand_image_from_web(clean_sku, brand_name_media, title_media, name_vi_media)
                         if fetched and fetched.exists():
-                            st.success("✓ Đã tìm thấy và lưu ảnh chính hãng!")
+                            st.toast(f"✓ Đã lưu ảnh {clean_sku}_brand_1.jpg!", icon="📸")
                             st.rerun()
                         else:
-                            st.warning("Chưa tìm thấy ảnh khớp trên web hãng. Hãy thử trích xuất từ PDF hoặc tải ảnh lên.")
-            with c_act2:
-                if st.button("✂️ Trích xuất từ Catalogue", key=f"btn_ext_pdf_{clean_sku}", help="Tự động bóc tách ảnh máy dệt từ trang Catalogue PDF"):
+                            st.warning("Chưa tải được ảnh tự động. Hãy bấm 'Xem trước nhiều ảnh' để chọn thủ công.")
+
+            with c_act3:
+                if st.button("✂️ Trích từ PDF", key=f"btn_ext_pdf_{clean_sku}", help="Tự động bóc tách ảnh máy dệt từ trang Catalogue PDF", use_container_width=True):
                     with st.spinner(f"Đang trích xuất ảnh từ trang {page_num_media}..."):
                         active_pdf_for_media = active_pdf if 'active_pdf' in locals() and active_pdf else pdf_file
                         ext_path = media_agent.extract_image_from_pdf(clean_sku, active_pdf_for_media, page_num_media)
@@ -1729,6 +1766,29 @@ with tab_media:
                             st.rerun()
                         else:
                             st.warning(f"Không tìm thấy ảnh nhúng trong trang {page_num_media} của Catalogue.")
+
+            # Hiển thị Lưới chọn ảnh nếu người dùng vừa tìm kiếm
+            web_results = st.session_state.get(f"web_img_results_{clean_sku}")
+            if web_results:
+                with st.expander(f"🖼️ KẾT QUẢ TÌM THẤY {len(web_results)} ẢNH TRÊN WEB (BẤM ĐỂ CHỌN)", expanded=True):
+                    grid_cols = st.columns(min(len(web_results), 3))
+                    for idx, it in enumerate(web_results):
+                        c_idx = idx % len(grid_cols)
+                        with grid_cols[c_idx]:
+                            try:
+                                st.image(it["thumb_url"], use_container_width=True)
+                                st.caption(f"**{it.get('domain', 'Web')}**\n{it.get('title', '')[:35]}...")
+                                if st.button(f"📥 Chọn ảnh {idx+1}", key=f"btn_pick_img_{clean_sku}_{idx}", use_container_width=True):
+                                    with st.spinner("Đang tải và lưu ảnh về Google Drive..."):
+                                        saved = media_agent.download_and_save_brand_image(clean_sku, it["image_url"])
+                                        if saved and saved.exists():
+                                            st.session_state.pop(f"web_img_results_{clean_sku}", None)
+                                            st.toast(f"✓ Đã lưu ảnh chính hãng `{clean_sku}_brand_1.jpg`!", icon="📸")
+                                            st.rerun()
+                                        else:
+                                            st.error("Lỗi khi tải ảnh này, hãy thử chọn ảnh khác.")
+                            except Exception:
+                                pass
 
             # Hiển thị ảnh đầu vào hiện có
             chosen_source_img = None

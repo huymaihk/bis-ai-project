@@ -121,27 +121,109 @@ class AgentMedia:
             print(f"Error extracting image from PDF: {e}")
         return None
 
-    def fetch_brand_image_from_web(self, sku: str, brand_name: str, title: str) -> Optional[Path]:
-        """Search official brand website using curl_cffi and download official photo."""
+    def search_web_images(self, query: str, max_results: int = 8) -> list[dict]:
+        """Tìm kiếm ảnh sản phẩm chất lượng cao trên web thông qua Bing Image Engine (curl_cffi)."""
+        import urllib.parse
+        import json
+        import re
+        from curl_cffi import requests
+        from bs4 import BeautifulSoup
+
+        clean_q = query.strip()
+        encoded = urllib.parse.quote_plus(clean_q)
+        url = f"https://www.bing.com/images/search?q={encoded}&form=HDRSC2&first=1"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Accept-Language": "en-US,en;q=0.9,vi;q=0.8"
+        }
+        results = []
+        try:
+            r = requests.get(url, headers=headers, impersonate="chrome", timeout=15)
+            if r.status_code == 200:
+                soup = BeautifulSoup(r.text, "html.parser")
+                for a in soup.find_all("a", class_="iusc"):
+                    m_attr = a.get("m")
+                    if m_attr:
+                        try:
+                            m_data = json.loads(m_attr)
+                            murl = m_data.get("murl")
+                            turl = m_data.get("turl")
+                            desc = m_data.get("desc", "")
+                            purl = m_data.get("purl", "")
+                            if murl and any(ext in murl.lower() for ext in [".jpg", ".jpeg", ".png", ".webp"]):
+                                # Lọc bỏ logo, icon nhỏ hoặc banner chung chung
+                                if not any(skip in murl.lower() for skip in ["logo", "icon", "banner", "avatar", "favicon", "pixel"]):
+                                    domain = re.sub(r"https?://(www\.)?", "", purl or murl).split("/")[0]
+                                    results.append({
+                                        "image_url": murl,
+                                        "thumb_url": turl or murl,
+                                        "title": desc or clean_q,
+                                        "domain": domain
+                                    })
+                                    if len(results) >= max_results:
+                                        break
+                        except Exception:
+                            continue
+        except Exception as e:
+            print(f"Error searching web images for '{query}': {e}")
+        return results
+
+    def download_and_save_brand_image(self, sku: str, image_url: str) -> Optional[Path]:
+        """Tải ảnh từ URL đã chọn và lưu vào thư mục ảnh hãng của SKU trên Google Drive."""
+        from curl_cffi import requests
         clean_sku = sku.strip().replace(" ", "_")
         target_path = self.brand_dir / f"{clean_sku}_brand_1.jpg"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        }
+        try:
+            r = requests.get(image_url, headers=headers, impersonate="chrome", timeout=20)
+            if r.status_code == 200 and len(r.content) > 5000:
+                with open(target_path, "wb") as f:
+                    f.write(r.content)
+                print(f"✓ Đã lưu ảnh sản phẩm {clean_sku} ({len(r.content):,} bytes) từ {image_url}")
+                return target_path
+        except Exception as e:
+            print(f"Error downloading image from {image_url}: {e}")
+        return None
+
+    def fetch_brand_image_from_web(self, sku: str, brand_name: str, title: str, product_name_vi: str = "") -> Optional[Path]:
+        """
+        Tìm và lưu ảnh sản phẩm thực tế từ Web kết hợp thông minh:
+        - Tên hãng (Brand) + Mã SKU + Tên sản phẩm tiếng Anh / tiếng Việt.
+        """
+        clean_sku = sku.strip().replace(" ", "_")
+        
+        # Tạo danh sách các truy vấn theo độ ưu tiên từ cụ thể nhất đến tổng quát
+        queries = []
+        if title:
+            queries.append(f"{brand_name} {sku} {title}".strip())
+        queries.append(f"{brand_name} {sku}".strip())
+        if product_name_vi and product_name_vi != title:
+            queries.append(f"{brand_name} {sku} {product_name_vi}".strip())
+        if title:
+            queries.append(f"{brand_name} {title}".strip())
+
+        for q in queries:
+            results = self.search_web_images(q, max_results=5)
+            for res in results:
+                saved = self.download_and_save_brand_image(clean_sku, res["image_url"])
+                if saved and saved.exists():
+                    return saved
+
+        # Fallback phụ: thử cào trang web thương hiệu trực tiếp
         try:
             from brand_web_enricher import resolve_brand_domain, fetch_brand_product_page
             domain = resolve_brand_domain(brand_name)
             web_data = fetch_brand_product_page(domain, sku, title)
             if web_data and web_data.get("images"):
-                import requests
                 for img_url in web_data["images"]:
-                    try:
-                        r = requests.get(img_url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
-                        if r.status_code == 200 and len(r.content) > 5000:
-                            with open(target_path, "wb") as f:
-                                f.write(r.content)
-                            return target_path
-                    except Exception:
-                        continue
+                    saved = self.download_and_save_brand_image(clean_sku, img_url)
+                    if saved and saved.exists():
+                        return saved
         except Exception as e:
-            print(f"Error fetching brand image from web: {e}")
+            print(f"Error in brand domain fallback: {e}")
+
         return None
 
     def register_user_image(self, sku: str, image_bytes: bytes, filename: str) -> Path:
