@@ -963,8 +963,6 @@ with col_logout:
     if st.button("🚪 Thoát", key="logout_btn", use_container_width=True):
         st.session_state.authenticated = False
         st.rerun()
-            st.session_state.authenticated = False
-            st.rerun()
 
 # ── 2. Topology Canvas & Execution Queue ──────────────────────────────────────
 col_canvas, col_side_queue = st.columns([8, 4])
