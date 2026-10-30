@@ -800,7 +800,7 @@ def cached_scan_catalog_pdfs(cat_dir_str: str, root_dir_str: str) -> dict:
 
 leader = get_cached_agent_leader(str(PROJECT_DIR))
 technical_agent = getattr(leader, "technical_agent", None)
-operations_agent = getattr(leader, "operations_agent", None)
+operations_agent = AgentOperations(PROJECT_DIR) if AgentOperations else getattr(leader, "operations_agent", None)
 learning_engine = getattr(leader, "learning_engine", None)
 marketing_agent = getattr(leader, "marketing_agent", None)
 if marketing_agent is None or not hasattr(marketing_agent, "load_marketing_knowledge"):
@@ -2240,7 +2240,8 @@ with tab_ops:
     st.info(f"Hiện có **{len(approved_for_sync)} sản phẩm** đã APPROVED sẵn sàng đẩy lên Haravan: {[x.get('sku') for x in approved_for_sync]}")
     if st.button("🚀 BẮT ĐẦU ĐỒNG BỘ CÁC SẢN PHẨM APPROVED LÊN HARAVAN", type="primary", disabled=(len(approved_for_sync) == 0)):
         with st.spinner("Agent_Operations đang tiến hành kết nối Haravan API..."):
-            sync_res = operations_agent.sync_approved_to_haravan(approved_for_sync)
+            fresh_ops = AgentOperations(PROJECT_DIR) if AgentOperations else operations_agent
+            sync_res = fresh_ops.sync_approved_to_haravan(approved_for_sync)
             st.write("📊 Kết quả phản hồi từ Haravan API:", sync_res)
             success_items = [r for r in sync_res if r.get("status") == "SUCCESS"]
             error_items = [r for r in sync_res if r.get("status") != "SUCCESS"]
