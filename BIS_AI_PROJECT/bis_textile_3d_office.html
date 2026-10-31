@@ -132,58 +132,53 @@
   <!-- CSS2D Overlay Layer for 16 Characters & 6 Zones -->
   <div id="labels-layer"></div>
 
-  <!-- TOP COMMAND HUD BAR -->
-  <header class="fixed top-2.5 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
-    <div class="glass-panel rounded-2xl px-3.5 py-2 flex items-center gap-3 pointer-events-auto">
-      <div class="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 via-sky-500 to-emerald-500 p-[1.5px] shadow-lg shadow-sky-500/20">
-        <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center font-extrabold text-xs tracking-tighter text-amber-300">
+  <!-- TOP COMPACT COMMAND HUD BAR -->
+  <header class="fixed top-2 left-2 right-2 z-20 flex flex-wrap items-center justify-between gap-1.5 pointer-events-none">
+    <div class="glass-panel rounded-xl px-2.5 py-1 flex items-center gap-2 pointer-events-auto shadow-lg">
+      <div class="relative flex items-center justify-center w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 via-sky-500 to-emerald-500 p-[1.5px]">
+        <div class="w-full h-full bg-slate-950 rounded-[6px] flex items-center justify-center font-extrabold text-[11px] text-amber-300">
           👑16
         </div>
-        <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full ring-2 ring-slate-950 animate-ping"></span>
-        <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full ring-2 ring-slate-950"></span>
+        <span class="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-400 rounded-full ring-2 ring-slate-950 animate-ping"></span>
+        <span class="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-400 rounded-full ring-2 ring-slate-950"></span>
       </div>
       <div>
-        <div class="flex items-center gap-2">
-          <h1 class="text-xs sm:text-sm font-extrabold tracking-tight text-white">
-            BIS TEXTILE METAVERSE — 16 NHÂN VẬT 3D (CHỦ TỊCH HUY MAI & 15 AI AGENTS)
+        <div class="flex items-center gap-1.5">
+          <h1 class="text-xs font-extrabold text-white">
+            VĂN PHÒNG 16 NHÂN SỰ 3D
           </h1>
-          <span class="hidden lg:inline-flex items-center px-2 py-0.5 rounded-full text-[9.5px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 mono">
-            LOCK 20/10/2026 • 23 CỘT SHEETS
+          <span class="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 mono">
+            15 BÀN + VIP
           </span>
         </div>
-        <p class="text-[10.5px] text-slate-400 flex items-center gap-2">
-          <span>1 Bàn Chủ Tịch + 15 Bàn Chuyên Viên (5 Phòng Ban) + Bàn Tròn Hologram 16 Ghế</span>
-          <span class="text-slate-600">•</span>
-          <span id="scenario-status-text" class="text-sky-400 font-semibold">Trạng thái: 16/16 Trực tuyến</span>
-        </p>
       </div>
     </div>
 
-    <!-- Bộ chọn nhanh Khu vực / Phòng ban -->
-    <div class="glass-panel rounded-2xl px-2.5 py-1.5 flex flex-wrap items-center gap-1 pointer-events-auto">
-      <button data-focus="ceo_huy_mai" class="dept-jump-btn hud-btn px-2.5 py-1 rounded-xl text-[11px] font-bold bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-400/40">
-        👑 Bàn Chủ Tịch Huy Mai
+    <!-- Quick Department Focus Pills & Toggle HUD Button -->
+    <div class="glass-panel rounded-xl px-2 py-1 flex flex-wrap items-center gap-1 pointer-events-auto shadow-lg">
+      <button data-focus="ceo_huy_mai" class="dept-jump-btn hud-btn px-2 py-0.5 rounded-lg text-[10.5px] font-bold bg-amber-500/25 hover:bg-amber-500/40 text-amber-200 border border-amber-400/40">
+        👑 Bàn Chủ Tịch
       </button>
-      <button data-focus="rd_lead" class="dept-jump-btn hud-btn px-2 py-1 rounded-xl text-[11px] font-semibold bg-blue-500/15 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30">
+      <button data-focus="rd_lead" class="dept-jump-btn hud-btn px-2 py-0.5 rounded-lg text-[10.5px] font-semibold bg-blue-500/15 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30">
         🔬 R&D (3)
       </button>
-      <button data-focus="seo_lead" class="dept-jump-btn hud-btn px-2 py-1 rounded-xl text-[11px] font-semibold bg-purple-500/15 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30">
-        🎯 Marketing & SEO (3)
+      <button data-focus="seo_lead" class="dept-jump-btn hud-btn px-2 py-0.5 rounded-lg text-[10.5px] font-semibold bg-purple-500/15 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30">
+        🎯 MKT (3)
       </button>
-      <button data-focus="studio_lead" class="dept-jump-btn hud-btn px-2 py-1 rounded-xl text-[11px] font-semibold bg-pink-500/15 hover:bg-pink-500/30 text-pink-300 border border-pink-500/30">
-        🎬 Studio 2K (3)
+      <button data-focus="studio_lead" class="dept-jump-btn hud-btn px-2 py-0.5 rounded-lg text-[10.5px] font-semibold bg-pink-500/15 hover:bg-pink-500/30 text-pink-300 border border-pink-500/30">
+        🎬 Studio (3)
       </button>
-      <button data-focus="trans_lead" class="dept-jump-btn hud-btn px-2 py-1 rounded-xl text-[11px] font-semibold bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30">
-        📚 Dịch Thuật OCR (3)
+      <button data-focus="trans_lead" class="dept-jump-btn hud-btn px-2 py-0.5 rounded-lg text-[10.5px] font-semibold bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30">
+        📚 Dịch Thuật (3)
       </button>
-      <button data-focus="ops_manager" class="dept-jump-btn hud-btn px-2 py-1 rounded-xl text-[11px] font-semibold bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30">
-        🛡️ Haravan Guard (3)
+      <button data-focus="ops_manager" class="dept-jump-btn hud-btn px-2 py-0.5 rounded-lg text-[10.5px] font-semibold bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30">
+        🛡️ Guard (3)
       </button>
-      <button id="btn-reset-cam" class="hud-btn px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600/50">
-        🎥 Toàn cảnh 360°
+      <button id="btn-reset-cam" class="hud-btn px-2 py-0.5 rounded-lg text-[10.5px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600/50">
+        🎥 Toàn Cảnh
       </button>
-      <button id="btn-toggle-right-panel" class="hud-btn px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-sky-300 border border-sky-500/30">
-        📋 16 Nhân sự
+      <button id="btn-toggle-hud" class="hud-btn px-2.5 py-0.5 rounded-lg text-[10.5px] font-bold bg-gradient-to-r from-sky-500/25 to-blue-600/25 hover:from-sky-500/40 hover:to-blue-600/40 text-sky-200 border border-sky-400/40">
+        ☰ Menu HUD (Ẩn/Hiện)
       </button>
     </div>
   </header>
@@ -230,7 +225,7 @@
   </section>
 
   <!-- RIGHT PANEL: DANH SÁCH ĐỦ 16 NHÂN VẬT 3D & TRẠNG THÁI THỜI GIAN THỰC -->
-  <aside id="right-roster-panel" class="fixed top-16 right-3 z-20 w-80 max-w-[calc(100vw-24px)] glass-panel rounded-2xl p-3 flex flex-col gap-2 pointer-events-auto">
+  <aside id="right-roster-panel" class="fixed top-12 right-2 z-20 w-76 max-w-[calc(100vw-20px)] glass-panel rounded-2xl p-2.5 hidden flex-col gap-1.5 pointer-events-auto shadow-2xl">
     <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
       <div class="flex items-center gap-1.5">
         <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
@@ -246,7 +241,7 @@
   </aside>
 
   <!-- BOTTOM HUD SCENARIO BAR -->
-  <footer class="fixed bottom-2.5 left-3 right-3 z-20 flex flex-col items-center pointer-events-none">
+  <footer id="bottom-footer" class="fixed bottom-2 left-2 right-2 z-20 flex flex-col items-center pointer-events-none hidden">
     <div class="glass-panel rounded-2xl p-1.5 sm:px-3 sm:py-2 pointer-events-auto flex flex-wrap items-center justify-center gap-1.5 max-w-full">
       <button id="btn-sim-handoff" class="hud-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-600/30 flex items-center gap-1.5 border border-blue-400/30">
         <span>🚶‍♂️</span>
@@ -899,7 +894,7 @@
       scene.fog = new THREE.FogExp2(0x040711, 0.012);
 
       camera = new THREE.PerspectiveCamera(44, window.innerWidth / window.innerHeight, 0.1, 220);
-      camera.position.set(0, 21.5, 26.5);
+      camera.position.set(0, 18, 22.5);
 
       renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -1801,9 +1796,19 @@
         if (!voiceEnabled && 'speechSynthesis' in window) window.speechSynthesis.cancel();
       });
 
+      
+      const btnToggleHud = document.getElementById('btn-toggle-hud');
+      if (btnToggleHud) {
+        btnToggleHud.addEventListener('click', () => {
+          const footer = document.getElementById('bottom-footer');
+          const rightPanel = document.getElementById('right-roster-panel');
+          if (footer) footer.classList.toggle('hidden');
+          if (rightPanel) rightPanel.classList.toggle('hidden');
+        });
+      }
       document.getElementById('btn-reset-cam').addEventListener('click', () => {
         cameraFocusState.lookAtPos.set(0, 1.0, -0.5);
-        cameraFocusState.targetPos.set(0, 21.5, 26.5);
+        cameraFocusState.targetPos.set(0, 18, 22.5);
         cameraFocusState.active = true;
       });
 

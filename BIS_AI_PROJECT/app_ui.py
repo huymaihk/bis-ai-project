@@ -1204,9 +1204,8 @@ tab_lego, tab_tech, tab_mkt, tab_media, tab_know, tab_trans, tab_ops, tab_learn 
     "🧠 8. Bộ Nhớ Tự Học (Few-Shot Feedback)"
 ])
 
-@st.cache_data(show_spinner=False)
 def load_3d_office_html() -> str:
-    """Đọc trọn vẹn nội dung file HTML 3D từ thư mục dự án (có RAM cache)."""
+    """Đọc trực tiếp file HTML 3D mới nhất từ thư mục dự án."""
     html_path = PROJECT_DIR / "bis_textile_3d_office.html"
     if not html_path.exists():
         html_path = PROJECT_DIR / "lego_hq.html"
