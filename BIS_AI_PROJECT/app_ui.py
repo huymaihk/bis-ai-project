@@ -1366,11 +1366,13 @@ with tab_lego:
         if st.button("⚡ Chạy 1 Bước Tự Động", use_container_width=True, type="primary", key="btn_step_loop"):
             if orch:
                 ev = orch.step_autonomous_loop()
+                chosen_id = ev.get("emp_id", st.session_state.selected_emp_id)
+                st.session_state.selected_emp_id = chosen_id
                 st.session_state.last_3d_command = {
-                    "agent_key": ev["avatar_3d_key"],
+                    "agent_key": chosen_id,
                     "state": ev["state_3d"],
                     "message": ev["text"],
-                    "selected_emp_id": st.session_state.selected_emp_id,
+                    "selected_emp_id": chosen_id,
                 }
                 st.rerun()
     with col_ctrl2:
@@ -1419,7 +1421,7 @@ with tab_lego:
                 st.session_state.chat_mode = "DIRECT_1_1"
                 emp_obj = orch.employees[chosen_eid]
                 st.session_state.last_3d_command = {
-                    "agent_key": emp_obj.avatar_3d_key,
+                    "agent_key": emp_obj.emp_id,
                     "state": STATE_TO_3D_MAP.get(emp_obj.state, "WORKING"),
                     "message": f"{emp_obj.avatar_emoji} {emp_obj.name}: Sẵn sàng trao đổi 1-1 với Chủ tịch Huy Mai!",
                     "selected_emp_id": emp_obj.emp_id,
@@ -1524,7 +1526,7 @@ with tab_lego:
             if final_prompt:
                 result = orch.chat_with_employee(active_emp.emp_id, final_prompt)
                 st.session_state.last_3d_command = {
-                    "agent_key": result["avatar_3d_key"],
+                    "agent_key": result.get("emp_id", active_emp.emp_id),
                     "state": result["state_3d"],
                     "message": result["bubble_3d"],
                     "selected_emp_id": active_emp.emp_id,
@@ -1620,7 +1622,7 @@ with tab_lego:
                             st.session_state.selected_emp_id = demp.emp_id
                             st.session_state.chat_mode = "DIRECT_1_1"
                             st.session_state.last_3d_command = {
-                                "agent_key": demp.avatar_3d_key,
+                                "agent_key": demp.emp_id,
                                 "state": STATE_TO_3D_MAP.get(demp.state, "WORKING"),
                                 "message": f"{demp.avatar_emoji} {demp.name}: Dạ em nghe lệnh Chủ tịch Huy Mai ạ!",
                                 "selected_emp_id": demp.emp_id,

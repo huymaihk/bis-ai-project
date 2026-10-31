@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BIS Textile — Văn Phòng 3D Thông Minh Điều Hành Multi-Agent</title>
+  <title>BIS Textile — Văn Phòng 3D Metaverse 16 Nhân Sự & Chủ Tịch Huy Mai</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
@@ -22,7 +22,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #060913;
+      background-color: #040711;
       font-family: 'Inter', sans-serif;
       color: #f8fafc;
     }
@@ -33,86 +33,81 @@
       height: 100%;
       z-index: 1;
     }
-    #bubbles-layer {
+    #labels-layer {
       position: fixed;
       inset: 0;
       pointer-events: none;
       z-index: 10;
       overflow: hidden;
     }
-    .thought-bubble {
+    /* Thẻ tên CSS2D rút gọn cho từng nhân vật trong 16 nhân sự */
+    .emp-tag {
       position: absolute;
       transform: translate(-50%, -100%);
-      max-width: 255px;
-      min-width: 165px;
-      padding: 8px 12px;
-      border-radius: 14px;
-      background: rgba(10, 15, 30, 0.88);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1.5px solid rgba(255, 255, 255, 0.18);
-      box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.7), 0 0 16px rgba(59, 130, 246, 0.2);
+      padding: 4px 9px;
+      border-radius: 10px;
+      background: rgba(8, 13, 26, 0.86);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1.5px solid rgba(148, 163, 184, 0.28);
+      box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.75);
       color: #f1f5f9;
-      font-size: 11.5px;
-      line-height: 1.38;
+      font-size: 10.5px;
+      line-height: 1.25;
       pointer-events: auto;
       cursor: pointer;
-      transition: opacity 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      white-space: nowrap;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
     }
-    .thought-bubble:hover {
-      border-color: rgba(255, 255, 255, 0.45);
-      box-shadow: 0 14px 32px -4px rgba(0, 0, 0, 0.85), 0 0 22px rgba(56, 189, 248, 0.38);
+    .emp-tag:hover, .emp-tag.active-tag {
+      transform: translate(-50%, -108%) scale(1.08);
+      z-index: 50 !important;
+      box-shadow: 0 12px 28px -2px rgba(0, 0, 0, 0.9), 0 0 18px rgba(56, 189, 248, 0.45);
     }
-    .thought-bubble::after {
-      content: '';
-      position: absolute;
-      bottom: -7px;
-      left: 50%;
-      transform: translateX(-50%) rotate(45deg);
-      width: 12px;
-      height: 12px;
-      background: rgba(10, 15, 30, 0.92);
-      border-right: 1.5px solid rgba(255, 255, 255, 0.18);
-      border-bottom: 1.5px solid rgba(255, 255, 255, 0.18);
+    .emp-tag .task-pop {
+      display: none;
+      max-width: 220px;
+      white-space: normal;
+      margin-top: 4px;
+      padding-top: 4px;
+      border-top: 1px solid rgba(148, 163, 184, 0.2);
+      font-size: 10px;
+      color: #cbd5e1;
     }
-    .thought-bubble.speaking {
-      animation: pulse-border 1.4s infinite ease-in-out;
+    .emp-tag:hover .task-pop, .emp-tag.active-tag .task-pop, .emp-tag.speaking-tag .task-pop {
+      display: block;
     }
-    @keyframes pulse-border {
-      0%, 100% { transform: translate(-50%, -100%) scale(1); }
-      50% { transform: translate(-50%, -103%) scale(1.03); }
-    }
-    .zone-label {
+    .zone-banner {
       position: absolute;
       transform: translate(-50%, -50%);
-      padding: 3px 9px;
+      padding: 3px 10px;
       border-radius: 999px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.05em;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      background: rgba(15, 23, 42, 0.72);
-      border: 1px solid rgba(148, 163, 184, 0.25);
-      color: #cbd5e1;
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: #e2e8f0;
       pointer-events: none;
       white-space: nowrap;
       backdrop-filter: blur(4px);
     }
     .glass-panel {
-      background: rgba(11, 17, 34, 0.82);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(148, 163, 184, 0.18);
-      box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.75);
+      background: rgba(9, 14, 28, 0.86);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.85);
     }
     .hud-btn {
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .hud-btn:hover {
       transform: translateY(-2px);
     }
     .hud-btn:active {
-      transform: translateY(0px) scale(0.98);
+      transform: translateY(0px) scale(0.97);
     }
     .mono {
       font-family: 'JetBrains Mono', monospace;
@@ -125,7 +120,7 @@
       background: rgba(15, 23, 42, 0.4);
     }
     ::-webkit-scrollbar-thumb {
-      background: rgba(100, 116, 139, 0.5);
+      background: rgba(100, 116, 139, 0.55);
       border-radius: 999px;
     }
   </style>
@@ -134,367 +129,553 @@
   <!-- 3D WebGL Canvas -->
   <div id="canvas-container"></div>
 
-  <!-- 3D Floating Thought Bubbles & Zone Labels Overlay -->
-  <div id="bubbles-layer"></div>
+  <!-- CSS2D Overlay Layer for 16 Characters & 6 Zones -->
+  <div id="labels-layer"></div>
 
-  <!-- TOP HEADER BAR -->
-  <header class="fixed top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
-    <!-- Brand & System Status -->
-    <div class="glass-panel rounded-2xl px-4 py-2.5 flex items-center gap-3 pointer-events-auto">
-      <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-blue-500 to-emerald-500 p-[1.5px] shadow-lg shadow-blue-500/20">
-        <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center font-extrabold text-sm tracking-tighter text-white">
-          BIS
+  <!-- TOP COMMAND HUD BAR -->
+  <header class="fixed top-2.5 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+    <div class="glass-panel rounded-2xl px-3.5 py-2 flex items-center gap-3 pointer-events-auto">
+      <div class="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 via-sky-500 to-emerald-500 p-[1.5px] shadow-lg shadow-sky-500/20">
+        <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center font-extrabold text-xs tracking-tighter text-amber-300">
+          👑16
         </div>
-        <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full ring-2 ring-slate-950 animate-ping"></span>
-        <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full ring-2 ring-slate-950"></span>
+        <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full ring-2 ring-slate-950 animate-ping"></span>
+        <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full ring-2 ring-slate-950"></span>
       </div>
       <div>
         <div class="flex items-center gap-2">
-          <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-white">
-            BIS TEXTILE — VĂN PHÒNG 3D MULTI-AGENT
+          <h1 class="text-xs sm:text-sm font-extrabold tracking-tight text-white">
+            BIS TEXTILE METAVERSE — 16 NHÂN VẬT 3D (CHỦ TỊCH HUY MAI & 15 AI AGENTS)
           </h1>
-          <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 mono">
-            SAFE-GUARD 20/10/2026 ACTIVE
+          <span class="hidden lg:inline-flex items-center px-2 py-0.5 rounded-full text-[9.5px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 mono">
+            LOCK 20/10/2026 • 23 CỘT SHEETS
           </span>
         </div>
-        <p class="text-[11px] text-slate-400 flex items-center gap-2">
-          <span>5 Khối Tác Nhân AI Độc Lập (Không Phòng Bán Hàng/Báo Giá)</span>
+        <p class="text-[10.5px] text-slate-400 flex items-center gap-2">
+          <span>1 Bàn Chủ Tịch + 15 Bàn Chuyên Viên (5 Phòng Ban) + Bàn Tròn Hologram 16 Ghế</span>
           <span class="text-slate-600">•</span>
-          <span id="scenario-status-text" class="text-sky-400 font-medium">Chế độ: Đang làm việc tại bàn</span>
+          <span id="scenario-status-text" class="text-sky-400 font-semibold">Trạng thái: 16/16 Trực tuyến</span>
         </p>
       </div>
     </div>
 
-    <!-- Quick Agent Focus Pills + Camera Reset -->
-    <div class="glass-panel rounded-2xl px-3 py-2 flex flex-wrap items-center gap-1.5 pointer-events-auto">
-      <span class="text-[11px] font-semibold text-slate-400 mr-1 hidden xl:inline">Nhân sự 3D:</span>
-      <button id="pill-boss" data-agent="boss" class="agent-pill hud-btn px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30">
-        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-        <span>CEO Boss</span>
+    <!-- Bộ chọn nhanh Khu vực / Phòng ban -->
+    <div class="glass-panel rounded-2xl px-2.5 py-1.5 flex flex-wrap items-center gap-1 pointer-events-auto">
+      <button data-focus="ceo_huy_mai" class="dept-jump-btn hud-btn px-2.5 py-1 rounded-xl text-[11px] font-bold bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-400/40">
+        👑 Bàn Chủ Tịch Huy Mai
       </button>
-      <button id="pill-engineer" data-agent="engineer" class="agent-pill hud-btn px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/30">
-        <span class="w-2 h-2 rounded-full bg-blue-400"></span>
-        <span>Kỹ thuật R&D</span>
+      <button data-focus="rd_lead" class="dept-jump-btn hud-btn px-2 py-1 rounded-xl text-[11px] font-semibold bg-blue-500/15 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30">
+        🔬 R&D (3)
       </button>
-      <button id="pill-guard" data-agent="guard" class="agent-pill hud-btn px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30">
-        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-        <span>Haravan Guard</span>
+      <button data-focus="seo_lead" class="dept-jump-btn hud-btn px-2 py-1 rounded-xl text-[11px] font-semibold bg-purple-500/15 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30">
+        🎯 Marketing & SEO (3)
       </button>
-      <button id="pill-creator" data-agent="creator" class="agent-pill hud-btn px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30">
-        <span class="w-2 h-2 rounded-full bg-purple-400"></span>
-        <span>Nội dung & SEO</span>
+      <button data-focus="studio_lead" class="dept-jump-btn hud-btn px-2 py-1 rounded-xl text-[11px] font-semibold bg-pink-500/15 hover:bg-pink-500/30 text-pink-300 border border-pink-500/30">
+        🎬 Studio 2K (3)
       </button>
-      <button id="pill-studio" data-agent="studio" class="agent-pill hud-btn px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 bg-pink-500/15 hover:bg-pink-500/25 text-pink-300 border border-pink-500/30">
-        <span class="w-2 h-2 rounded-full bg-pink-400"></span>
-        <span>Studio & Tri Thức</span>
+      <button data-focus="trans_lead" class="dept-jump-btn hud-btn px-2 py-1 rounded-xl text-[11px] font-semibold bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30">
+        📚 Dịch Thuật OCR (3)
       </button>
-      <div class="h-4 w-[1px] bg-slate-700/70 mx-0.5"></div>
-      <button id="btn-reset-cam" class="hud-btn px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600/50" title="Đặt lại góc nhìn toàn cảnh 360°">
-        🎥 Toàn cảnh
+      <button data-focus="ops_manager" class="dept-jump-btn hud-btn px-2 py-1 rounded-xl text-[11px] font-semibold bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30">
+        🛡️ Haravan Guard (3)
       </button>
-      <button id="btn-toggle-panel" class="hud-btn px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-sky-300 border border-sky-500/30" title="Đóng/Mở bảng điều khiển Streamlit API & Nhật ký">
-        ⚡ API & Log
+      <button id="btn-reset-cam" class="hud-btn px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600/50">
+        🎥 Toàn cảnh 360°
+      </button>
+      <button id="btn-toggle-right-panel" class="hud-btn px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-sky-300 border border-sky-500/30">
+        📋 16 Nhân sự
       </button>
     </div>
   </header>
 
-  <!-- RIGHT SIDEBAR: SELECTED AGENT CARD + LIVE STREAMING LOG / API TESTER -->
-  <aside id="side-panel" class="fixed top-20 right-3 z-20 w-80 max-w-[calc(100vw-24px)] flex flex-col gap-2.5 pointer-events-none transition-all duration-300">
-    <!-- Selected Agent Inspector Card -->
-    <div id="agent-inspector" class="glass-panel rounded-2xl p-3.5 pointer-events-auto border-l-4 border-l-amber-400">
-      <div class="flex items-start justify-between gap-2">
-        <div>
-          <span id="inspector-badge" class="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
-            WORKING • TẠI BÀN
-          </span>
-          <h2 id="inspector-name" class="text-sm font-bold text-white mt-1">
-            LEGO Boss (CEO Điều Phối)
-          </h2>
-          <p id="inspector-role" class="text-[11px] text-slate-400">
-            Chỉ huy chiến lược & Bộ nhớ tự học Few-shot
-          </p>
+  <!-- LEFT HOLOGRAM 1-1 CHAT DRAWER (MỞ KHI CLICK VÀO BẤT KỲ NHÂN VẬT NÀO TRONG 16 NHÂN VẬT) -->
+  <section id="direct-chat-drawer" class="fixed top-16 left-3 z-30 w-96 max-w-[calc(100vw-24px)] glass-panel rounded-2xl p-3.5 hidden flex-col gap-2.5 border-l-4 border-l-sky-400">
+    <div class="flex items-start justify-between gap-2">
+      <div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-sky-400 mono">HOLOGRAM CHAT 1-1 • CHỦ TỊCH HUY MAI</span>
         </div>
-        <button id="btn-Inspect-Speak" class="hud-btn px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-xs font-semibold text-amber-300 border border-amber-500/30">
-          👋 Chào & Báo cáo
-        </button>
+        <h3 id="chat-drawer-title" class="text-sm font-extrabold text-white mt-0.5">🔬 Dr. Textile Tech</h3>
+        <p id="chat-drawer-subtitle" class="text-[11px] text-slate-400">Trưởng phòng Kỹ thuật R&D • Bàn số 1</p>
       </div>
-      <div class="mt-2.5 p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-slate-200 leading-relaxed" id="inspector-message">
-        "Đang giám sát luồng Multi-Agent và tối ưu bộ nhớ tự học Few-shot cho thiết bị phòng Lab dệt may."
-      </div>
-      <div class="mt-2 grid grid-cols-2 gap-1.5 text-[10px] text-slate-400 mono">
-        <div class="bg-slate-900/60 px-2 py-1 rounded-lg border border-slate-800/80">
-          Nhiệm vụ: <span id="inspector-metric" class="text-slate-200 font-semibold">Few-shot Memory</span>
-        </div>
-        <div class="bg-slate-900/60 px-2 py-1 rounded-lg border border-slate-800/80">
-          Tọa độ: <span id="inspector-coords" class="text-emerald-400 font-semibold">X: 0.0, Z: -4.2</span>
-        </div>
-      </div>
+      <button id="btn-close-chat-drawer" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300">✕</button>
     </div>
 
-    <!-- Live Multi-Agent Activity Feed & External Streamlit Bridge -->
-    <div id="api-log-panel" class="glass-panel rounded-2xl p-3.5 pointer-events-auto flex flex-col gap-2.5">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">
-            Nhật ký điều hành & Streamlit Bridge
-          </h3>
-        </div>
-        <span class="text-[10px] text-slate-400 mono">window.updateAgentStatus()</span>
-      </div>
+    <!-- Chọn nhanh 1 trong 16 nhân vật ngay trong Drawer -->
+    <div>
+      <select id="chat-drawer-emp-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white font-semibold focus:outline-none focus:border-sky-400"></select>
+    </div>
 
-      <!-- Activity Log Stream -->
-      <div id="activity-log" class="h-32 overflow-y-auto rounded-xl bg-slate-950/80 border border-slate-800/90 p-2 space-y-1.5 text-[11px] mono"></div>
+    <!-- Thông số chuyên môn & Tool của nhân vật đang chọn -->
+    <div id="chat-drawer-meta" class="px-2.5 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-[10.5px] text-slate-300 mono">
+      Tool: verify_sku_spec(AATCC/ISO) • B1-B6
+    </div>
 
-      <!-- Quick Live Command Tester for `window.updateAgentStatus` -->
-      <div class="pt-1 border-t border-slate-800/80">
-        <div class="text-[10px] font-semibold text-slate-400 mb-1.5">
-          Gửi lệnh trực tiếp (`window.updateAgentStatus`):
-        </div>
-        <div class="grid grid-cols-2 gap-1.5 mb-1.5">
-          <select id="cmd-agent" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-sky-500">
-            <option value="engineer">Kỹ thuật R&D (Engineer)</option>
-            <option value="boss">CEO Boss (Điều phối)</option>
-            <option value="guard">Haravan Guard (Vận hành)</option>
-            <option value="creator">Nội dung & SEO (Creator)</option>
-            <option value="studio">Studio & Tri Thức</option>
-          </select>
-          <select id="cmd-state" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-sky-500">
-            <option value="WORKING">WORKING (Làm việc)</option>
-            <option value="HANDOFF">HANDOFF (Bàn giao)</option>
-            <option value="BREAK">BREAK (Giải lao Pantry)</option>
-            <option value="MEETING">MEETING (Ra bàn họp)</option>
-          </select>
-        </div>
-        <div class="flex gap-1.5">
-          <input id="cmd-msg" type="text" placeholder="Nhập thông điệp suy nghĩ / giọng nói..." value="Đã thẩm định xong bước B6, chuẩn bị đồng bộ 23 cột!" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:border-sky-500" />
-          <button id="btn-send-cmd" class="hud-btn px-3 py-1 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs whitespace-nowrap">
-            Thực thi
-          </button>
-        </div>
+    <!-- Lịch sử hội thoại 1-1 -->
+    <div id="chat-drawer-messages" class="h-52 overflow-y-auto rounded-xl bg-slate-950/90 border border-slate-800 p-2.5 space-y-2 text-xs"></div>
+
+    <!-- 3 Nút giao việc nhanh của Chủ tịch Huy Mai -->
+    <div class="flex flex-wrap gap-1">
+      <button data-quick="Kiểm tra lại thông số SKU 03026A theo 6 bước B1-B6 cho anh" class="quick-3d-chat-btn px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-[10px] text-sky-300 border border-sky-500/30">🔍 Thẩm định SKU 03026A</button>
+      <button data-quick="Dựng HTML 7 khối chuẩn Haravan (bảng 39%-61%) và dịch giữ 100% layout" class="quick-3d-chat-btn px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-[10px] text-amber-300 border border-amber-500/30">📄 HTML 7 Khối & Dịch</button>
+      <button data-quick="Kiểm tra Pre-flight chống rỗng thuộc tính và giữ khóa bảo vệ 20/10/2026" class="quick-3d-chat-btn px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-[10px] text-emerald-300 border border-emerald-500/30">🛡️ Khóa Guard 20/10/2026</button>
+    </div>
+
+    <!-- Ô nhập lệnh trực tiếp -->
+    <div class="flex gap-1.5">
+      <input id="chat-drawer-input" type="text" placeholder="Chủ tịch Huy Mai nhập lệnh chỉ đạo..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-sky-400" />
+      <button id="btn-chat-drawer-send" class="hud-btn px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-xs">Gửi</button>
+    </div>
+  </section>
+
+  <!-- RIGHT PANEL: DANH SÁCH ĐỦ 16 NHÂN VẬT 3D & TRẠNG THÁI THỜI GIAN THỰC -->
+  <aside id="right-roster-panel" class="fixed top-16 right-3 z-20 w-80 max-w-[calc(100vw-24px)] glass-panel rounded-2xl p-3 flex flex-col gap-2 pointer-events-auto">
+    <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+      <div class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+        <h2 class="text-xs font-extrabold uppercase tracking-wider text-white">Quân số 3D: 16 Nhân vật</h2>
       </div>
+      <span class="text-[10px] text-emerald-400 font-semibold mono">Click để Zoom & Chat</span>
+    </div>
+    <div id="roster-16-list" class="max-h-64 overflow-y-auto space-y-1 pr-1"></div>
+    <div class="pt-1 border-t border-slate-800">
+      <div class="text-[10px] font-bold uppercase text-slate-400 mb-1">📡 Nhật ký Hoạt động 3D</div>
+      <div id="activity-log" class="h-24 overflow-y-auto rounded-xl bg-slate-950/85 border border-slate-800/90 p-2 space-y-1 text-[10.5px] mono"></div>
     </div>
   </aside>
 
-  <!-- BOTTOM HUD CONTROL BAR -->
-  <footer class="fixed bottom-3 left-3 right-3 z-20 flex flex-col items-center pointer-events-none">
-    <div class="glass-panel rounded-2xl p-2 sm:px-3.5 sm:py-2.5 pointer-events-auto flex flex-wrap items-center justify-center gap-2 max-w-full">
-      <button id="btn-sim-handoff" class="hud-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-600/30 flex items-center gap-2 border border-blue-400/30">
+  <!-- BOTTOM HUD SCENARIO BAR -->
+  <footer class="fixed bottom-2.5 left-3 right-3 z-20 flex flex-col items-center pointer-events-none">
+    <div class="glass-panel rounded-2xl p-1.5 sm:px-3 sm:py-2 pointer-events-auto flex flex-wrap items-center justify-center gap-1.5 max-w-full">
+      <button id="btn-sim-handoff" class="hud-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-600/30 flex items-center gap-1.5 border border-blue-400/30">
         <span>🚶‍♂️</span>
-        <span>Chạy mô phỏng quy trình bóc tách -> Bàn giao</span>
+        <span>Mô phỏng Bóc tách PDF -> Bàn giao Liên Phòng Ban</span>
       </button>
-
-      <button id="btn-sim-break" class="hud-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/30 flex items-center gap-1.5">
-        <span>☕</span>
-        <span>Cho đội ngũ nghỉ giải lao tại Pantry</span>
-      </button>
-
-      <button id="btn-sim-work" class="hud-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/30 flex items-center gap-1.5">
-        <span>💼</span>
-        <span>Về bàn làm việc</span>
-      </button>
-
-      <button id="btn-sim-meeting" class="hud-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-400/30 flex items-center gap-1.5">
+      <button id="btn-sim-meeting" class="hud-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 shadow-lg shadow-amber-500/30 flex items-center gap-1.5">
         <span>🗣️</span>
-        <span>Họp bàn tròn giao ban</span>
+        <span>Triệu tập Họp Bàn Tròn 16 Nhân Sự</span>
       </button>
-
-      <button id="btn-toggle-voice" class="hud-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-400/30 flex items-center gap-1.5">
+      <button id="btn-sim-work" class="hud-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/30 flex items-center gap-1">
+        <span>💼</span>
+        <span>Về 16 Bàn Làm Việc</span>
+      </button>
+      <button id="btn-sim-break" class="hud-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/30 flex items-center gap-1">
+        <span>☕</span>
+        <span>Giải lao Pantry</span>
+      </button>
+      <button id="btn-toggle-voice" class="hud-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-400/30 flex items-center gap-1">
         <span id="voice-icon">🔊</span>
         <span id="voice-label">Giọng nói: BẬT</span>
       </button>
-    </div>
-    <div class="mt-1 text-[10px] text-slate-400/90 hidden sm:flex items-center gap-3 bg-slate-950/60 px-3 py-0.5 rounded-full border border-slate-800/60">
-      <span>🖱️ <b>Chuột trái + Kéo:</b> Xoay 360°</span>
-      <span>•</span>
-      <span>🖱️ <b>Con lăn:</b> Phóng to / Thu nhỏ</span>
-      <span>•</span>
-      <span>🖱️ <b>Chuột phải + Kéo:</b> Lia camera</span>
-      <span>•</span>
-      <span>👆 <b>Nhấp vào nhân vật LEGO:</b> Zoom cận cảnh & nghe báo cáo</span>
     </div>
   </footer>
 
   <script>
     // ============================================================================
-    // 1. CẤU HÌNH HỆ THỐNG ĐA TÁC NHÂN BIS TEXTILE (5 PHÒNG BAN - KHÔNG CÓ SALES)
+    // 1. ĐẶC TẢ ĐẦY ĐỦ 16 NHÂN VẬT 3D & TỌA ĐỘ 16 BÀN LÀM VIỆC TRONG VĂN PHÒNG
     // ============================================================================
-    const AGENT_CONFIGS = {
-      boss: {
-        key: 'boss',
-        name: 'LEGO Boss (CEO)',
-        shortName: 'CEO Boss',
-        department: 'Ban Giám Đốc & Điều Phối AI',
-        colorHex: 0xf59e0b,
-        accentHex: 0xfef08a,
-        badgeBg: 'rgba(245, 158, 11, 0.22)',
-        badgeBorder: '#f59e0b',
-        textColor: '#fde68a',
-        metric: 'Few-shot Memory (99.4%)',
-        deskPos: { x: 0, z: -5.8, rotY: 0 },
-        seatOffset: { x: 0, z: -0.95 },
-        standFrontOffset: { x: 0, z: 1.55 },
-        meetingSpot: { x: 0, z: -2.95, rotY: 0 },
-        breakSpot: { x: -10.8, z: -6.8, rotY: Math.PI * 0.25, sit: true },
-        defaultWorkMsg: '💼 Đang điều phối luồng Multi-Agent & huấn luyện bộ nhớ tự học Few-shot.',
-        greetingMsg: 'Xin chào! Tôi là CEO LEGO Boss. Tôi điều phối toàn bộ hệ thống AI BIS Textile và giám sát bộ nhớ tự học Few-shot.',
-        meetingReportMsg: 'CEO Boss: Hệ thống Few-shot đã ghi nhận 100% quy chuẩn kỹ thuật, yêu cầu các khối phối hợp nhịp nhàng!'
+    const CHARACTERS_16 = [
+      // 0. CHỦ TỊCH HUY MAI — BÀN LÃNH ĐẠO TỐI CAO (EXECUTIVE DESK)
+      {
+        id: 'ceo_huy_mai',
+        deskNo: 'VIP',
+        name: 'Chủ Tịch Huy Mai (CEO)',
+        shortName: '👑 CEO Huy Mai',
+        title: 'Chủ Tịch HĐQT / Tổng Giám Đốc',
+        deptId: 'EXEC',
+        deptName: 'Bàn Lãnh Đạo Tối Cao',
+        legacyGroup: 'boss',
+        colorHex: 0xfef08a,
+        suitHex: 0xffffff, // Vest trắng viền vàng hoàng gia
+        trimHex: 0xf59e0b,
+        badgeBorder: '#facc15',
+        textColor: '#fef08a',
+        accessory: 'crown',
+        toolName: 'executive_command_all_15_agents()',
+        deskPos: { x: 0, z: -8.6, rotY: 0 },
+        breakPos: { x: -11.5, z: -8.0, rotY: 0.4, sit: true },
+        defaultTask: '👑 Chỉ huy chiến lược 15 nhân sự AI & phê duyệt chuẩn B1-B6 toàn công ty.',
+        greeting: 'Chào toàn thể anh em BIS Textile! Tôi là Chủ tịch Huy Mai đang điều hành trực tiếp tại trung tâm chỉ huy 3D.'
       },
-      engineer: {
-        key: 'engineer',
-        name: 'LEGO Engineer (Kỹ thuật R&D)',
-        shortName: 'Kỹ thuật R&D',
-        department: 'Phòng Kỹ Thuật & Thẩm Định R&D',
+
+      // KHU VỰC 1: PHÒNG KỸ THUẬT R&D (3 BÀN - XANH DƯƠNG #3b82f6)
+      {
+        id: 'rd_lead',
+        deskNo: 'Bàn 1',
+        name: 'Dr. Textile Tech',
+        shortName: '🔬 Dr. Textile Tech',
+        title: 'Trưởng phòng Kỹ thuật R&D',
+        deptId: 'RD',
+        deptName: 'Phòng Kỹ Thuật R&D',
+        legacyGroup: 'engineer',
         colorHex: 0x3b82f6,
-        accentHex: 0x93c5fd,
-        badgeBg: 'rgba(59, 130, 246, 0.22)',
+        suitHex: 0x1d4ed8,
+        trimHex: 0x60a5fa,
         badgeBorder: '#3b82f6',
         textColor: '#bfdbfe',
-        metric: 'Catalogue 36p • B1-B6',
-        deskPos: { x: -7.5, z: -1.8, rotY: Math.PI * 0.35 },
-        seatOffset: { x: -0.85, z: -0.45 },
-        standFrontOffset: { x: 1.35, z: 0.75 },
-        meetingSpot: { x: -2.85, z: -0.9, rotY: Math.PI * 0.4 },
-        breakSpot: { x: -13.2, z: -9.8, rotY: 0, sit: false },
-        defaultWorkMsg: '🔬 Đang bóc tách Catalogue PDF 36 trang bằng Gemini & thẩm định 6 bước B1-B6.',
-        greetingMsg: 'Chào bạn! Phòng Kỹ thuật R&D đang bóc tách Catalogue PDF 36 trang bằng Gemini và kiểm duyệt nghiêm ngặt 6 bước B1 đến B6.',
-        meetingReportMsg: 'Kỹ thuật R&D: Đã hoàn tất bóc tách 17 mã SKU từ Catalogue 36 trang, đạt chuẩn 6 bước thẩm định B1-B6!'
+        accessory: 'magnifier',
+        toolName: 'verify_sku_spec(AATCC/ISO • B1-B6)',
+        deskPos: { x: -12.2, z: -5.4, rotY: Math.PI * 0.42 },
+        breakPos: { x: -14.2, z: -9.8, rotY: 0.2, sit: false },
+        defaultTask: '🔬 Duyệt tiêu chuẩn AATCC/ISO/ASTM & thẩm định 6 bước B1-B6.',
+        greeting: 'Kính chào Chủ tịch Huy Mai! Em là Dr. Textile Tech (Bàn 1), đang thẩm định tiêu chuẩn AATCC và ISO cho lô Catalogue mới.'
       },
-      guard: {
-        key: 'guard',
-        name: 'LEGO Haravan Guard (Vận hành)',
-        shortName: 'Haravan Guard',
-        department: 'Phòng Vận Hành & Bảo Mật Máy Chủ',
-        colorHex: 0x10b981,
-        accentHex: 0x6ee7b7,
-        badgeBg: 'rgba(16, 185, 129, 0.22)',
-        badgeBorder: '#10b981',
-        textColor: '#a7f3d0',
-        metric: 'Lock 20/10/2026 • 23 Cột',
-        deskPos: { x: 7.5, z: -1.8, rotY: -Math.PI * 0.35 },
-        seatOffset: { x: 0.85, z: -0.45 },
-        standFrontOffset: { x: -1.35, z: 0.75 },
-        meetingSpot: { x: 2.85, z: -0.9, rotY: -Math.PI * 0.4 },
-        breakSpot: { x: -11.4, z: -10.3, rotY: 0, sit: false },
-        defaultWorkMsg: '🛡️ Canh giữ Server, bảo vệ tuyệt đối SP trước 20/10/2026 & đồng bộ Sheets 23 cột.',
-        greetingMsg: 'Báo cáo! Tôi là Haravan Guard. Rào chắn bảo vệ dữ liệu trước ngày 20 tháng 10 năm 2026 an toàn tuyệt đối, đồng bộ chuẩn 23 cột Google Sheets!',
-        meetingReportMsg: 'Haravan Guard: Rào chắn bảo mật 20/10/2026 khóa chặt 100%, đã đồng bộ mượt mà 23 cột dữ liệu lên Google Sheets!'
+      {
+        id: 'rd_qa',
+        deskNo: 'Bàn 2',
+        name: 'Lab QA Assistant',
+        shortName: '🧪 Lab QA Assistant',
+        title: 'Kỹ sư Kiểm định Phòng Lab',
+        deptId: 'RD',
+        deptName: 'Phòng Kỹ Thuật R&D',
+        legacyGroup: 'engineer',
+        colorHex: 0x3b82f6,
+        suitHex: 0xe2e8f0, // Áo blouse phòng Lab trắng xanh
+        trimHex: 0x38bdf8,
+        badgeBorder: '#60a5fa',
+        textColor: '#bae6fd',
+        accessory: 'glasses',
+        toolName: 'extract_lab_qa_data(Colorfastness/Shrinkage)',
+        deskPos: { x: -12.2, z: -2.0, rotY: Math.PI * 0.45 },
+        breakPos: { x: -13.0, z: -10.2, rotY: 0, sit: false },
+        defaultTask: '🧪 Bóc tách dữ liệu test độ bền màu & độ co rút vải dệt.',
+        greeting: 'Báo cáo Chủ tịch Huy Mai! Em là Kỹ sư Lab QA (Bàn 2), đang kiểm tra thông số độ bền màu và co rút dệt.'
       },
-      creator: {
-        key: 'creator',
-        name: 'LEGO Creator (Nội dung & SEO)',
-        shortName: 'Nội dung & SEO',
-        department: 'Phòng Sáng Tạo Nội Dung & SEO Quốc Tế',
+      {
+        id: 'rd_spec',
+        deskNo: 'Bàn 3',
+        name: 'Spec Data Analyst',
+        shortName: '📐 Spec Data Analyst',
+        title: 'Chuyên viên Chuẩn hóa 23 Cột',
+        deptId: 'RD',
+        deptName: 'Phòng Kỹ Thuật R&D',
+        legacyGroup: 'engineer',
+        colorHex: 0x3b82f6,
+        suitHex: 0x2563eb,
+        trimHex: 0x93c5fd,
+        badgeBorder: '#93c5fd',
+        textColor: '#dbeafe',
+        accessory: 'visor',
+        toolName: 'normalize_spec_units(SI 23 Cột)',
+        deskPos: { x: -12.2, z: 1.4, rotY: Math.PI * 0.5 },
+        breakPos: { x: -11.8, z: -10.2, rotY: -0.2, sit: false },
+        defaultTask: '📐 Chuẩn hóa bảng thuộc tính SI (mm, kg, kPa) vào 23 cột.',
+        greeting: 'Dạ thưa Chủ tịch Huy Mai! Em là Spec Data Analyst (Bàn 3), chuyên chuẩn hóa đơn vị đo lường SI cho 23 cột dữ liệu.'
+      },
+
+      // KHU VỰC 2: PHÒNG MARKETING & SEO (3 BÀN - TÍM NEON #a855f7)
+      {
+        id: 'seo_lead',
+        deskNo: 'Bàn 4',
+        name: 'Marketing Lead Pro',
+        shortName: '🎯 Marketing Lead Pro',
+        title: 'Trưởng phòng Marketing & SEO',
+        deptId: 'MKT',
+        deptName: 'Phòng Marketing & SEO',
+        legacyGroup: 'creator',
         colorHex: 0xa855f7,
-        accentHex: 0xd8b4fe,
-        badgeBg: 'rgba(168, 85, 247, 0.22)',
+        suitHex: 0x6b21a8,
+        trimHex: 0xd8b4fe,
         badgeBorder: '#a855f7',
         textColor: '#e9d5ff',
-        metric: 'AATCC/ISO • HTML 7 Khối',
-        deskPos: { x: -6.5, z: 4.8, rotY: Math.PI * 0.72 },
-        seatOffset: { x: -0.75, z: 0.6 },
-        standFrontOffset: { x: 1.2, z: -0.95 },
-        meetingSpot: { x: -1.85, z: 2.4, rotY: Math.PI * 0.8 },
-        breakSpot: { x: -12.6, z: -7.1, rotY: Math.PI * 0.5, sit: true },
-        defaultWorkMsg: '✍️ Nghiên cứu từ khóa AATCC/ISO, viết bài song ngữ Việt-Anh & dựng HTML 7 khối.',
-        greetingMsg: 'Xin chào! Tôi là LEGO Creator. Tôi phụ trách từ khóa tiêu chuẩn AATCC, ISO, biên tập nội dung song ngữ Việt Anh và xuất mã HTML 7 khối.',
-        meetingReportMsg: 'Nội dung & SEO: Đã phủ bộ từ khóa tiêu chuẩn AATCC/ISO và hoàn thiện cấu trúc HTML 7 khối song ngữ Việt - Anh!'
+        accessory: 'beret',
+        toolName: 'plan_b2b_campaign(AIDA Benchmark)',
+        deskPos: { x: -11.5, z: 5.8, rotY: Math.PI * 0.72 },
+        breakPos: { x: -13.6, z: -7.4, rotY: 0.5, sit: true },
+        defaultTask: '🎯 Hoạch định chiến lược B2B học từ 4 web đầu ngành.',
+        greeting: 'Kính chào Chủ tịch Huy Mai! Em là Marketing Lead Pro (Bàn 4), đang hoạch định chiến lược B2B cho thiết bị phòng Lab.'
       },
-      studio: {
-        key: 'studio',
-        name: 'LEGO Studio & Tri Thức',
-        shortName: 'Studio & Tri Thức',
-        department: 'Phòng Studio Hình Ảnh & Lưu Trữ Tri Thức',
+      {
+        id: 'seo_spec',
+        deskNo: 'Bàn 5',
+        name: 'SEO Specialist',
+        shortName: '🔍 SEO Specialist',
+        title: 'Chuyên viên Tối ưu SEO E-commerce',
+        deptId: 'MKT',
+        deptName: 'Phòng Marketing & SEO',
+        legacyGroup: 'creator',
+        colorHex: 0xa855f7,
+        suitHex: 0x7e22ce,
+        trimHex: 0xc084fc,
+        badgeBorder: '#c084fc',
+        textColor: '#f3e8ff',
+        accessory: 'glasses',
+        toolName: 'audit_seo_keywords(Density 2.2%)',
+        deskPos: { x: -7.6, z: 7.4, rotY: Math.PI * 0.88 },
+        breakPos: { x: -12.4, z: -7.4, rotY: 0.3, sit: true },
+        defaultTask: '🔍 Tối ưu Title, Meta, Slug & mật độ từ khóa AATCC/ISO.',
+        greeting: 'Báo cáo Chủ tịch Huy Mai! Em là SEO Specialist (Bàn 5), đang tối ưu mật độ từ khóa chuẩn E-commerce.'
+      },
+      {
+        id: 'seo_copy',
+        deskNo: 'Bàn 6',
+        name: 'Content Creator',
+        shortName: '✍️ Content Creator',
+        title: 'Copywriter B2B 7 Khối HTML',
+        deptId: 'MKT',
+        deptName: 'Phòng Marketing & SEO',
+        legacyGroup: 'creator',
+        colorHex: 0xa855f7,
+        suitHex: 0x9333ea,
+        trimHex: 0xf0abfc,
+        badgeBorder: '#d8b4fe',
+        textColor: '#fae8ff',
+        accessory: 'headset',
+        toolName: 'generate_7block_html(39%-61% Table)',
+        deskPos: { x: -3.6, z: 7.8, rotY: Math.PI * 0.95 },
+        breakPos: { x: -10.4, z: -7.4, rotY: -0.3, sit: true },
+        defaultTask: '✍️ Soạn thảo mã HTML 7 khối chuẩn Haravan (bảng 39%-61%).',
+        greeting: 'Dạ thưa Chủ tịch Huy Mai! Em là Content Creator (Bàn 6), đang biên tập bài mô tả 7 khối HTML song ngữ.'
+      },
+
+      // KHU VỰC 3: PHÒNG STUDIO & MEDIA (3 BÀN - HỒNG NEON #ec4899)
+      {
+        id: 'studio_lead',
+        deskNo: 'Bàn 7',
+        name: 'Creative Director',
+        shortName: '🎬 Creative Director',
+        title: 'Giám đốc Sáng tạo Studio',
+        deptId: 'STUDIO',
+        deptName: 'Phòng Studio & Media',
+        legacyGroup: 'studio',
         colorHex: 0xec4899,
-        accentHex: 0x06b6d4,
-        badgeBg: 'rgba(236, 72, 153, 0.22)',
+        suitHex: 0xbe185d,
+        trimHex: 0xf472b6,
         badgeBorder: '#ec4899',
         textColor: '#fbcfe8',
-        metric: 'Lab Phối Cảnh • CO/CQ',
-        deskPos: { x: 6.5, z: 4.8, rotY: -Math.PI * 0.72 },
-        seatOffset: { x: 0.75, z: 0.6 },
-        standFrontOffset: { x: -1.2, z: -0.95 },
-        meetingSpot: { x: 1.85, z: 2.4, rotY: -Math.PI * 0.8 },
-        breakSpot: { x: -9.5, z: -8.3, rotY: -Math.PI * 0.4, sit: true },
-        defaultWorkMsg: '📸 Ghép ảnh thiết bị vào nền phòng Lab chân thực, lưu trữ tiêu chuẩn & CO/CQ.',
-        greetingMsg: 'Chào bạn! Tôi là LEGO Studio và Tri Thức. Tôi xử lý ghép ảnh thiết bị vào bối cảnh phòng Lab thực tế và quản lý kho hồ sơ CO, CQ.',
-        meetingReportMsg: 'Studio & Tri Thức: Đã render xong bộ ảnh thiết bị trong phòng Lab tiêu chuẩn và đính kèm đầy đủ chứng nhận CO/CQ!'
+        accessory: 'beret',
+        toolName: 'approve_visual_concept(Lab 2K)',
+        deskPos: { x: 3.6, z: 7.8, rotY: -Math.PI * 0.95 },
+        breakPos: { x: -9.8, z: -8.8, rotY: -0.5, sit: true },
+        defaultTask: '🎬 Duyệt concept phối cảnh phòng Lab 2K & ánh sáng Studio.',
+        greeting: 'Kính chào Chủ tịch Huy Mai! Em là Creative Director (Bàn 7), phụ trách duyệt hình ảnh Studio Lab 2K.'
       },
-      user_avatar: {
-        key: 'user_avatar',
-        name: '👑 CHỦ TỊCH / CEO HUY MAI',
-        shortName: 'CEO Huy Mai (User)',
-        department: 'Ban Lãnh Đạo Tối Cao',
-        colorHex: 0xffffff,
-        accentHex: 0xf59e0b,
-        badgeBg: 'rgba(255, 255, 255, 0.28)',
-        badgeBorder: '#fbbf24',
-        textColor: '#ffffff',
-        metric: 'Quyền Điều Hành Tối Cao (100%)',
-        deskPos: { x: 1.6, z: -5.8, rotY: 0 },
-        seatOffset: { x: 0, z: -0.95 },
-        standFrontOffset: { x: 0, z: 1.55 },
-        meetingSpot: { x: 0, z: -3.6, rotY: 0 },
-        breakSpot: { x: -10.8, z: -5.5, rotY: Math.PI * 0.25, sit: true },
-        defaultWorkMsg: '👑 Đang điều hành tổng thể & kiểm tra các phòng ban.',
-        greetingMsg: 'Xin chào! Tôi là CEO Huy Mai, tôi đang trực tiếp thanh tra và điều phối các phòng ban.',
-        meetingReportMsg: 'CEO Huy Mai: Yêu cầu tất cả Trưởng phòng báo cáo ngắn gọn tiến độ và các điểm cần tối ưu!'
+      {
+        id: 'studio_render',
+        deskNo: 'Bàn 8',
+        name: '3D Render Specialist',
+        shortName: '🧊 3D Render Specialist',
+        title: 'Chuyên viên Phối cảnh 3D Lab',
+        deptId: 'STUDIO',
+        deptName: 'Phòng Studio & Media',
+        legacyGroup: 'studio',
+        colorHex: 0xec4899,
+        suitHex: 0xdb2777,
+        trimHex: 0x38bdf8,
+        badgeBorder: '#f472b6',
+        textColor: '#fce7f3',
+        accessory: 'headset',
+        toolName: 'render_3d_lab_mockup(HDRI 2K)',
+        deskPos: { x: 7.6, z: 7.4, rotY: -Math.PI * 0.88 },
+        breakPos: { x: -10.8, z: -9.4, rotY: 0, sit: false },
+        defaultTask: '🧊 Render phối cảnh máy kiểm nghiệm dệt may trong Lab 3D.',
+        greeting: 'Báo cáo Chủ tịch Huy Mai! Em là 3D Render Specialist (Bàn 8), đang kết xuất phối cảnh thiết bị Lab 2K.'
       },
-      translator: {
-        key: 'translator',
-        name: 'LEGO Senior Translator (Dịch thuật)',
-        shortName: 'Trưởng phòng Dịch thuật',
-        department: 'Phòng Biên Dịch & Bản Địa Hóa Tiêu Chuẩn',
-        colorHex: 0x06b6d4,
-        accentHex: 0x67e8f9,
-        badgeBg: 'rgba(6, 182, 212, 0.22)',
+      {
+        id: 'studio_editor',
+        deskNo: 'Bàn 9',
+        name: 'Visual Post-editor',
+        shortName: '🖼️ Visual Post-editor',
+        title: 'Hậu kỳ التách nền & Watermark',
+        deptId: 'STUDIO',
+        deptName: 'Phòng Studio & Media',
+        legacyGroup: 'studio',
+        colorHex: 0xec4899,
+        suitHex: 0x0891b2,
+        trimHex: 0xf472b6,
         badgeBorder: '#06b6d4',
-        textColor: '#a5f3fc',
-        metric: 'OCR & Chuẩn Hóa Bảng Biểu (100%)',
-        deskPos: { x: -2.8, z: 4.8, rotY: -Math.PI * 0.25 },
-        seatOffset: { x: -0.5, z: -0.5 },
-        standFrontOffset: { x: 0.8, z: 0.8 },
-        meetingSpot: { x: -1.4, z: -1.2, rotY: Math.PI * 0.2 },
-        breakSpot: { x: -12.5, z: -7.5, rotY: 0, sit: false },
-        defaultWorkMsg: '🌐 Đang bóc tách OCR & dịch tài liệu Manual & Standard sang tiếng Việt.',
-        greetingMsg: 'Chào Sếp! Phòng Dịch thuật đang phụ trách bóc tách tài liệu từ 23 Hãng, dịch 100% bảng biểu giữ nguyên cấu trúc.',
-        meetingReportMsg: 'Dịch thuật: Đã hoàn tất bóc tách OCR và dịch chuẩn các tài liệu kỹ thuật của 23 hãng!'
-      }
-    };
+        textColor: '#cffafe',
+        accessory: 'glasses',
+        toolName: 'apply_bis_watermark(1200x1200px)',
+        deskPos: { x: 11.5, z: 5.8, rotY: -Math.PI * 0.72 },
+        breakPos: { x: -12.2, z: -9.2, rotY: 0.2, sit: false },
+        defaultTask: '🖼️ Tách nền Canva Pro & đóng dấu Watermark BIS Textile.',
+        greeting: 'Dạ thưa Chủ tịch Huy Mai! Em là Visual Post-editor (Bàn 9), đang tách nền và đóng dấu bản quyền BIS Textile.'
+      },
 
-    const ZONE_LABELS = [
-      { text: '🌐 BÀN HỌP TRÒN HOLOGRAM (CONFERENCE HUB)', x: 0, y: 3.1, z: 0 },
-      { text: '☕ PHÒNG NGHỈ & PANTRY GIẢI LAO', x: -11.8, y: 2.8, z: -8.8 },
-      { text: '🛡️ SERVER RACK BẢO VỆ RÀO CHẮN 20/10/2026', x: 12.2, y: 3.4, z: -8.8 },
-      { text: '🔬 KHU VỰC KỸ THUẬT & R&D', x: -7.5, y: 3.2, z: -1.8 },
-      { text: '📢 KHU VỰC SEO & MARKETING', x: 7.5, y: 3.2, z: -1.8 },
-      { text: '🎨 KHU VỰC STUDIO & MEDIA', x: 6.5, y: 3.2, z: 4.8 },
-      { text: '🌐 KHU VỰC DỊCH THUẬT & BẢN ĐỊA HÓA', x: -2.8, y: 3.2, z: 4.8 },
-      { text: '👑 BÀN CHỦ TỊCH / CEO HUY MAI', x: 1.6, y: 3.2, z: -5.8 }
+      // KHU VỰC 4: PHÒNG DỊCH THUẬT & TIÊU CHUẨN (3 BÀN - VÀNG HỔ PHÁCH #f59e0b)
+      {
+        id: 'trans_lead',
+        deskNo: 'Bàn 10',
+        name: 'Senior Translator Lead',
+        shortName: '📚 Senior Translator Lead',
+        title: 'Trưởng phòng Dịch thuật & OCR',
+        deptId: 'TRANS',
+        deptName: 'Phòng Dịch Thuật & Tiêu Chuẩn',
+        legacyGroup: 'boss',
+        colorHex: 0xf59e0b,
+        suitHex: 0xb45309,
+        trimHex: 0xfde68a,
+        badgeBorder: '#f59e0b',
+        textColor: '#fde68a',
+        accessory: 'glasses',
+        toolName: 'translate_technical_doc(100% Layout)',
+        deskPos: { x: 12.2, z: 1.4, rotY: -Math.PI * 0.5 },
+        breakPos: { x: -14.0, z: -8.4, rotY: 0.4, sit: false },
+        defaultTask: '📚 Duyệt bản dịch tài liệu 22 hãng giữ nguyên 100% bảng biểu.',
+        greeting: 'Kính chào Chủ tịch Huy Mai! Em là Senior Translator Lead (Bàn 10), đảm bảo dịch thuật giữ nguyên 100% định dạng gốc.'
+      },
+      {
+        id: 'trans_term',
+        deskNo: 'Bàn 11',
+        name: 'Term Specialist',
+        shortName: '📖 Term Specialist',
+        title: 'Chuyên gia Thuật ngữ ISO/ASTM',
+        deptId: 'TRANS',
+        deptName: 'Phòng Dịch Thuật & Tiêu Chuẩn',
+        legacyGroup: 'boss',
+        colorHex: 0xf59e0b,
+        suitHex: 0xd97706,
+        trimHex: 0xfef08a,
+        badgeBorder: '#fbbf24',
+        textColor: '#fef3c7',
+        accessory: 'magnifier',
+        toolName: 'lookup_textile_glossary(22 Brands)',
+        deskPos: { x: 12.2, z: -2.0, rotY: -Math.PI * 0.45 },
+        breakPos: { x: -13.2, z: -8.6, rotY: 0.3, sit: false },
+        defaultTask: '📖 Chuẩn hóa từ điển chuyên ngành AATCC, ISO, ASTM, GB/T.',
+        greeting: 'Báo cáo Chủ tịch Huy Mai! Em là Term Specialist (Bàn 11), phụ trách từ điển thuật ngữ dệt may quốc tế.'
+      },
+      {
+        id: 'trans_proof',
+        deskNo: 'Bàn 12',
+        name: 'Proofreader AI',
+        shortName: '✒️ Proofreader AI',
+        title: 'Hiệu đính Ngôn ngữ B2B',
+        deptId: 'TRANS',
+        deptName: 'Phòng Dịch Thuật & Tiêu Chuẩn',
+        legacyGroup: 'boss',
+        colorHex: 0xf59e0b,
+        suitHex: 0x92400e,
+        trimHex: 0xfde047,
+        badgeBorder: '#fcd34d',
+        textColor: '#fef9c3',
+        accessory: 'glasses',
+        toolName: 'polish_vietnamese_b2b_style()',
+        deskPos: { x: 12.2, z: -5.4, rotY: -Math.PI * 0.42 },
+        breakPos: { x: -12.0, z: -8.2, rotY: 0.2, sit: false },
+        defaultTask: '✒️ Hiệu đính ngữ pháp tiếng Việt B2B & rà soát ký hiệu SI.',
+        greeting: 'Dạ thưa Chủ tịch Huy Mai! Em là Proofreader AI (Bàn 12), chuyên hiệu đính câu chữ tiếng Việt chuẩn mực.'
+      },
+
+      // KHU VỰC 5: PHÒNG HARAVAN GUARD & VẬN HÀNH (3 BÀN - XANH EMERALD #10b981)
+      {
+        id: 'ops_manager',
+        deskNo: 'Bàn 13',
+        name: 'Haravan Ops Manager',
+        shortName: '🛡️ Haravan Ops Manager',
+        title: 'Trưởng phòng Vận hành & Guard',
+        deptId: 'OPS',
+        deptName: 'Phòng Haravan Guard & Vận Hành',
+        legacyGroup: 'guard',
+        colorHex: 0x10b981,
+        suitHex: 0x047857,
+        trimHex: 0x6ee7b7,
+        badgeBorder: '#10b981',
+        textColor: '#a7f3d0',
+        accessory: 'helmet',
+        toolName: 'haravan_guard_control(Cutoff 20/10/2026)',
+        deskPos: { x: 6.8, z: -6.2, rotY: -Math.PI * 0.2 },
+        breakPos: { x: -11.0, z: -10.0, rotY: -0.1, sit: false },
+        defaultTask: '🛡️ Canh giữ rào chắn 20/10/2026 & điều phối đồng bộ ẩn.',
+        greeting: 'Báo cáo Chủ tịch Huy Mai! Em là Haravan Ops Manager (Bàn 13), rào chắn bảo vệ dữ liệu trước 20/10/2026 khóa chặt 100%!'
+      },
+      {
+        id: 'ops_validator',
+        deskNo: 'Bàn 14',
+        name: 'API Payload Validator',
+        shortName: '🔐 API Payload Validator',
+        title: 'Kỹ sư Chống Rỗng Thuộc Tính API',
+        deptId: 'OPS',
+        deptName: 'Phòng Haravan Guard & Vận Hành',
+        legacyGroup: 'guard',
+        colorHex: 0x10b981,
+        suitHex: 0x059669,
+        trimHex: 0x34d399,
+        badgeBorder: '#34d399',
+        textColor: '#d1fae5',
+        accessory: 'visor',
+        toolName: 'sanitize_haravan_payload(No Empty Attr)',
+        deskPos: { x: 6.2, z: -2.6, rotY: -Math.PI * 0.35 },
+        breakPos: { x: -10.2, z: -9.8, rotY: -0.3, sit: false },
+        defaultTask: '🔐 Khử 100% lỗi thuộc tính sản phẩm rỗng trước khi gọi API.',
+        greeting: 'Kính chào Chủ tịch Huy Mai! Em là API Payload Validator (Bàn 14), đảm bảo không bao giờ xảy ra lỗi thuộc tính rỗng trên Haravan.'
+      },
+      {
+        id: 'ops_auditor',
+        deskNo: 'Bàn 15',
+        name: 'Data Auditor',
+        shortName: '📊 Data Auditor',
+        title: 'Kiểm toán viên Đối soát 202 SP',
+        deptId: 'OPS',
+        deptName: 'Phòng Haravan Guard & Vận Hành',
+        legacyGroup: 'guard',
+        colorHex: 0x10b981,
+        suitHex: 0x065f46,
+        trimHex: 0xa7f3d0,
+        badgeBorder: '#6ee7b7',
+        textColor: '#ecfdf5',
+        accessory: 'helmet',
+        toolName: 'reconcile_202_live_products(83 Valid/14 Locked)',
+        deskPos: { x: -6.2, z: -5.8, rotY: Math.PI * 0.2 },
+        breakPos: { x: -9.6, z: -9.4, rotY: -0.4, sit: false },
+        defaultTask: '📊 Đối soát 202 SP trên sàn (khóa 14 mã trùng, duyệt 83 mã mới).',
+        greeting: 'Dạ thưa Chủ tịch Huy Mai! Em là Data Auditor (Bàn 15), đang đối soát 2 chiều giữa Google Sheets 23 cột và 202 sản phẩm Haravan.'
+      }
     ];
 
+    const ZONE_BANNERS = [
+      { text: '👑 BÀN CHỦ TỊCH HUY MAI (EXECUTIVE COMMAND)', x: 0, y: 3.1, z: -8.6 },
+      { text: '🌐 BÀN TRÒN HOLOGRAM 16 GHẾ (ALL-HANDS HUB)', x: 0, y: 3.0, z: 0.4 },
+      { text: '🔬 KHU 1: KỸ THUẬT R&D (BÀN 1-3)', x: -12.2, y: 2.7, z: -2.0 },
+      { text: '🎯 KHU 2: MARKETING & SEO (BÀN 4-6)', x: -7.6, y: 2.7, z: 7.0 },
+      { text: '🎬 KHU 3: STUDIO & MEDIA 2K (BÀN 7-9)', x: 7.6, y: 2.7, z: 7.0 },
+      { text: '📚 KHU 4: DỊCH THUẬT & OCR (BÀN 10-12)', x: 12.2, y: 2.7, z: -2.0 },
+      { text: '🛡️ KHU 5: HARAVAN GUARD & SERVER 20/10/2026 (BÀN 13-15)', x: 9.5, y: 3.3, z: -8.2 },
+      { text: '☕ PHÒNG NGHỈ & PANTRY GIẢI LAO', x: -12.2, y: 2.8, z: -9.2 }
+    ];
+
+    // ============================================================================
+    // 2. BIẾN TOÀN CỤC THREE.JS & BỘ NHỚ HỘI THOẠI
+    // ============================================================================
     let scene, camera, renderer, controls, clock;
-    const agents = {};
+    const entities = {}; // Lưu đủ 16 nhân vật theo id
     const clickableMeshes = [];
-    const monitorMaterials = [];
-    const serverLedMeshes = [];
+    const monitorScreens = [];
+    const serverLeds = [];
+    const floorPulses = [];
     let hologramGroup, hologramRings = [];
     let ambientParticles = null;
-    let dataFloorPulses = [];
-    let cinematicOrbit = false;
-    let cityLightsTexture;
-    let selectedAgentKey = 'boss';
+
+    let activeCharId = 'ceo_huy_mai';
+    let hoveredCharId = null;
     let voiceEnabled = true;
     let activeTimers = [];
+    const chatMemory16 = {};
+
     let cameraFocusState = {
       active: false,
       targetPos: new THREE.Vector3(),
-      lookAtPos: new THREE.Vector3(),
-      lerpAlpha: 0
+      lookAtPos: new THREE.Vector3()
     };
 
+    // Tính toán sẵn 16 ghế ngồi quanh Bàn Họp Tròn Trung Tâm (tâm 0, 0.4, bán kính 3.55)
+    CHARACTERS_16.forEach((cfg, idx) => {
+      const angle = -Math.PI / 2 + (idx / 16) * Math.PI * 2;
+      const radius = 3.55;
+      cfg.meetingSpot = {
+        x: Math.cos(angle) * radius,
+        z: 0.4 + Math.sin(angle) * radius,
+        rotY: Math.atan2(-Math.cos(angle), -Math.sin(angle))
+      };
+    });
+
+    // ============================================================================
+    // 3. HỆ THỐNG ÂM THANH & GIỌNG NÓI TIẾNG VIỆT (WEB SPEECH API)
+    // ============================================================================
     let audioCtx = null;
-    function playChime(freq = 587.33, duration = 0.14) {
+    function playChime(freq = 640, duration = 0.13) {
       if (!voiceEnabled) return;
       try {
         if (!audioCtx) {
@@ -508,43 +689,36 @@
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(freq * 1.25, audioCtx.currentTime + duration);
-        gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + duration);
-      } catch (err) {}
+      } catch (e) {}
     }
 
-    function speakVietnamese(text, agentKey = null) {
+    function speakVietnamese(text, charId = null) {
       if (!voiceEnabled || !('speechSynthesis' in window)) return;
       try {
         window.speechSynthesis.cancel();
-        const cleanText = text.replace(/[💭💼🔬🛡️✍️📸☕🗣️🚶‍♂️✅]/g, '').trim();
+        const cleanText = text.replace(/[👑🔬🧪📐🎯🔍✍️🎬🧊🖼️📚📖✒️🛡️🔐📊💭💼☕🗣️🚶‍♂️✅]/g, '').trim();
         const utter = new SpeechSynthesisUtterance(cleanText);
         utter.lang = 'vi-VN';
-        utter.rate = 1.05;
-        const pitchMap = { boss: 0.92, engineer: 1.02, guard: 0.88, creator: 1.15, studio: 1.18 };
-        utter.pitch = pitchMap[agentKey] || 1.0;
+        utter.rate = 1.06;
+        utter.pitch = charId === 'ceo_huy_mai' ? 0.92 : 1.04;
 
         const voices = window.speechSynthesis.getVoices();
         const viVoice = voices.find(v => v.lang && v.lang.toLowerCase().includes('vi'));
         if (viVoice) utter.voice = viVoice;
 
-        if (agentKey && agents[agentKey]) {
-          agents[agentKey].isSpeaking = true;
-          updateBubbleStyle(agentKey);
+        if (charId && entities[charId]) {
+          entities[charId].isSpeaking = true;
+          entities[charId].tagEl.classList.add('speaking-tag');
           utter.onend = () => {
-            if (agents[agentKey]) {
-              agents[agentKey].isSpeaking = false;
-              updateBubbleStyle(agentKey);
-            }
-          };
-          utter.onerror = () => {
-            if (agents[agentKey]) {
-              agents[agentKey].isSpeaking = false;
-              updateBubbleStyle(agentKey);
+            if (entities[charId]) {
+              entities[charId].isSpeaking = false;
+              entities[charId].tagEl.classList.remove('speaking-tag');
             }
           };
         }
@@ -552,187 +726,53 @@
       } catch (e) {}
     }
 
-    function clearScenarioTimers() {
+    function clearAllTimers() {
       activeTimers.forEach(id => clearTimeout(id));
       activeTimers = [];
     }
 
-    function scheduleStep(fn, delayMs) {
-      const id = setTimeout(fn, delayMs);
+    function scheduleTask(fn, ms) {
+      const id = setTimeout(fn, ms);
       activeTimers.push(id);
       return id;
     }
 
-    function addActivityLog(actorName, message, badgeColor = '#38bdf8') {
-      const container = document.getElementById('activity-log');
-      if (!container) return;
-      const now = new Date();
-      const timeStr = now.toTimeString().slice(0, 8);
-      const item = document.createElement('div');
-      item.className = 'p-1.5 rounded-lg bg-slate-900/90 border border-slate-800/80 leading-snug';
-      item.innerHTML = `
-        <div class="flex items-center justify-between text-[10px] text-slate-400">
-          <span class="font-bold" style="color:${badgeColor}">${actorName}</span>
-          <span>${timeStr}</span>
-        </div>
-        <div class="text-slate-200 mt-0.5">${message}</div>
-      `;
-      container.prepend(item);
-      while (container.children.length > 25) {
-        container.removeChild(container.lastChild);
-      }
+    function log3DActivity(actor, text, color = '#38bdf8') {
+      const box = document.getElementById('activity-log');
+      if (!box) return;
+      const t = new Date().toTimeString().slice(0, 8);
+      const div = document.createElement('div');
+      div.className = 'p-1 rounded bg-slate-900/90 border border-slate-800/80';
+      div.innerHTML = `<span style="color:${color};font-weight:700">${actor}</span> <span class="text-slate-500">(${t})</span>: <span class="text-slate-200">${text}</span>`;
+      box.prepend(div);
+      while (box.children.length > 30) box.removeChild(box.lastChild);
     }
 
+    // ============================================================================
+    // 4. PROCEDURAL TEXTURES (SÀN GỖ, BẦU TRỜI CYBERPUNK, MẶT LEGO, MÀN HÌNH)
+    // ============================================================================
     function createWoodFloorTexture() {
       const canvas = document.createElement('canvas');
       canvas.width = 512;
       canvas.height = 512;
       const ctx = canvas.getContext('2d');
-
-      ctx.fillStyle = '#2a1d15';
+      ctx.fillStyle = '#241811';
       ctx.fillRect(0, 0, 512, 512);
 
-      const plankH = 64;
-      const plankW = 256;
-      const tones = ['#362419', '#2e1f15', '#3d291d', '#332218'];
-
-      for (let y = 0; y < 512; y += plankH) {
-        const row = y / plankH;
-        const offset = (row % 2) * (plankW / 2);
-        for (let x = -plankW; x < 512; x += plankW) {
-          ctx.fillStyle = tones[(row + Math.abs(x / plankW)) % tones.length];
-          ctx.fillRect(x + offset, y, plankW - 2, plankH - 2);
-
-          ctx.strokeStyle = 'rgba(20, 12, 6, 0.28)';
-          ctx.lineWidth = 1;
-          for (let i = 0; i < 5; i++) {
-            ctx.beginPath();
-            ctx.moveTo(x + offset + 6, y + 10 + i * 11);
-            ctx.bezierCurveTo(
-              x + offset + 80, y + 6 + i * 11,
-              x + offset + 160, y + 15 + i * 11,
-              x + offset + plankW - 8, y + 10 + i * 11
-            );
-            ctx.stroke();
-          }
+      const tones = ['#2e1f16', '#38251a', '#291b12', '#332218'];
+      for (let y = 0; y < 512; y += 64) {
+        const row = y / 64;
+        const offset = (row % 2) * 128;
+        for (let x = -256; x < 512; x += 256) {
+          ctx.fillStyle = tones[(row + Math.abs(x / 256)) % tones.length];
+          ctx.fillRect(x + offset, y, 254, 62);
         }
       }
-
       const tex = new THREE.CanvasTexture(canvas);
       tex.wrapS = THREE.RepeatWrapping;
       tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(9, 7);
+      tex.repeat.set(10, 8);
       return tex;
-    }
-
-    function createScreenTexture(agentKey, screenIndex) {
-      const canvas = document.createElement('canvas');
-      canvas.width = 256;
-      canvas.height = 144;
-      const ctx = canvas.getContext('2d');
-      const cfg = AGENT_CONFIGS[agentKey];
-      const hexStr = '#' + cfg.colorHex.toString(16).padStart(6, '0');
-
-      function draw(tick = 0) {
-        ctx.fillStyle = '#070c18';
-        ctx.fillRect(0, 0, 256, 144);
-
-        ctx.fillStyle = '#111c33';
-        ctx.fillRect(0, 0, 256, 22);
-        ctx.fillStyle = hexStr;
-        ctx.fillRect(6, 6, 10, 10);
-        ctx.fillStyle = '#e2e8f0';
-        ctx.font = 'bold 10px monospace';
-        ctx.fillText(`${cfg.shortName.toUpperCase()} // NODE-${screenIndex + 1}`, 22, 14);
-
-        if (screenIndex === 0) {
-          for (let i = 0; i < 8; i++) {
-            const y = 32 + i * 13;
-            const len = 60 + ((i * 37 + tick * 7) % 150);
-            ctx.fillStyle = i % 3 === 0 ? hexStr : (i % 2 === 0 ? '#38bdf8' : '#64748b');
-            ctx.fillRect(10 + (i % 2) * 10, y, Math.min(len, 220), 6);
-          }
-        } else {
-          ctx.strokeStyle = hexStr;
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          for (let x = 12; x < 244; x += 8) {
-            const y = 85 + Math.sin((x + tick * 6) * 0.08) * 26 + Math.cos((x - tick * 4) * 0.05) * 10;
-            if (x === 12) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-          }
-          ctx.stroke();
-
-          for (let b = 0; b < 6; b++) {
-            const bh = 18 + ((b * 19 + tick * 5) % 45);
-            ctx.fillStyle = b % 2 === 0 ? hexStr : '#22d3ee';
-            ctx.fillRect(18 + b * 38, 134 - bh, 22, bh);
-          }
-        }
-      }
-
-      draw(0);
-      const tex = new THREE.CanvasTexture(canvas);
-      return { tex, draw };
-    }
-
-    function createLegoFaceTexture(agentKey) {
-      const canvas = document.createElement('canvas');
-      canvas.width = 256;
-      canvas.height = 256;
-      const ctx = canvas.getContext('2d');
-
-      ctx.fillStyle = '#fbbf24';
-      ctx.fillRect(0, 0, 256, 256);
-
-      ctx.fillStyle = '#0f172a';
-      ctx.beginPath();
-      ctx.arc(98, 112, 11, 0, Math.PI * 2);
-      ctx.arc(158, 112, 11, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(94, 108, 3.5, 0, Math.PI * 2);
-      ctx.arc(154, 108, 3.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.strokeStyle = '#0f172a';
-      ctx.lineWidth = 5;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(82, 92);
-      ctx.lineTo(110, 95);
-      ctx.moveTo(146, 95);
-      ctx.lineTo(174, 92);
-      ctx.stroke();
-
-      if (agentKey === 'engineer' || agentKey === 'studio') {
-        ctx.strokeStyle = agentKey === 'engineer' ? '#1d4ed8' : '#db2777';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(76, 96, 44, 30);
-        ctx.strokeRect(136, 96, 44, 30);
-        ctx.beginPath();
-        ctx.moveTo(120, 110);
-        ctx.lineTo(136, 110);
-        ctx.stroke();
-      }
-
-      if (agentKey === 'guard') {
-        ctx.fillStyle = 'rgba(16, 185, 129, 0.35)';
-        ctx.fillRect(72, 95, 112, 32);
-        ctx.strokeStyle = '#059669';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(72, 95, 112, 32);
-      }
-
-      ctx.strokeStyle = '#0f172a';
-      ctx.lineWidth = 6;
-      ctx.beginPath();
-      ctx.arc(128, 134, 26, 0.15 * Math.PI, 0.85 * Math.PI);
-      ctx.stroke();
-
-      return new THREE.CanvasTexture(canvas);
     }
 
     function createCyberpunkSkyTexture() {
@@ -740,74 +780,126 @@
       canvas.width = 1024;
       canvas.height = 512;
       const ctx = canvas.getContext('2d');
-
       const grad = ctx.createLinearGradient(0, 0, 0, 512);
-      grad.addColorStop(0, '#040711');
-      grad.addColorStop(0.5, '#0f172a');
-      grad.addColorStop(0.85, '#1e1b4b');
-      grad.addColorStop(1, '#311042');
+      grad.addColorStop(0, '#030611');
+      grad.addColorStop(0.55, '#0f172a');
+      grad.addColorStop(1, '#2e1065');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 1024, 512);
 
-      for (let i = 0; i < 160; i++) {
-        ctx.fillStyle = i % 4 === 0 ? '#38bdf8' : '#ffffff';
-        const s = (i % 3) + 1;
-        ctx.fillRect((i * 97) % 1024, (i * 53) % 240, s, s);
+      for (let i = 0; i < 140; i++) {
+        ctx.fillStyle = i % 3 === 0 ? '#38bdf8' : '#ffffff';
+        ctx.fillRect((i * 97) % 1024, (i * 47) % 240, 2, 2);
       }
 
-      const moonGrad = ctx.createRadialGradient(820, 110, 10, 820, 110, 85);
-      moonGrad.addColorStop(0, 'rgba(244, 114, 182, 0.9)');
-      moonGrad.addColorStop(0.4, 'rgba(168, 85, 247, 0.35)');
-      moonGrad.addColorStop(1, 'rgba(15, 23, 42, 0)');
-      ctx.fillStyle = moonGrad;
-      ctx.beginPath();
-      ctx.arc(820, 110, 85, 0, Math.PI * 2);
-      ctx.fill();
-
-      const neonColors = ['#38bdf8', '#f472b6', '#a855f7', '#fbbf24', '#34d399'];
+      const neonCols = ['#38bdf8', '#f472b6', '#a855f7', '#fbbf24', '#10b981'];
       for (let b = 0; b < 32; b++) {
-        const bw = 26 + ((b * 17) % 34);
-        const bh = 120 + ((b * 43) % 240);
+        const bw = 28;
+        const bh = 130 + ((b * 41) % 230);
         const bx = b * 32;
         const by = 512 - bh;
-
-        ctx.fillStyle = '#090d1a';
-        ctx.fillRect(bx, by, bw - 3, bh);
-
-        const ncol = neonColors[b % neonColors.length];
-        ctx.fillStyle = ncol;
-        ctx.fillRect(bx, by, bw - 3, 3);
-
-        for (let wy = by + 10; wy < 495; wy += 10) {
-          for (let wx = bx + 4; wx < bx + bw - 8; wx += 7) {
-            if (((wx + wy + b) % 5) !== 0) {
-              ctx.fillStyle = ((wx * wy) % 7 === 0) ? ncol : 'rgba(226, 232, 240, 0.65)';
-              ctx.fillRect(wx, wy, 4, 5);
+        ctx.fillStyle = '#070b16';
+        ctx.fillRect(bx, by, bw, bh);
+        ctx.fillStyle = neonCols[b % neonCols.length];
+        ctx.fillRect(bx, by, bw, 3);
+        for (let wy = by + 10; wy < 495; wy += 12) {
+          for (let wx = bx + 4; wx < bx + bw - 6; wx += 8) {
+            if ((wx + wy + b) % 4 !== 0) {
+              ctx.fillStyle = 'rgba(226, 232, 240, 0.65)';
+              ctx.fillRect(wx, wy, 4, 6);
             }
           }
         }
       }
 
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-      ctx.fillRect(140, 175, 290, 48);
-      ctx.strokeStyle = '#38bdf8';
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+      ctx.fillRect(320, 110, 384, 54);
+      ctx.strokeStyle = '#facc15';
       ctx.lineWidth = 3;
-      ctx.strokeRect(140, 175, 290, 48);
-      ctx.fillStyle = '#38bdf8';
+      ctx.strokeRect(320, 110, 384, 54);
+      ctx.fillStyle = '#fef08a';
       ctx.font = 'bold 22px sans-serif';
-      ctx.fillText('BIS TEXTILE LAB HUB', 162, 207);
+      ctx.fillText('👑 BIS TEXTILE AI METAVERSE HQ', 342, 145);
 
       return new THREE.CanvasTexture(canvas);
     }
 
+    function createFaceTexture(cfg) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 128;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(0, 0, 128, 128);
+
+      // Mắt
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(48, 56, 6, 0, Math.PI * 2);
+      ctx.arc(80, 56, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Kính hoặc Visor
+      if (cfg.accessory === 'glasses' || cfg.accessory === 'magnifier') {
+        ctx.strokeStyle = cfg.badgeBorder;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(36, 46, 24, 18);
+        ctx.strokeRect(68, 46, 24, 18);
+        ctx.beginPath();
+        ctx.moveTo(60, 55);
+        ctx.lineTo(68, 55);
+        ctx.stroke();
+      } else if (cfg.accessory === 'visor') {
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.38)';
+        ctx.fillRect(34, 46, 60, 18);
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(34, 46, 60, 18);
+      }
+
+      // Nụ cười
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.arc(64, 68, 14, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.stroke();
+
+      return new THREE.CanvasTexture(canvas);
+    }
+
+    function createMonitorCanvas(cfg) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 128;
+      canvas.height = 72;
+      const ctx = canvas.getContext('2d');
+
+      function draw(tick = 0) {
+        ctx.fillStyle = '#050914';
+        ctx.fillRect(0, 0, 128, 72);
+        ctx.fillStyle = cfg.badgeBorder;
+        ctx.fillRect(0, 0, 128, 10);
+        for (let i = 0; i < 5; i++) {
+          const w = 30 + ((i * 29 + tick * 9) % 85);
+          ctx.fillStyle = i % 2 === 0 ? cfg.badgeBorder : '#38bdf8';
+          ctx.fillRect(6, 16 + i * 10, w, 5);
+        }
+      }
+      draw(0);
+      const tex = new THREE.CanvasTexture(canvas);
+      return { tex, draw };
+    }
+
+    // ============================================================================
+    // 5. KHỞI TẠO KHÔNG GIAN 3D VỚI ĐỦ 16 WORKSTATIONS & BÀN TRÒN 16 GHẾ
+    // ============================================================================
     function initScene() {
       const container = document.getElementById('canvas-container');
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x060913);
-      scene.fog = new THREE.FogExp2(0x060913, 0.015);
+      scene.background = new THREE.Color(0x040711);
+      scene.fog = new THREE.FogExp2(0x040711, 0.012);
 
-      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
-      camera.position.set(0, 16.5, 22.5);
+      camera = new THREE.PerspectiveCamera(44, window.innerWidth / window.innerHeight, 0.1, 220);
+      camera.position.set(0, 21.5, 26.5);
 
       renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -815,16 +907,16 @@
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.12;
+      renderer.toneMappingExposure = 1.15;
       container.appendChild(renderer.domElement);
 
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.06;
       controls.maxPolarAngle = Math.PI / 2 - 0.04;
-      controls.minDistance = 4.5;
-      controls.maxDistance = 42;
-      controls.target.set(0, 1.2, -1.2);
+      controls.minDistance = 4.0;
+      controls.maxDistance = 48;
+      controls.target.set(0, 1.0, -0.5);
 
       renderer.domElement.addEventListener('pointerdown', () => {
         cameraFocusState.active = false;
@@ -833,1416 +925,916 @@
       clock = new THREE.Clock();
 
       setupLights();
-      buildOfficeArchitecture();
-      buildLuxuryDecorAndParticles();
-      buildConferenceHub();
-      buildBreakRoomLounge();
-      buildServerRackZone();
-      buildAllWorkstations();
-      buildAllLegoAgents();
-      createDOMOverlays();
+      buildArchitecture();
+      buildConferenceHub16Seats();
+      buildPantryAndServerZone();
+      buildAll16WorkstationsAndCharacters();
+      buildDOMLabelsAndRoster();
 
       window.addEventListener('resize', onWindowResize);
-      setupRaycasterInteraction();
-      setupUIButtons();
+      setupRaycasting();
+      setupHUDControls();
 
-      selectAgentForInspector('boss', false);
-      addActivityLog('HỆ THỐNG', 'Khởi tạo Văn phòng 3D BIS Textile Ultra-Luxury thành công.', '#34d399');
+      log3DActivity('HỆ THỐNG', 'Đã dựng đủ 16 bàn làm việc & 16 nhân vật 3D (Chủ tịch Huy Mai + 15 AI Agents).', '#facc15');
     }
 
     function setupLights() {
-      const hemiLight = new THREE.HemisphereLight(0xdbeafe, 0x1e293b, 0.65);
-      hemiLight.position.set(0, 20, 0);
-      scene.add(hemiLight);
+      const hemi = new THREE.HemisphereLight(0xdbeafe, 0x0f172a, 0.7);
+      hemi.position.set(0, 25, 0);
+      scene.add(hemi);
 
-      const dirLight = new THREE.DirectionalLight(0xfff7ed, 0.95);
-      dirLight.position.set(14, 24, 16);
-      dirLight.castShadow = true;
-      dirLight.shadow.mapSize.width = 2048;
-      dirLight.shadow.mapSize.height = 2048;
-      dirLight.shadow.camera.near = 2;
-      dirLight.shadow.camera.far = 60;
-      const d = 22;
-      dirLight.shadow.camera.left = -d;
-      dirLight.shadow.camera.right = d;
-      dirLight.shadow.camera.top = d;
-      dirLight.shadow.camera.bottom = -d;
-      dirLight.shadow.bias = -0.0005;
-      scene.add(dirLight);
+      const dir = new THREE.DirectionalLight(0xfffbeb, 0.95);
+      dir.position.set(16, 28, 18);
+      dir.castShadow = true;
+      dir.shadow.mapSize.width = 2048;
+      dir.shadow.mapSize.height = 2048;
+      const d = 24;
+      dir.shadow.camera.left = -d;
+      dir.shadow.camera.right = d;
+      dir.shadow.camera.top = d;
+      dir.shadow.camera.bottom = -d;
+      scene.add(dir);
 
-      const holoLight = new THREE.PointLight(0x38bdf8, 1.4, 12);
-      holoLight.position.set(0, 2.8, 0);
+      // Spotlight Hoàng gia chiếu vào Bàn Chủ Tịch Huy Mai
+      const ceoLight = new THREE.PointLight(0xfacc15, 1.6, 12);
+      ceoLight.position.set(0, 4.5, -8.6);
+      scene.add(ceoLight);
+
+      // Ánh sáng Hologram bàn họp tròn trung tâm
+      const holoLight = new THREE.PointLight(0x38bdf8, 1.5, 14);
+      holoLight.position.set(0, 3.2, 0.4);
       scene.add(holoLight);
-
-      const loungeLight = new THREE.PointLight(0xfbbf24, 1.1, 11);
-      loungeLight.position.set(-11.5, 3.8, -8.5);
-      scene.add(loungeLight);
-
-      const serverLight = new THREE.PointLight(0x10b981, 1.3, 12);
-      serverLight.position.set(12.0, 3.8, -8.5);
-      scene.add(serverLight);
     }
 
-    function buildOfficeArchitecture() {
-      const floorGeo = new THREE.PlaneGeometry(34, 26);
-      const floorMat = new THREE.MeshStandardMaterial({
-        map: createWoodFloorTexture(),
-        roughness: 0.28,
-        metalness: 0.08
-      });
-      const floor = new THREE.Mesh(floorGeo, floorMat);
+    function buildArchitecture() {
+      // Sàn gỗ rộng 36x28 cho 16 bàn làm việc
+      const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(36, 26),
+        new THREE.MeshStandardMaterial({ map: createWoodFloorTexture(), roughness: 0.28, metalness: 0.08 })
+      );
       floor.rotation.x = -Math.PI / 2;
       floor.receiveShadow = true;
       scene.add(floor);
 
-      const baseGeo = new THREE.BoxGeometry(34.6, 0.5, 26.6);
-      const baseMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.6 });
-      const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-      baseMesh.position.y = -0.26;
-      scene.add(baseMesh);
+      // Bầu trời đêm Cyberpunk phía sau
+      const sky = new THREE.Mesh(
+        new THREE.PlaneGeometry(40, 14),
+        new THREE.MeshBasicMaterial({ map: createCyberpunkSkyTexture() })
+      );
+      sky.position.set(0, 5.5, -14.5);
+      scene.add(sky);
 
-      const carpetGeo = new THREE.CylinderGeometry(4.3, 4.3, 0.03, 48);
-      const carpetMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.85 });
-      const carpet = new THREE.Mesh(carpetGeo, carpetMat);
-      carpet.position.set(0, 0.015, 0);
-      carpet.receiveShadow = true;
-      scene.add(carpet);
+      // Vách kính lớn phía Bắc
+      const glass = new THREE.Mesh(
+        new THREE.PlaneGeometry(36, 8.5),
+        new THREE.MeshPhysicalMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.14, roughness: 0.05 })
+      );
+      glass.position.set(0, 4.25, -13.0);
+      scene.add(glass);
 
-      const ringGeo = new THREE.RingGeometry(4.25, 4.38, 64);
-      const ringMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide });
-      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-      ringMesh.rotation.x = -Math.PI / 2;
-      ringMesh.position.set(0, 0.032, 0);
-      scene.add(ringMesh);
-
-      cityLightsTexture = createCyberpunkSkyTexture();
-      const skyBackdropGeo = new THREE.PlaneGeometry(38, 14);
-      const skyBackdropMat = new THREE.MeshBasicMaterial({ map: cityLightsTexture });
-      const skyBackdrop = new THREE.Mesh(skyBackdropGeo, skyBackdropMat);
-      skyBackdrop.position.set(0, 5.2, -15.2);
-      scene.add(skyBackdrop);
-
-      const glassGeo = new THREE.PlaneGeometry(34, 8.5);
-      const glassMat = new THREE.MeshPhysicalMaterial({
-        color: 0x93c5fd,
-        transparent: true,
-        opacity: 0.16,
-        roughness: 0.05,
-        metalness: 0.1,
-        transmission: 0.85
-      });
-      const glassWall = new THREE.Mesh(glassGeo, glassMat);
-      glassWall.position.set(0, 4.25, -13);
-      scene.add(glassWall);
-
-      const mullionMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.7, roughness: 0.3 });
-      for (let x = -17; x <= 17; x += 4.25) {
-        const col = new THREE.Mesh(new THREE.BoxGeometry(0.18, 8.5, 0.24), mullionMat);
-        col.position.set(x, 4.25, -13);
-        col.castShadow = true;
-        scene.add(col);
-      }
-      const topBeam = new THREE.Mesh(new THREE.BoxGeometry(34.4, 0.35, 0.35), mullionMat);
-      topBeam.position.set(0, 8.5, -13);
-      scene.add(topBeam);
-
-      const sideWallMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.5 });
-      const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.35, 4.2, 26), sideWallMat);
-      leftWall.position.set(-17, 2.1, 0);
-      leftWall.receiveShadow = true;
-      scene.add(leftWall);
-
-      const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.35, 4.2, 26), sideWallMat);
-      rightWall.position.set(17, 2.1, 0);
-      rightWall.receiveShadow = true;
-      scene.add(rightWall);
-    }
-
-    function buildLuxuryDecorAndParticles() {
-      const haloConfigs = [
-        { x: 0, y: 6.2, z: 0, r: 3.2, color: 0x38bdf8 },
-        { x: -7.0, y: 5.8, z: 1.5, r: 1.8, color: 0x60a5fa },
-        { x: 7.0, y: 5.8, z: 1.5, r: 1.8, color: 0x34d399 },
-        { x: -11.5, y: 5.5, z: -8.5, r: 1.6, color: 0xfbbf24 }
+      // Vòng đèn LED Halo trên trần
+      const halos = [
+        { x: 0, z: -8.6, r: 2.2, col: 0xfacc15 },
+        { x: 0, z: 0.4, r: 3.6, col: 0x38bdf8 },
+        { x: -11.5, z: -2.0, r: 2.0, col: 0x3b82f6 },
+        { x: -7.5, z: 6.8, r: 2.0, col: 0xa855f7 },
+        { x: 7.5, z: 6.8, r: 2.0, col: 0xec4899 },
+        { x: 11.5, z: -2.0, r: 2.0, col: 0xf59e0b }
       ];
-      haloConfigs.forEach(hc => {
+      halos.forEach(h => {
         const ring = new THREE.Mesh(
-          new THREE.TorusGeometry(hc.r, 0.045, 12, 64),
-          new THREE.MeshBasicMaterial({ color: hc.color })
+          new THREE.TorusGeometry(h.r, 0.05, 10, 48),
+          new THREE.MeshBasicMaterial({ color: h.col })
         );
         ring.rotation.x = Math.PI / 2;
-        ring.position.set(hc.x, hc.y, hc.z);
+        ring.position.set(h.x, 6.2, h.z);
         scene.add(ring);
       });
-
-      Object.keys(AGENT_CONFIGS).forEach(key => {
-        const cfg = AGENT_CONFIGS[key];
-        const start = new THREE.Vector3(0, 0.028, 0);
-        const end = new THREE.Vector3(cfg.deskPos.x, 0.028, cfg.deskPos.z);
-        const dir = end.clone().sub(start);
-        const len = dir.length();
-        const mid = start.clone().addScaledVector(dir, 0.5);
-
-        const lineGeo = new THREE.PlaneGeometry(0.08, len);
-        const lineMat = new THREE.MeshBasicMaterial({
-          color: cfg.colorHex,
-          transparent: true,
-          opacity: 0.35,
-          side: THREE.DoubleSide
-        });
-        const lineMesh = new THREE.Mesh(lineGeo, lineMat);
-        lineMesh.position.copy(mid);
-        lineMesh.rotation.x = -Math.PI / 2;
-        lineMesh.rotation.z = -Math.atan2(dir.x, dir.z);
-        scene.add(lineMesh);
-
-        const pulseMesh = new THREE.Mesh(
-          new THREE.SphereGeometry(0.11, 12, 12),
-          new THREE.MeshBasicMaterial({ color: cfg.accentHex })
-        );
-        scene.add(pulseMesh);
-        dataFloorPulses.push({
-          mesh: pulseMesh,
-          start,
-          end,
-          speed: 0.45 + Math.random() * 0.25,
-          offset: Math.random()
-        });
-      });
-
-      const particleCount = 140;
-      const positions = new Float32Array(particleCount * 3);
-      for (let i = 0; i < particleCount; i++) {
-        positions[i * 3] = (Math.random() - 0.5) * 30;
-        positions[i * 3 + 1] = 0.6 + Math.random() * 6.5;
-        positions[i * 3 + 2] = (Math.random() - 0.5) * 22;
-      }
-      const pGeo = new THREE.BufferGeometry();
-      pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      const pMat = new THREE.PointsMaterial({
-        color: 0x7dd3fc,
-        size: 0.09,
-        transparent: true,
-        opacity: 0.55
-      });
-      ambientParticles = new THREE.Points(pGeo, pMat);
-      scene.add(ambientParticles);
     }
 
-    function buildConferenceHub() {
-      const hubGroup = new THREE.Group();
-      hubGroup.position.set(0, 0, 0);
+    function buildConferenceHub16Seats() {
+      const hub = new THREE.Group();
+      hub.position.set(0, 0, 0.4);
 
-      const baseMesh = new THREE.Mesh(
-        new THREE.CylinderGeometry(1.1, 1.45, 0.78, 32),
-        new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.65, roughness: 0.25 })
+      // Thảm tròn lớn cho 16 ghế
+      const carpet = new THREE.Mesh(
+        new THREE.CylinderGeometry(4.4, 4.4, 0.03, 64),
+        new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.85 })
       );
-      baseMesh.position.y = 0.39;
-      baseMesh.castShadow = true;
-      hubGroup.add(baseMesh);
+      carpet.position.y = 0.015;
+      carpet.receiveShadow = true;
+      hub.add(carpet);
 
-      const tableWood = new THREE.Mesh(
-        new THREE.CylinderGeometry(2.35, 2.35, 0.08, 48),
-        new THREE.MeshStandardMaterial({ color: 0x3b2314, roughness: 0.22, metalness: 0.1 })
+      const ringEdge = new THREE.Mesh(
+        new THREE.RingGeometry(4.35, 4.48, 64),
+        new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide })
       );
-      tableWood.position.y = 0.82;
-      tableWood.castShadow = true;
-      tableWood.receiveShadow = true;
-      hubGroup.add(tableWood);
+      ringEdge.rotation.x = -Math.PI / 2;
+      ringEdge.position.y = 0.032;
+      hub.add(ringEdge);
 
-      const tableGlass = new THREE.Mesh(
-        new THREE.CylinderGeometry(2.55, 2.55, 0.04, 48),
-        new THREE.MeshPhysicalMaterial({
-          color: 0x38bdf8,
-          transparent: true,
-          opacity: 0.35,
-          roughness: 0.08,
-          metalness: 0.2
-        })
+      // Mặt bàn tròn lớn
+      const tableBase = new THREE.Mesh(
+        new THREE.CylinderGeometry(1.2, 1.5, 0.76, 32),
+        new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.7, roughness: 0.25 })
       );
-      tableGlass.position.y = 0.87;
-      hubGroup.add(tableGlass);
+      tableBase.position.y = 0.38;
+      hub.add(tableBase);
 
-      const emitter = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.45, 0.55, 0.08, 24),
-        new THREE.MeshStandardMaterial({ color: 0x0284c7, emissive: 0x0ea5e9, emissiveIntensity: 0.9 })
+      const tableTop = new THREE.Mesh(
+        new THREE.CylinderGeometry(2.65, 2.65, 0.08, 48),
+        new THREE.MeshStandardMaterial({ color: 0x3b2314, roughness: 0.22 })
       );
-      emitter.position.y = 0.92;
-      hubGroup.add(emitter);
+      tableTop.position.y = 0.80;
+      tableTop.castShadow = true;
+      hub.add(tableTop);
 
-      hologramGroup = new THREE.Group();
-      hologramGroup.position.set(0, 1.85, 0);
-
-      const coreGeo = new THREE.IcosahedronGeometry(0.48, 1);
-      const coreMat = new THREE.MeshBasicMaterial({
-        color: 0x38bdf8,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.85
-      });
-      const coreMesh = new THREE.Mesh(coreGeo, coreMat);
-      hologramGroup.add(coreMesh);
-
-      for (let i = 0; i < 2; i++) {
-        const torus = new THREE.Mesh(
-          new THREE.TorusGeometry(0.72 + i * 0.18, 0.018, 12, 48),
-          new THREE.MeshBasicMaterial({
-            color: i === 0 ? 0x22d3ee : 0xa855f7,
-            transparent: true,
-            opacity: 0.75
+      // 16 Ghế ngồi nhỏ xếp quanh bàn họp tròn
+      for (let i = 0; i < 16; i++) {
+        const angle = -Math.PI / 2 + (i / 16) * Math.PI * 2;
+        const sx = Math.cos(angle) * 3.55;
+        const sz = Math.sin(angle) * 3.55;
+        const stool = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.24, 0.22, 0.42, 16),
+          new THREE.MeshStandardMaterial({
+            color: i === 0 ? 0xfacc15 : 0x334155,
+            roughness: 0.4
           })
         );
-        torus.rotation.x = i === 0 ? Math.PI / 3 : -Math.PI / 4;
-        hologramRings.push(torus);
-        hologramGroup.add(torus);
+        stool.position.set(sx, 0.21, sz);
+        hub.add(stool);
       }
 
-      const beam = new THREE.Mesh(
-        new THREE.ConeGeometry(0.95, 1.3, 24, 1, true),
-        new THREE.MeshBasicMaterial({
-          color: 0x38bdf8,
-          transparent: true,
-          opacity: 0.13,
-          side: THREE.DoubleSide
-        })
+      // Quả cầu Hologram xoay ở tâm bàn
+      hologramGroup = new THREE.Group();
+      hologramGroup.position.set(0, 1.85, 0);
+      const core = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(0.52, 1),
+        new THREE.MeshBasicMaterial({ color: 0x38bdf8, wireframe: true })
       );
-      beam.position.y = -0.35;
-      beam.rotation.x = Math.PI;
-      hologramGroup.add(beam);
+      hologramGroup.add(core);
 
-      hubGroup.add(hologramGroup);
-      scene.add(hubGroup);
+      for (let i = 0; i < 2; i++) {
+        const t = new THREE.Mesh(
+          new THREE.TorusGeometry(0.78 + i * 0.2, 0.02, 12, 48),
+          new THREE.MeshBasicMaterial({ color: i === 0 ? 0x22d3ee : 0xfacc15 })
+        );
+        t.rotation.x = i === 0 ? Math.PI / 3 : -Math.PI / 4;
+        hologramRings.push(t);
+        hologramGroup.add(t);
+      }
+      hub.add(hologramGroup);
+      scene.add(hub);
     }
 
-    function buildBreakRoomLounge() {
-      const lounge = new THREE.Group();
-      lounge.position.set(-11.5, 0, -8.5);
-
-      const rug = new THREE.Mesh(
-        new THREE.BoxGeometry(6.8, 0.03, 5.8),
-        new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.9 })
-      );
-      rug.position.set(0, 0.015, 0.4);
-      rug.receiveShadow = true;
-      lounge.add(rug);
-
-      const sofaMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.65 });
-      const cushionMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.55 });
-
-      const sofaBase1 = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.42, 1.15), sofaMat);
-      sofaBase1.position.set(0.5, 0.21, 1.5);
-      sofaBase1.castShadow = true;
-      lounge.add(sofaBase1);
-
-      const sofaBack1 = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.65, 0.25), cushionMat);
-      sofaBack1.position.set(0.5, 0.62, 1.95);
-      sofaBack1.castShadow = true;
-      lounge.add(sofaBack1);
-
-      const sofaBase2 = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.42, 2.4), sofaMat);
-      sofaBase2.position.set(-1.1, 0.21, 0.85);
-      sofaBase2.castShadow = true;
-      lounge.add(sofaBase2);
-
-      const teaTable = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.75, 0.75, 0.42, 24),
-        new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.3 })
-      );
-      teaTable.position.set(0.7, 0.21, 0.15);
-      teaTable.castShadow = true;
-      lounge.add(teaTable);
+    function buildPantryAndServerZone() {
+      // Khu Pantry góc Tây-Bắc (-12.2, -9.2)
+      const pantry = new THREE.Group();
+      pantry.position.set(-12.2, 0, -9.2);
 
       const counter = new THREE.Mesh(
-        new THREE.BoxGeometry(3.2, 0.92, 0.9),
-        new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.35 })
+        new THREE.BoxGeometry(3.6, 0.9, 0.85),
+        new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.35 })
       );
-      counter.position.set(-1.3, 0.46, -1.7);
-      counter.castShadow = true;
-      lounge.add(counter);
+      counter.position.set(0, 0.45, -1.2);
+      pantry.add(counter);
 
-      const coffeeMachine = new THREE.Mesh(
-        new THREE.BoxGeometry(0.65, 0.58, 0.5),
-        new THREE.MeshStandardMaterial({ color: 0xb91c1c, metalness: 0.5, roughness: 0.25 })
+      const coffee = new THREE.Mesh(
+        new THREE.BoxGeometry(0.65, 0.55, 0.48),
+        new THREE.MeshStandardMaterial({ color: 0xdc2626, metalness: 0.5 })
       );
-      coffeeMachine.position.set(-1.8, 1.21, -1.7);
-      coffeeMachine.castShadow = true;
-      lounge.add(coffeeMachine);
+      coffee.position.set(-0.9, 1.18, -1.2);
+      pantry.add(coffee);
 
-      const dispenserBody = new THREE.Mesh(
-        new THREE.BoxGeometry(0.55, 1.15, 0.55),
-        new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.3 })
+      const sofa = new THREE.Mesh(
+        new THREE.BoxGeometry(3.4, 0.45, 1.1),
+        new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6 })
       );
-      dispenserBody.position.set(0.2, 0.58, -1.75);
-      dispenserBody.castShadow = true;
-      lounge.add(dispenserBody);
+      sofa.position.set(0.4, 0.22, 1.4);
+      pantry.add(sofa);
+      scene.add(pantry);
 
-      const waterBottle = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.22, 0.22, 0.55, 16),
-        new THREE.MeshPhysicalMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.65, roughness: 0.1 })
-      );
-      waterBottle.position.set(0.2, 1.42, -1.75);
-      lounge.add(waterBottle);
-
-      buildPlant(lounge, 2.4, -1.6);
-      buildPlant(lounge, -2.9, 1.9);
-
-      scene.add(lounge);
-    }
-
-    function buildPlant(parentGroup, x, z) {
-      const pot = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.35, 0.26, 0.52, 16),
-        new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.6 })
-      );
-      pot.position.set(x, 0.26, z);
-      pot.castShadow = true;
-      parentGroup.add(pot);
-
-      const foliageMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.5 });
-      for (let i = 0; i < 3; i++) {
-        const leafSphere = new THREE.Mesh(
-          new THREE.DodecahedronGeometry(0.42 - i * 0.08, 1),
-          foliageMat
-        );
-        leafSphere.position.set(x + (i - 1) * 0.12, 0.75 + i * 0.32, z);
-        leafSphere.castShadow = true;
-        parentGroup.add(leafSphere);
-      }
-    }
-
-    function buildServerRackZone() {
+      // Khu Server Rack Bảo Mật 20/10/2026 góc Đông-Bắc (10.5, -9.2)
       const serverZone = new THREE.Group();
-      serverZone.position.set(12.2, 0, -8.8);
-
-      const pad = new THREE.Mesh(
-        new THREE.BoxGeometry(6.2, 0.05, 4.6),
-        new THREE.MeshStandardMaterial({ color: 0x064e3b, roughness: 0.4, metalness: 0.3 })
-      );
-      pad.position.y = 0.025;
-      pad.receiveShadow = true;
-      serverZone.add(pad);
-
+      serverZone.position.set(10.5, 0, -9.2);
       const rackMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.75, roughness: 0.25 });
+
       for (let r = -1; r <= 1; r++) {
-        const rack = new THREE.Mesh(new THREE.BoxGeometry(1.35, 2.75, 1.25), rackMat);
-        rack.position.set(r * 1.75, 1.4, -0.8);
+        const rack = new THREE.Mesh(new THREE.BoxGeometry(1.25, 2.7, 1.15), rackMat);
+        rack.position.set(r * 1.6, 1.35, 0);
         rack.castShadow = true;
         serverZone.add(rack);
 
-        for (let row = 0; row < 7; row++) {
-          const isAlertRow = row === 2;
-          const ledMat = new THREE.MeshBasicMaterial({
-            color: isAlertRow ? 0xf59e0b : 0x10b981
-          });
-          const ledBar = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.07, 0.04), ledMat);
-          ledBar.position.set(r * 1.75, 0.5 + row * 0.32, -0.16);
-          serverZone.add(ledBar);
-          serverLedMeshes.push({ mesh: ledBar, baseRow: row, rackIdx: r });
+        for (let row = 0; row < 6; row++) {
+          const led = new THREE.Mesh(
+            new THREE.BoxGeometry(0.95, 0.06, 0.04),
+            new THREE.MeshBasicMaterial({ color: row === 2 ? 0xf59e0b : 0x10b981 })
+          );
+          led.position.set(r * 1.6, 0.5 + row * 0.35, 0.59);
+          serverZone.add(led);
+          serverLeds.push({ mesh: led, row });
         }
       }
-
-      const postMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8 });
-      const laserMat = new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.65 });
-      for (let px of [-2.8, 2.8]) {
-        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.2, 12), postMat);
-        post.position.set(px, 0.6, 1.3);
-        serverZone.add(post);
-      }
-      for (let ly of [0.35, 0.7, 1.05]) {
-        const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 5.6, 8), laserMat);
-        beam.rotation.z = Math.PI / 2;
-        beam.position.set(0, ly, 1.3);
-        serverZone.add(beam);
-      }
-
       scene.add(serverZone);
     }
 
-    function buildAllWorkstations() {
-      Object.keys(AGENT_CONFIGS).forEach(key => {
-        const cfg = AGENT_CONFIGS[key];
+    // ============================================================================
+    // 6. DỰNG ĐỦ 16 BÀN LÀM VIỆC & 16 NHÂN VẬT 3D ĐỘC LẬP
+    // ============================================================================
+    function buildAll16WorkstationsAndCharacters() {
+      CHARACTERS_16.forEach(cfg => {
+        const isCEO = cfg.id === 'ceo_huy_mai';
+
+        // 6.1 Dựng Bàn Làm Việc (Workstation)
         const ws = new THREE.Group();
         ws.position.set(cfg.deskPos.x, 0, cfg.deskPos.z);
         ws.rotation.y = cfg.deskPos.rotY;
 
-        const deskTop = new THREE.Mesh(
-          new THREE.BoxGeometry(2.5, 0.08, 1.25),
-          new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.25, metalness: 0.2 })
-        );
-        deskTop.position.y = 0.78;
-        deskTop.castShadow = true;
-        deskTop.receiveShadow = true;
-        ws.add(deskTop);
+        const deskW = isCEO ? 3.2 : 2.1;
+        const deskD = isCEO ? 1.35 : 1.05;
+        const deskColor = isCEO ? 0x27170e : 0x1e293b; // Gỗ mun hoàng gia cho Chủ tịch
 
-        const neonStrip = new THREE.Mesh(
-          new THREE.BoxGeometry(2.52, 0.035, 0.04),
+        const topMesh = new THREE.Mesh(
+          new THREE.BoxGeometry(deskW, 0.08, deskD),
+          new THREE.MeshStandardMaterial({ color: deskColor, roughness: 0.22, metalness: 0.25 })
+        );
+        topMesh.position.y = 0.76;
+        topMesh.castShadow = true;
+        topMesh.receiveShadow = true;
+        ws.add(topMesh);
+
+        // Viền LED phát sáng theo màu Phòng ban (Vàng Gold cho Chủ tịch Huy Mai)
+        const trimMesh = new THREE.Mesh(
+          new THREE.BoxGeometry(deskW + 0.04, 0.04, 0.04),
           new THREE.MeshBasicMaterial({ color: cfg.colorHex })
         );
-        neonStrip.position.set(0, 0.78, 0.63);
-        ws.add(neonStrip);
+        trimMesh.position.set(0, 0.76, deskD / 2 + 0.01);
+        ws.add(trimMesh);
 
-        const legMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.8, roughness: 0.2 });
-        for (let lx of [-1.1, 1.1]) {
-          for (let lz of [-0.5, 0.5]) {
-            const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.78, 12), legMat);
-            leg.position.set(lx, 0.39, lz);
-            leg.castShadow = true;
-            ws.add(leg);
-          }
+        // 2 Màn hình máy tính trên mỗi bàn
+        for (let m of [-0.38, 0.38]) {
+          const monFrame = new THREE.Mesh(
+            new THREE.BoxGeometry(0.68, 0.40, 0.04),
+            new THREE.MeshStandardMaterial({ color: 0x090d16 })
+          );
+          monFrame.position.set(m, 1.12, 0.18);
+          monFrame.rotation.y = m < 0 ? 0.15 : -0.15;
+
+          const scrData = createMonitorCanvas(cfg);
+          monitorScreens.push(scrData);
+          const scrPlane = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.62, 0.34),
+            new THREE.MeshBasicMaterial({ map: scrData.tex })
+          );
+          scrPlane.position.set(0, 0, -0.025);
+          scrPlane.rotation.y = Math.PI;
+          monFrame.add(scrPlane);
+          ws.add(monFrame);
         }
 
-        for (let m = 0; m < 2; m++) {
-          const mx = m === 0 ? -0.46 : 0.46;
-          const mRotY = m === 0 ? 0.18 : -0.18;
-
-          const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.05, 0.35, 10), legMat);
-          stand.position.set(mx, 0.95, 0.25);
-          ws.add(stand);
-
-          const frame = new THREE.Mesh(
-            new THREE.BoxGeometry(0.82, 0.48, 0.04),
-            new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.4 })
-          );
-          frame.position.set(mx, 1.18, 0.22);
-          frame.rotation.y = mRotY;
-          frame.castShadow = true;
-
-          const screenData = createScreenTexture(key, m);
-          monitorMaterials.push(screenData);
-          const screenMesh = new THREE.Mesh(
-            new THREE.PlaneGeometry(0.76, 0.42),
-            new THREE.MeshBasicMaterial({ map: screenData.tex })
-          );
-          screenMesh.position.set(0, 0, -0.025);
-          screenMesh.rotation.y = Math.PI;
-          frame.add(screenMesh);
-
-          ws.add(frame);
-        }
-
-        const cpuTower = new THREE.Mesh(
-          new THREE.BoxGeometry(0.28, 0.52, 0.52),
-          new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.6, roughness: 0.25 })
-        );
-        cpuTower.position.set(-1.02, 1.08, 0.1);
-        cpuTower.castShadow = true;
-        ws.add(cpuTower);
-
-        const cpuLed = new THREE.Mesh(
-          new THREE.BoxGeometry(0.03, 0.42, 0.03),
-          new THREE.MeshBasicMaterial({ color: cfg.colorHex })
-        );
-        cpuLed.position.set(-1.02, 1.08, -0.17);
-        ws.add(cpuLed);
-
-        const keyboard = new THREE.Mesh(
-          new THREE.BoxGeometry(0.52, 0.025, 0.18),
-          new THREE.MeshStandardMaterial({ color: 0x334155, emissive: cfg.colorHex, emissiveIntensity: 0.25 })
-        );
-        keyboard.position.set(0, 0.83, -0.22);
-        ws.add(keyboard);
-
-        const docStack = new THREE.Mesh(
-          new THREE.BoxGeometry(0.32, 0.06, 0.42),
-          new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.6 })
-        );
-        docStack.position.set(0.95, 0.85, -0.15);
-        docStack.rotation.y = 0.25;
-        ws.add(docStack);
-
-        const chair = new THREE.Group();
-        chair.position.set(0, 0, -0.92);
-
-        const chairBase = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.06, 16), legMat);
-        chairBase.position.y = 0.05;
-        chair.add(chairBase);
-
-        const chairPole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.42, 12), legMat);
-        chairPole.position.y = 0.25;
-        chair.add(chairPole);
-
-        const chairSeat = new THREE.Mesh(
-          new THREE.BoxGeometry(0.56, 0.08, 0.54),
-          new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5 })
-        );
-        chairSeat.position.y = 0.46;
-        chairSeat.castShadow = true;
-        chair.add(chairSeat);
-
+        // Ghế xoay công thái học đặt phía sau bàn (-Z local)
         const chairBack = new THREE.Mesh(
-          new THREE.BoxGeometry(0.52, 0.68, 0.08),
-          new THREE.MeshStandardMaterial({ color: cfg.colorHex, roughness: 0.4 })
+          new THREE.BoxGeometry(0.5, isCEO ? 0.85 : 0.62, 0.08),
+          new THREE.MeshStandardMaterial({ color: cfg.colorHex, roughness: 0.35 })
         );
-        chairBack.position.set(0, 0.84, -0.24);
-        chairBack.castShadow = true;
-        chair.add(chairBack);
+        chairBack.position.set(0, 0.82, -1.08);
+        ws.add(chairBack);
 
-        ws.add(chair);
         scene.add(ws);
-      });
-    }
 
-    function buildAllLegoAgents() {
-      Object.keys(AGENT_CONFIGS).forEach(key => {
-        const cfg = AGENT_CONFIGS[key];
-        const root = new THREE.Group();
-
-        const startX = cfg.deskPos.x + cfg.seatOffset.x;
-        const startZ = cfg.deskPos.z + cfg.seatOffset.z;
-        root.position.set(startX, 0, startZ);
-        root.rotation.y = cfg.deskPos.rotY;
-
-        const yellowSkinMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, roughness: 0.25 });
-        const torsoMat = new THREE.MeshStandardMaterial({
-          color: cfg.colorHex,
-          roughness: 0.28,
-          metalness: 0.15
-        });
-        const pantsMat = new THREE.MeshStandardMaterial({
-          color: 0x1e293b,
-          roughness: 0.4
+        // Đường mạch Neon nối từ bàn về Bàn Tròn Trung Tâm
+        const startVec = new THREE.Vector3(0, 0.025, 0.4);
+        const endVec = new THREE.Vector3(cfg.deskPos.x, 0.025, cfg.deskPos.z);
+        const pulseSphere = new THREE.Mesh(
+          new THREE.SphereGeometry(0.08, 8, 8),
+          new THREE.MeshBasicMaterial({ color: cfg.colorHex })
+        );
+        scene.add(pulseSphere);
+        floorPulses.push({
+          mesh: pulseSphere,
+          start: startVec,
+          end: endVec,
+          speed: 0.35 + Math.random() * 0.25,
+          offset: Math.random()
         });
 
-        const leftLegPivot = new THREE.Group();
-        leftLegPivot.position.set(-0.14, 0.48, 0);
-        const leftLegMesh = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.48, 0.26), pantsMat);
-        leftLegMesh.position.y = -0.24;
-        leftLegMesh.castShadow = true;
-        leftLegPivot.add(leftLegMesh);
-        root.add(leftLegPivot);
+        // 6.2 Dựng Nhân Vật 3D Độc Lập
+        const charRoot = new THREE.Group();
+        const seatLocal = new THREE.Vector3(0, 0, -0.82).applyAxisAngle(new THREE.Vector3(0, 1, 0), cfg.deskPos.rotY);
+        const startX = cfg.deskPos.x + seatLocal.x;
+        const startZ = cfg.deskPos.z + seatLocal.z;
+        charRoot.position.set(startX, 0, startZ);
+        charRoot.rotation.y = cfg.deskPos.rotY;
 
-        const rightLegPivot = new THREE.Group();
-        rightLegPivot.position.set(0.14, 0.48, 0);
-        const rightLegMesh = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.48, 0.26), pantsMat);
-        rightLegMesh.position.y = -0.24;
-        rightLegMesh.castShadow = true;
-        rightLegPivot.add(rightLegMesh);
-        root.add(rightLegPivot);
+        const skinMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, roughness: 0.25 });
+        const suitMat = new THREE.MeshStandardMaterial({ color: cfg.suitHex, roughness: 0.28, metalness: 0.15 });
+        const pantsMat = new THREE.MeshStandardMaterial({ color: isCEO ? 0xf8fafc : 0x1e293b, roughness: 0.4 });
 
-        const torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.58, 0.3), torsoMat);
-        torsoMesh.position.y = 0.77;
-        torsoMesh.castShadow = true;
-        root.add(torsoMesh);
+        // Chân Trái & Phải
+        const leftLeg = new THREE.Group();
+        leftLeg.position.set(-0.13, 0.46, 0);
+        const leftLegM = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.46, 0.24), pantsMat);
+        leftLegM.position.y = -0.23;
+        leftLeg.add(leftLegM);
+        charRoot.add(leftLeg);
 
-        const badgeMesh = new THREE.Mesh(
-          new THREE.BoxGeometry(0.32, 0.22, 0.02),
-          new THREE.MeshBasicMaterial({ color: cfg.accentHex })
+        const rightLeg = new THREE.Group();
+        rightLeg.position.set(0.13, 0.46, 0);
+        const rightLegM = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.46, 0.24), pantsMat);
+        rightLegM.position.y = -0.23;
+        rightLeg.add(rightLegM);
+        charRoot.add(rightLeg);
+
+        // Thân Áo (Vest) + Huy hiệu
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.56, 0.28), suitMat);
+        torso.position.y = 0.74;
+        torso.castShadow = true;
+        charRoot.add(torso);
+
+        const chestTrim = new THREE.Mesh(
+          new THREE.BoxGeometry(0.32, 0.2, 0.02),
+          new THREE.MeshBasicMaterial({ color: cfg.trimHex })
         );
-        badgeMesh.position.set(0, 0.82, 0.16);
-        root.add(badgeMesh);
+        chestTrim.position.set(0, 0.78, 0.15);
+        charRoot.add(chestTrim);
 
-        const leftArmPivot = new THREE.Group();
-        leftArmPivot.position.set(-0.36, 1.0, 0);
-        const leftArmMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.085, 0.44, 12), torsoMat);
-        leftArmMesh.position.y = -0.18;
-        leftArmMesh.castShadow = true;
-        leftArmPivot.add(leftArmMesh);
+        // Tay Trái & Phải
+        const leftArm = new THREE.Group();
+        leftArm.position.set(-0.34, 0.96, 0);
+        const leftArmM = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 0.42, 10), suitMat);
+        leftArmM.position.y = -0.18;
+        leftArm.add(leftArmM);
+        charRoot.add(leftArm);
 
-        const leftHand = new THREE.Mesh(new THREE.SphereGeometry(0.085, 12, 12), yellowSkinMat);
-        leftHand.position.y = -0.42;
-        leftArmPivot.add(leftHand);
-        root.add(leftArmPivot);
+        const rightArm = new THREE.Group();
+        rightArm.position.set(0.34, 0.96, 0);
+        const rightArmM = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 0.42, 10), suitMat);
+        rightArmM.position.y = -0.18;
+        rightArm.add(rightArmM);
+        charRoot.add(rightArm);
 
-        const rightArmPivot = new THREE.Group();
-        rightArmPivot.position.set(0.36, 1.0, 0);
-        const rightArmMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.085, 0.44, 12), torsoMat);
-        rightArmMesh.position.y = -0.18;
-        rightArmMesh.castShadow = true;
-        rightArmPivot.add(rightArmMesh);
-
-        const rightHand = new THREE.Mesh(new THREE.SphereGeometry(0.085, 12, 12), yellowSkinMat);
-        rightHand.position.y = -0.42;
-        rightArmPivot.add(rightHand);
-
-        const coffeeCup = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.07, 0.055, 0.14, 12),
-          new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 })
-        );
-        coffeeCup.position.set(0, -0.44, 0.12);
-        coffeeCup.rotation.x = Math.PI / 2;
-        coffeeCup.visible = false;
-        rightArmPivot.add(coffeeCup);
-
-        root.add(rightArmPivot);
-
+        // Đầu & Phụ kiện đặc trưng (Vương miện CEO, Mũ Beret, Mũ Bảo An...)
         const headPivot = new THREE.Group();
-        headPivot.position.set(0, 1.08, 0);
-
-        const headCyl = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.22, 0.22, 0.36, 24),
-          new THREE.MeshStandardMaterial({ map: createLegoFaceTexture(key), roughness: 0.25 })
+        headPivot.position.set(0, 1.04, 0);
+        const headMesh = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.21, 0.21, 0.34, 20),
+          new THREE.MeshStandardMaterial({ map: createFaceTexture(cfg), roughness: 0.25 })
         );
-        headCyl.rotation.y = -Math.PI / 2;
-        headCyl.position.y = 0.2;
-        headCyl.castShadow = true;
-        headPivot.add(headCyl);
+        headMesh.rotation.y = -Math.PI / 2;
+        headMesh.position.y = 0.18;
+        headPivot.add(headMesh);
 
-        const topStud = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.11, 0.11, 0.07, 16),
-          yellowSkinMat
-        );
-        topStud.position.y = 0.41;
-        headPivot.add(topStud);
-
-        if (key === 'boss') {
+        if (cfg.accessory === 'crown') {
           const crown = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.24, 0.22, 0.1, 8),
-            new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.15 })
+            new THREE.CylinderGeometry(0.24, 0.21, 0.12, 8),
+            new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.85, roughness: 0.1 })
           );
-          crown.position.y = 0.42;
+          crown.position.y = 0.40;
           headPivot.add(crown);
-        } else if (key === 'guard') {
-          const helmet = new THREE.Mesh(
-            new THREE.SphereGeometry(0.24, 16, 12, 0, Math.PI * 2, 0, Math.PI / 1.8),
-            new THREE.MeshStandardMaterial({ color: 0x059669, metalness: 0.4, roughness: 0.2 })
-          );
-          helmet.position.y = 0.32;
-          headPivot.add(helmet);
-        } else if (key === 'creator') {
+        } else if (cfg.accessory === 'beret') {
           const beret = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.25, 0.22, 0.08, 16),
-            new THREE.MeshStandardMaterial({ color: 0x9333ea, roughness: 0.4 })
+            new THREE.CylinderGeometry(0.24, 0.20, 0.07, 16),
+            new THREE.MeshStandardMaterial({ color: cfg.colorHex })
           );
-          beret.position.set(0.03, 0.4, 0);
-          beret.rotation.z = -0.15;
+          beret.position.set(0.02, 0.38, 0);
           headPivot.add(beret);
-        } else if (key === 'studio') {
-          const band = new THREE.Mesh(
-            new THREE.TorusGeometry(0.24, 0.025, 8, 24, Math.PI),
-            new THREE.MeshStandardMaterial({ color: 0x06b6d4 })
+        } else if (cfg.accessory === 'helmet') {
+          const helmet = new THREE.Mesh(
+            new THREE.SphereGeometry(0.23, 14, 10, 0, Math.PI * 2, 0, Math.PI / 1.8),
+            new THREE.MeshStandardMaterial({ color: 0x059669, metalness: 0.4 })
           );
-          band.position.y = 0.22;
-          headPivot.add(band);
+          helmet.position.y = 0.30;
+          headPivot.add(helmet);
         }
+        charRoot.add(headPivot);
 
-        root.add(headPivot);
-
-        const auraRing = new THREE.Mesh(
-          new THREE.RingGeometry(0.38, 0.48, 32),
-          new THREE.MeshBasicMaterial({ color: cfg.colorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.7 })
+        // Vòng Aura Neon dưới chân
+        const aura = new THREE.Mesh(
+          new THREE.RingGeometry(0.36, 0.48, 28),
+          new THREE.MeshBasicMaterial({ color: cfg.colorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.75 })
         );
-        auraRing.rotation.x = -Math.PI / 2;
-        auraRing.position.y = 0.02;
-        root.add(auraRing);
+        aura.rotation.x = -Math.PI / 2;
+        aura.position.y = 0.02;
+        charRoot.add(aura);
 
-        root.traverse(obj => {
-          if (obj.isMesh) {
-            obj.userData.agentKey = key;
-            clickableMeshes.push(obj);
+        // Gắn charId cho Raycaster
+        charRoot.traverse(o => {
+          if (o.isMesh) {
+            o.userData.charId = cfg.id;
+            clickableMeshes.push(o);
           }
         });
 
-        scene.add(root);
+        scene.add(charRoot);
 
-        agents[key] = {
-          key,
+        // Lưu tọa độ đứng trước bàn (để đồng nghiệp bước tới bàn giao)
+        const frontLocal = new THREE.Vector3(0, 0, 1.35).applyAxisAngle(new THREE.Vector3(0, 1, 0), cfg.deskPos.rotY);
+
+        entities[cfg.id] = {
+          id: cfg.id,
           cfg,
-          root,
+          root: charRoot,
           headPivot,
-          leftArmPivot,
-          rightArmPivot,
-          leftLegPivot,
-          rightLegPivot,
-          coffeeCup,
-          auraRing,
-          state: 'WORKING',
-          message: cfg.defaultWorkMsg,
+          leftArm,
+          rightArm,
+          leftLeg,
+          rightLeg,
+          aura,
+          homePos: new THREE.Vector3(startX, 0, startZ),
+          homeRotY: cfg.deskPos.rotY,
+          frontDeskPos: new THREE.Vector3(cfg.deskPos.x + frontLocal.x, 0, cfg.deskPos.z + frontLocal.z),
           targetPos: new THREE.Vector3(startX, 0, startZ),
           targetRotY: cfg.deskPos.rotY,
-          lookAtTarget: null,
+          lookAtVec: null,
+          state: 'WORKING',
+          message: cfg.defaultTask,
           isMoving: false,
           isSpeaking: false,
           waveTimer: 0,
           nodTimer: 0,
-          phaseOffset: Math.random() * Math.PI * 2,
-          onArriveCallback: null
+          phase: Math.random() * Math.PI * 2,
+          onArrive: null,
+          tagEl: null
         };
       });
     }
 
-    function createDOMOverlays() {
-      const layer = document.getElementById('bubbles-layer');
+    // ============================================================================
+    // 7. TẠO CSS2D FLOATING TAGS CHO 16 NHÂN VẬT & DANH SÁCH BÊN PHẢI
+    // ============================================================================
+    function buildDOMLabelsAndRoster() {
+      const layer = document.getElementById('labels-layer');
       layer.innerHTML = '';
 
-      ZONE_LABELS.forEach((zItem, idx) => {
+      ZONE_BANNERS.forEach(zb => {
         const el = document.createElement('div');
-        el.className = 'zone-label';
-        el.id = `zone-label-${idx}`;
-        el.textContent = zItem.text;
+        el.className = 'zone-banner';
+        el.textContent = zb.text;
         layer.appendChild(el);
-        zItem.el = el;
+        zb.el = el;
       });
 
-      Object.keys(AGENT_CONFIGS).forEach(key => {
-        const cfg = AGENT_CONFIGS[key];
-        const bubble = document.createElement('div');
-        bubble.className = 'thought-bubble';
-        bubble.id = `bubble-${key}`;
-        bubble.style.borderColor = cfg.badgeBorder;
+      const rosterContainer = document.getElementById('roster-16-list');
+      const drawerSelect = document.getElementById('chat-drawer-emp-select');
+      rosterContainer.innerHTML = '';
+      drawerSelect.innerHTML = '';
 
-        bubble.innerHTML = `
-          <div class="flex items-center justify-between gap-1.5 mb-1">
-            <span class="font-extrabold text-[11px] tracking-tight" style="color:${cfg.textColor}">
-              ${cfg.shortName}
-            </span>
-            <span id="bubble-state-${key}" class="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase mono" style="background:${cfg.badgeBg}; color:${cfg.textColor}; border:1px solid ${cfg.badgeBorder}">
-              WORKING
-            </span>
+      CHARACTERS_16.forEach(cfg => {
+        // 1. Tạo nhãn nổi 3D trên đầu mỗi nhân vật
+        const tag = document.createElement('div');
+        tag.className = 'emp-tag';
+        tag.id = `tag-${cfg.id}`;
+        tag.style.borderColor = cfg.badgeBorder;
+        tag.innerHTML = `
+          <div class="flex items-center gap-1.5">
+            <span class="px-1 py-0.2 rounded text-[8.5px] font-extrabold mono" style="background:${cfg.badgeBorder}33;color:${cfg.textColor}">${cfg.deskNo}</span>
+            <span class="font-bold text-[10.5px]" style="color:${cfg.textColor}">${cfg.shortName}</span>
+            <span id="tag-state-${cfg.id}" class="text-[8.5px] text-emerald-300 mono">[WORKING]</span>
           </div>
-          <div id="bubble-msg-${key}" class="text-[11px] text-slate-100 font-medium leading-snug">
-            ${cfg.defaultWorkMsg}
-          </div>
+          <div id="tag-msg-${cfg.id}" class="task-pop">${cfg.defaultTask}</div>
         `;
-
-        bubble.addEventListener('click', (e) => {
+        tag.addEventListener('click', (e) => {
           e.stopPropagation();
-          focusAndGreetAgent(key);
+          zoomAndOpenChatWithCharacter(cfg.id);
         });
+        layer.appendChild(tag);
+        entities[cfg.id].tagEl = tag;
 
-        layer.appendChild(bubble);
-        agents[key].bubbleEl = bubble;
+        // 2. Thêm vào danh sách 16 nhân sự bên phải
+        const row = document.createElement('div');
+        row.className = 'p-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 cursor-pointer flex items-center justify-between gap-1.5 transition';
+        row.innerHTML = `
+          <div class="truncate">
+            <div class="text-[11px] font-bold truncate" style="color:${cfg.textColor}">${cfg.deskNo} • ${cfg.shortName}</div>
+            <div class="text-[9.5px] text-slate-400 truncate">${cfg.title}</div>
+          </div>
+          <span class="px-1.5 py-0.5 rounded text-[9px] font-bold mono bg-slate-950 text-sky-300 border border-slate-700">Chat 1-1</span>
+        `;
+        row.addEventListener('click', () => zoomAndOpenChatWithCharacter(cfg.id));
+        rosterContainer.appendChild(row);
+
+        // 3. Thêm vào Dropdown trong Chat Drawer
+        const opt = document.createElement('option');
+        opt.value = cfg.id;
+        opt.textContent = `[${cfg.deskNo}] ${cfg.name} — ${cfg.deptName}`;
+        drawerSelect.appendChild(opt);
       });
     }
 
-    function updateBubbleContent(agentKey) {
-      const ag = agents[agentKey];
-      if (!ag) return;
-      const stateEl = document.getElementById(`bubble-state-${agentKey}`);
-      const msgEl = document.getElementById(`bubble-msg-${agentKey}`);
-      if (stateEl) stateEl.textContent = ag.state;
-      if (msgEl) msgEl.textContent = ag.message;
-      updateBubbleStyle(agentKey);
-      if (selectedAgentKey === agentKey) {
-        refreshInspectorUI(agentKey);
-      }
+    function updateCharacterLabel(charId) {
+      const ent = entities[charId];
+      if (!ent) return;
+      const stEl = document.getElementById(`tag-state-${charId}`);
+      const msgEl = document.getElementById(`tag-msg-${charId}`);
+      if (stEl) stEl.textContent = `[${ent.state}]`;
+      if (msgEl) msgEl.textContent = ent.message;
     }
 
-    function updateBubbleStyle(agentKey) {
-      const ag = agents[agentKey];
-      if (!ag || !ag.bubbleEl) return;
-      if (ag.isSpeaking) {
-        ag.bubbleEl.classList.add('speaking');
-      } else {
-        ag.bubbleEl.classList.remove('speaking');
-      }
+    function projectTo2D(vec3) {
+      const v = vec3.clone().project(camera);
+      return {
+        x: (v.x * 0.5 + 0.5) * window.innerWidth,
+        y: (-(v.y * 0.5) + 0.5) * window.innerHeight,
+        behind: v.z > 1
+      };
     }
 
-    function project3DToScreen(worldVec) {
-      const vec = worldVec.clone();
-      vec.project(camera);
-      const isBehind = vec.z > 1;
-      const x = (vec.x * 0.5 + 0.5) * window.innerWidth;
-      const y = (-(vec.y * 0.5) + 0.5) * window.innerHeight;
-      return { x, y, isBehind };
-    }
+    function updateAllDOMOverlays() {
+      const headVec = new THREE.Vector3();
+      const items = [];
 
-    function updateDOMOverlaysPosition() {
-      const headWorld = new THREE.Vector3();
-      const bubbleItems = [];
-
-      Object.keys(agents).forEach(key => {
-        const ag = agents[key];
-        if (!ag.bubbleEl) return;
-        ag.headPivot.getWorldPosition(headWorld);
-        headWorld.y += 0.68;
-        const pos = project3DToScreen(headWorld);
-        bubbleItems.push({
-          key,
-          el: ag.bubbleEl,
-          x: pos.x,
-          y: pos.y,
-          isBehind: pos.isBehind
-        });
+      CHARACTERS_16.forEach(cfg => {
+        const ent = entities[cfg.id];
+        if (!ent || !ent.tagEl) return;
+        ent.headPivot.getWorldPosition(headVec);
+        headVec.y += 0.58;
+        const p = projectTo2D(headVec);
+        items.push({ id: cfg.id, el: ent.tagEl, x: p.x, y: p.y, behind: p.behind });
       });
 
-      const minW = 205;
-      const minH = 72;
-      for (let iter = 0; iter < 4; iter++) {
-        for (let i = 0; i < bubbleItems.length; i++) {
-          for (let j = i + 1; j < bubbleItems.length; j++) {
-            const a = bubbleItems[i];
-            const b = bubbleItems[j];
-            if (a.isBehind || b.isBehind) continue;
+      // Thuật toán chống đè nhãn 16 nhân vật
+      const minW = 135;
+      const minH = 34;
+      for (let iter = 0; iter < 3; iter++) {
+        for (let i = 0; i < items.length; i++) {
+          for (let j = i + 1; j < items.length; j++) {
+            const a = items[i];
+            const b = items[j];
+            if (a.behind || b.behind) continue;
             const dx = b.x - a.x;
             const dy = b.y - a.y;
             if (Math.abs(dx) < minW && Math.abs(dy) < minH) {
-              const overlapX = (minW - Math.abs(dx)) * 0.35;
-              const overlapY = (minH - Math.abs(dy)) * 0.45;
-              if (Math.abs(dx) > Math.abs(dy)) {
-                const signX = dx >= 0 ? 1 : -1;
-                a.x -= signX * overlapX;
-                b.x += signX * overlapX;
-              } else {
-                const signY = dy >= 0 ? 1 : -1;
-                a.y -= signY * overlapY;
-                b.y += signY * overlapY;
-              }
+              const pushY = (minH - Math.abs(dy)) * 0.45;
+              if (dy >= 0) { a.y -= pushY; b.y += pushY; }
+              else { a.y += pushY; b.y -= pushY; }
             }
           }
         }
       }
 
-      bubbleItems.forEach(item => {
-        if (item.isBehind) {
-          item.el.style.opacity = '0';
-          item.el.style.pointerEvents = 'none';
+      items.forEach(it => {
+        if (it.behind) {
+          it.el.style.opacity = '0';
+          it.el.style.pointerEvents = 'none';
         } else {
-          const clampedX = Math.max(120, Math.min(window.innerWidth - 120, item.x));
-          const clampedY = Math.max(90, Math.min(window.innerHeight - 95, item.y));
-          item.el.style.opacity = '1';
-          item.el.style.pointerEvents = 'auto';
-          item.el.style.left = `${clampedX}px`;
-          item.el.style.top = `${clampedY}px`;
+          it.el.style.opacity = '1';
+          it.el.style.pointerEvents = 'auto';
+          it.el.style.left = `${Math.max(70, Math.min(window.innerWidth - 70, it.x))}px`;
+          it.el.style.top = `${Math.max(60, Math.min(window.innerHeight - 65, it.y))}px`;
+          if (it.id === activeCharId || it.id === hoveredCharId) {
+            it.el.classList.add('active-tag');
+          } else {
+            it.el.classList.remove('active-tag');
+          }
         }
       });
 
-      ZONE_LABELS.forEach(zItem => {
-        if (!zItem.el) return;
-        const pos = project3DToScreen(new THREE.Vector3(zItem.x, zItem.y, zItem.z));
-        if (pos.isBehind) {
-          zItem.el.style.opacity = '0';
-        } else {
-          zItem.el.style.opacity = '0.85';
-          zItem.el.style.left = `${pos.x}px`;
-          zItem.el.style.top = `${pos.y}px`;
-        }
+      ZONE_BANNERS.forEach(zb => {
+        if (!zb.el) return;
+        const p = projectTo2D(new THREE.Vector3(zb.x, zb.y, zb.z));
+        zb.el.style.opacity = p.behind ? '0' : '0.82';
+        zb.el.style.left = `${p.x}px`;
+        zb.el.style.top = `${p.y}px`;
       });
     }
 
-    function normalizeAgentKey(rawKey) {
-      if (!rawKey) return null;
-      const k = String(rawKey).toLowerCase().trim();
-      if (k === 'all' || k === '*') return 'all';
-      if (k.includes('boss') || k.includes('ceo')) return 'boss';
-      if (k.includes('user') || k.includes('huy') || k.includes('admin') || k.includes('sep') || k.includes('chủ tịch')) return 'user_avatar';
-      if (k.includes('trans') || k.includes('dich')) return 'translator';
-      if (k.includes('eng') || k.includes('rd') || k.includes('ky_thuat') || k.includes('kỹ thuật')) return 'engineer';
-      if (k.includes('guard') || k.includes('haravan') || k.includes('van_hanh') || k.includes('ops')) return 'guard';
-      if (k.includes('creat') || k.includes('seo') || k.includes('content') || k.includes('noi_dung')) return 'creator';
-      if (k.includes('studio') || k.includes('tri_thuc') || k.includes('knowledge') || k.includes('lab')) return 'studio';
-      return AGENT_CONFIGS[k] ? k : null;
-    }
-
-    function normalizeState(rawState) {
-      if (!rawState) return 'WORKING';
-      const s = String(rawState).toUpperCase().trim();
-      if (s.includes('HANDOFF') || s.includes('TRANSFER') || s.includes('BAN_GIAO')) return 'HANDOFF';
-      if (s.includes('BREAK') || s.includes('IDLE') || s.includes('PANTRY') || s.includes('LOUNGE')) return 'BREAK';
-      if (s.includes('MEET') || s.includes('ALL_HANDS') || s.includes('HOP')) return 'MEETING';
-      return 'WORKING';
-    }
-
-    function sendAgentTo(agentKey, state, targetCoords, message, options = {}) {
-      const ag = agents[agentKey];
-      if (!ag) return;
-
-      ag.state = state;
-      if (message) ag.message = message;
-      ag.targetPos.set(targetCoords.x, 0, targetCoords.z);
-      ag.targetRotY = targetCoords.rotY !== undefined ? targetCoords.rotY : ag.root.rotation.y;
-      ag.lookAtTarget = options.lookAtTarget || null;
-      ag.onArriveCallback = options.onArrive || null;
-      ag.coffeeCup.visible = (state === 'BREAK');
-
-      updateBubbleContent(agentKey);
-    }
-
-    window.updateAgentStatus = function(agentKey, state, message) {
-      const normKey = normalizeAgentKey(agentKey);
-      const normState = normalizeState(state);
-
-      if (!normKey) return false;
-
-      if (normKey === 'all') {
-        Object.keys(AGENT_CONFIGS).forEach(k => {
-          window.updateAgentStatus(k, normState, message);
-        });
-        return true;
-      }
-
-      const cfg = AGENT_CONFIGS[normKey];
-      const customMsg = message && String(message).trim().length > 0 ? String(message).trim() : null;
-
-      if (normState === 'WORKING') {
-        const msg = customMsg || cfg.defaultWorkMsg;
-        sendAgentTo(
-          normKey,
-          'WORKING',
-          { x: cfg.deskPos.x + cfg.seatOffset.x, z: cfg.deskPos.z + cfg.seatOffset.z, rotY: cfg.deskPos.rotY },
-          msg
-        );
-        addActivityLog(cfg.shortName, `[WORKING] ${msg}`, cfg.badgeBorder);
-      } else if (normState === 'BREAK') {
-        const msg = customMsg || '💭 Đang chờ dữ liệu mới, làm ngụm cà phê đã...';
-        sendAgentTo(normKey, 'BREAK', cfg.breakSpot, msg);
-        addActivityLog(cfg.shortName, `[BREAK] ${msg}`, cfg.badgeBorder);
-      } else if (normState === 'MEETING') {
-        const msg = customMsg || cfg.meetingReportMsg;
-        sendAgentTo(
-          normKey,
-          'MEETING',
-          cfg.meetingSpot,
-          msg,
-          {
-            lookAtTarget: new THREE.Vector3(0, 0, 0),
-            onArrive: () => {
-              agents[normKey].nodTimer = 1.6;
-            }
-          }
-        );
-        addActivityLog(cfg.shortName, `[MEETING] ${msg}`, cfg.badgeBorder);
-      } else if (normState === 'HANDOFF') {
-        const partnerMap = {
-          engineer: 'creator',
-          creator: 'studio',
-          studio: 'guard',
-          guard: 'boss',
-          boss: 'engineer'
-        };
-        const partnerKey = partnerMap[normKey] || 'creator';
-        const partnerCfg = AGENT_CONFIGS[partnerKey];
-        const msg = customMsg || `${cfg.shortName}: Đã xử lý xong tác vụ, bàn giao dữ liệu cho ${partnerCfg.shortName}!`;
-
-        const targetX = partnerCfg.deskPos.x + partnerCfg.standFrontOffset.x;
-        const targetZ = partnerCfg.deskPos.z + partnerCfg.standFrontOffset.z;
-        const partnerWorld = new THREE.Vector3(
-          partnerCfg.deskPos.x + partnerCfg.seatOffset.x,
-          0,
-          partnerCfg.deskPos.z + partnerCfg.seatOffset.z
-        );
-
-        sendAgentTo(
-          normKey,
-          'HANDOFF',
-          { x: targetX, z: targetZ, rotY: 0 },
-          msg,
-          {
-            lookAtTarget: partnerWorld,
-            onArrive: () => {
-              agents[normKey].nodTimer = 2.2;
-              agents[partnerKey].nodTimer = 2.2;
-              speakVietnamese(msg, normKey);
-            }
-          }
-        );
-        addActivityLog(cfg.shortName, `[HANDOFF -> ${partnerCfg.shortName}] ${msg}`, cfg.badgeBorder);
-      }
-
-      return true;
-    };
-
-    window.moveUserToDepartment = function(deptKey, customMsg) {
-      const spots = {
-        'tech': { x: -5.8, z: -1.8, rotY: Math.PI * 0.5, name: 'Phòng Kỹ Thuật R&D' },
-        'mkt': { x: 5.8, z: -1.8, rotY: -Math.PI * 0.5, name: 'Phòng Marketing & SEO' },
-        'media': { x: 5.8, z: 4.8, rotY: -Math.PI * 0.5, name: 'Phòng Studio & Media' },
-        'ops': { x: -5.8, z: 4.8, rotY: Math.PI * 0.5, name: 'Phòng Haravan Guard' },
-        'trans': { x: -2.0, z: 3.8, rotY: 0, name: 'Phòng Dịch Thuật' },
-        'know': { x: 3.5, z: 2.2, rotY: -Math.PI * 0.25, name: 'Phòng Tri Thức' },
-        'meeting': { x: 0, z: -3.6, rotY: 0, name: 'Phòng Họp Bàn Tròn' },
-        'lounge': { x: -10.8, z: -5.5, rotY: Math.PI * 0.25, name: 'Khu Nghỉ Ngơi Lounge' },
-        'desk': { x: 1.6, z: -6.75, rotY: 0, name: 'Bàn Làm Việc CEO' }
-      };
-
-      const target = spots[deptKey] || spots['desk'];
-      const msg = customMsg || `👑 CEO Huy Mai đang đến thanh tra & làm việc tại ${target.name}!`;
-
-      sendAgentTo('user_avatar', 'WORKING', target, msg);
-      addActivityLog('CEO HUY MAI', `[DI CHUYỂN] Đến ${target.name}`, '#fbbf24');
-
-      const deptAgentMap = {
-        'tech': 'engineer',
-        'mkt': 'creator',
-        'media': 'studio',
-        'ops': 'guard',
-        'trans': 'translator',
-        'know': 'studio'
-      };
-      const leadKey = deptAgentMap[deptKey];
-      if (leadKey && agents[leadKey]) {
-        setTimeout(() => {
-          const leadCfg = AGENT_CONFIGS[leadKey];
-          const greet = `Kính chào Sếp! ${leadCfg.shortName} xin báo cáo tiến độ công việc hôm nay...`;
-          agents[leadKey].message = greet;
-          updateBubbleContent(leadKey);
-          addActivityLog(leadCfg.shortName, `[BÁO CÁO CEO] ${greet}`, leadCfg.badgeBorder);
-        }, 1200);
-      }
-      return true;
-    };
-
-    window.highlightActiveEmployeeIn3D = function(empId) {
-      if (!empId) return false;
-      let targetAgentKey = null;
-      let empInfo = null;
-      if (window.BIS_EMPLOYEE_ROSTER && window.BIS_EMPLOYEE_ROSTER[empId]) {
-        empInfo = window.BIS_EMPLOYEE_ROSTER[empId];
-        targetAgentKey = normalizeAgentKey(empInfo.avatar_3d_key);
-      } else {
-        const fallbackMap = {
-          rd_lead: 'engineer', rd_qa: 'engineer', rd_spec: 'engineer',
-          seo_lead: 'creator', seo_spec: 'creator', seo_copy: 'creator',
-          studio_lead: 'studio', studio_render: 'studio', studio_editor: 'studio',
-          trans_lead: 'translator', trans_term: 'translator', trans_proof: 'translator',
-          ops_manager: 'guard', ops_validator: 'guard', ops_auditor: 'guard'
-        };
-        targetAgentKey = fallbackMap[empId] || normalizeAgentKey(empId);
-      }
-      if (!targetAgentKey || !agents[targetAgentKey]) return false;
-
-      selectAgentForInspector(targetAgentKey, true);
-      const ag = agents[targetAgentKey];
-      ag.waveTimer = 2.5;
-      if (empInfo) {
-        ag.message = `${empInfo.avatar_emoji} [${empInfo.title}] ${empInfo.name}: Dạ em đang nghe chỉ đạo của Chủ tịch Huy Mai ạ!`;
-      }
-      updateBubbleContent(targetAgentKey);
-      return true;
-    };
-
-    window.addEventListener('message', (event) => {
-      const data = event.data;
-      if (data && data.type === 'UPDATE_AGENT_STATUS') {
-        window.updateAgentStatus(data.agentKey, data.state, data.message);
-      }
-    });
-
-    function setScenarioBanner(text) {
-      const el = document.getElementById('scenario-status-text');
-      if (el) el.textContent = text;
-    }
-
-    function runHandoffWorkflowSimulation() {
-      clearScenarioTimers();
-      playChime(659.25, 0.16);
-      setScenarioBanner('Chế độ: Đang chạy quy trình Bóc tách PDF -> Bàn giao liên phòng ban');
-
-      Object.keys(AGENT_CONFIGS).forEach(k => {
-        const cfg = AGENT_CONFIGS[k];
-        sendAgentTo(
-          k,
-          'WORKING',
-          { x: cfg.deskPos.x + cfg.seatOffset.x, z: cfg.deskPos.z + cfg.seatOffset.z, rotY: cfg.deskPos.rotY },
-          cfg.defaultWorkMsg
-        );
-      });
-
-      const msgStep1 = '🔬 Gemini đã bóc tách xong Catalogue PDF 36 trang (17 mã SKU), hoàn tất thẩm định B1-B6!';
-      agents.engineer.message = msgStep1;
-      updateBubbleContent('engineer');
-      addActivityLog('Kỹ thuật R&D', msgStep1, '#3b82f6');
-
-      scheduleStep(() => {
-        const seoCfg = AGENT_CONFIGS.creator;
-        const seoSeatVec = new THREE.Vector3(
-          seoCfg.deskPos.x + seoCfg.seatOffset.x,
-          0,
-          seoCfg.deskPos.z + seoCfg.seatOffset.z
-        );
-        const handoffMsg1 = 'Kỹ thuật: Đã bóc tách xong 17 mã SKU, bàn giao cho bên SEO viết bài chuẩn AATCC/ISO nhé!';
-
-        sendAgentTo(
-          'engineer',
-          'HANDOFF',
-          {
-            x: seoCfg.deskPos.x + seoCfg.standFrontOffset.x,
-            z: seoCfg.deskPos.z + seoCfg.standFrontOffset.z,
-            rotY: 0
-          },
-          handoffMsg1,
-          {
-            lookAtTarget: seoSeatVec,
-            onArrive: () => {
-              agents.creator.lookAtTarget = agents.engineer.root.position.clone();
-              agents.engineer.nodTimer = 2.4;
-              agents.creator.nodTimer = 2.4;
-              agents.creator.message = '✍️ Nội dung & SEO: Đã nhận 17 mã SKU! Bắt đầu dựng HTML 7 khối song ngữ Việt - Anh.';
-              updateBubbleContent('creator');
-              speakVietnamese(handoffMsg1, 'engineer');
-              addActivityLog('Kỹ thuật -> SEO', handoffMsg1, '#a855f7');
-
-              scheduleStep(() => {
-                agents.creator.lookAtTarget = null;
-                const guardCfg = AGENT_CONFIGS.guard;
-                const guardSeatVec = new THREE.Vector3(
-                  guardCfg.deskPos.x + guardCfg.seatOffset.x,
-                  0,
-                  guardCfg.deskPos.z + guardCfg.seatOffset.z
-                );
-                const handoffMsg2 = 'Kỹ thuật: Bàn giao tiếp bộ thông số kỹ thuật cho Haravan Guard đồng bộ 23 cột Google Sheets!';
-
-                sendAgentTo(
-                  'engineer',
-                  'HANDOFF',
-                  {
-                    x: guardCfg.deskPos.x + guardCfg.standFrontOffset.x,
-                    z: guardCfg.deskPos.z + guardCfg.standFrontOffset.z,
-                    rotY: 0
-                  },
-                  handoffMsg2,
-                  {
-                    lookAtTarget: guardSeatVec,
-                    onArrive: () => {
-                      agents.guard.lookAtTarget = agents.engineer.root.position.clone();
-                      agents.engineer.nodTimer = 2.4;
-                      agents.guard.nodTimer = 2.4;
-                      const guardReply = '🛡️ Haravan Guard: Đã khóa rào chắn bảo vệ SP trước 20/10/2026 và đồng bộ 23 cột thành công!';
-                      agents.guard.message = guardReply;
-                      updateBubbleContent('guard');
-                      speakVietnamese(guardReply, 'guard');
-                      addActivityLog('Kỹ thuật -> Guard', guardReply, '#10b981');
-
-                      scheduleStep(() => {
-                        agents.guard.lookAtTarget = null;
-                        const engCfg = AGENT_CONFIGS.engineer;
-                        sendAgentTo(
-                          'engineer',
-                          'WORKING',
-                          {
-                            x: engCfg.deskPos.x + engCfg.seatOffset.x,
-                            z: engCfg.deskPos.z + engCfg.seatOffset.z,
-                            rotY: engCfg.deskPos.rotY
-                          },
-                          '✅ Đã bàn giao xong cho SEO & Vận hành. Tiếp tục chờ Catalogue PDF mới!'
-                        );
-                        setScenarioBanner('Chế độ: Hoàn tất bàn giao liên phòng ban');
-                      }, 3200);
-                    }
-                  }
-                );
-              }, 3600);
-            }
-          }
-        );
-      }, 1000);
-    }
-
-    function sendAllToBreakRoom() {
-      clearScenarioTimers();
-      playChime(523.25, 0.16);
-      setScenarioBanner('Chế độ: Giải lao & Thư giãn tại khu Pantry / Lounge');
-
-      const breakThoughts = {
-        boss: '💭 Đang chờ dữ liệu mới, làm ngụm cà phê đã...',
-        engineer: '💭 Đang chờ dữ liệu mới, làm ngụm cà phê đã...',
-        guard: '💭 Server 20/10/2026 đã khóa an toàn, làm ngụm cà phê đã...',
-        creator: '💭 Đang chờ dữ liệu mới, làm ngụm cà phê đã...',
-        studio: '💭 Ảnh Lab CO/CQ đã lưu xong, thưởng thức trà chiều thôi...'
-      };
-
-      Object.keys(AGENT_CONFIGS).forEach(key => {
-        const cfg = AGENT_CONFIGS[key];
-        sendAgentTo(key, 'BREAK', cfg.breakSpot, breakThoughts[key]);
-      });
-
-      speakVietnamese('Đang chờ dữ liệu mới, anh em sang khu Pantry làm ngụm cà phê giải lao nhé!', 'boss');
-      addActivityLog('PANTRY LOUNGE', 'Toàn bộ 5 nhân sự AI di chuyển sang phòng nghỉ uống cà phê.', '#fbbf24');
-    }
-
-    function sendAllToWorkstations() {
-      clearScenarioTimers();
-      playChime(698.46, 0.14);
-      setScenarioBanner('Chế độ: Làm việc tốc độ cao tại 5 Workstations');
-
-      Object.keys(AGENT_CONFIGS).forEach(key => {
-        const cfg = AGENT_CONFIGS[key];
-        sendAgentTo(
-          key,
-          'WORKING',
-          { x: cfg.deskPos.x + cfg.seatOffset.x, z: cfg.deskPos.z + cfg.seatOffset.z, rotY: cfg.deskPos.rotY },
-          cfg.defaultWorkMsg
-        );
-      });
-
-      speakVietnamese('Toàn đội quay về bàn làm việc, tiếp tục vận hành hệ thống AI BIS Textile!', 'boss');
-      addActivityLog('WORKSTATIONS', 'Cả 5 phòng ban đã về vị trí làm việc và xử lý dữ liệu.', '#38bdf8');
-    }
-
-    function startAllHandsMeeting() {
-      clearScenarioTimers();
-      playChime(783.99, 0.18);
-      setScenarioBanner('Chế độ: Họp bàn tròn Hologram giao ban toàn công ty');
-
-      const centerVec = new THREE.Vector3(0, 0, 0);
-      Object.keys(AGENT_CONFIGS).forEach(key => {
-        const cfg = AGENT_CONFIGS[key];
-        sendAgentTo(
-          key,
-          'MEETING',
-          cfg.meetingSpot,
-          '🚶‍♂️ Đang tiến ra bàn họp tròn trung tâm...',
-          {
-            lookAtTarget: centerVec,
-            onArrive: () => {
-              agents[key].nodTimer = 1.5;
-            }
-          }
-        );
-      });
-
-      addActivityLog('HỌP GIAO BAN', 'Triệu tập 5 nhân vật AI ra bàn tròn Hologram trung tâm.', '#c084fc');
-
-      const order = ['boss', 'engineer', 'guard', 'creator', 'studio'];
-      order.forEach((key, index) => {
-        scheduleStep(() => {
-          const cfg = AGENT_CONFIGS[key];
-          const ag = agents[key];
-          ag.message = cfg.meetingReportMsg;
-          ag.waveTimer = 1.8;
-          updateBubbleContent(key);
-          selectAgentForInspector(key, false);
-          speakVietnamese(cfg.meetingReportMsg, key);
-          addActivityLog(cfg.shortName, cfg.meetingReportMsg, cfg.badgeBorder);
-        }, 2400 + index * 3800);
-      });
-    }
-
-    function setupRaycasterInteraction() {
+    // ============================================================================
+    // 8. RAYCASTING THÔNG MINH (HOVER PHÁT SÁNG + CLICK MỞ CHAT HOLOGRAM 1-1)
+    // ============================================================================
+    function setupRaycasting() {
       const raycaster = new THREE.Raycaster();
       const mouse = new THREE.Vector2();
-      let downPos = { x: 0, y: 0 };
+      let downPt = { x: 0, y: 0 };
+
+      renderer.domElement.addEventListener('pointermove', (e) => {
+        mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        const hits = raycaster.intersectObjects(clickableMeshes, true);
+        if (hits.length > 0 && hits[0].object.userData.charId) {
+          hoveredCharId = hits[0].object.userData.charId;
+          renderer.domElement.style.cursor = 'pointer';
+        } else {
+          hoveredCharId = null;
+          renderer.domElement.style.cursor = 'grab';
+        }
+      });
 
       renderer.domElement.addEventListener('pointerdown', (e) => {
-        downPos.x = e.clientX;
-        downPos.y = e.clientY;
+        downPt = { x: e.clientX, y: e.clientY };
       });
 
       renderer.domElement.addEventListener('pointerup', (e) => {
-        const dist = Math.hypot(e.clientX - downPos.x, e.clientY - downPos.y);
-        if (dist > 6) return;
-
+        if (Math.hypot(e.clientX - downPt.x, e.clientY - downPt.y) > 6) return;
         mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-
         raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(clickableMeshes, true);
-        if (intersects.length > 0) {
-          const hitKey = intersects[0].object.userData.agentKey;
-          if (hitKey) {
-            focusAndGreetAgent(hitKey);
-          }
+        const hits = raycaster.intersectObjects(clickableMeshes, true);
+        if (hits.length > 0 && hits[0].object.userData.charId) {
+          zoomAndOpenChatWithCharacter(hits[0].object.userData.charId);
         }
       });
     }
 
-    function focusAndGreetAgent(agentKey) {
-      const ag = agents[agentKey];
-      if (!ag) return;
+    function zoomAndOpenChatWithCharacter(charId) {
+      const ent = entities[charId];
+      if (!ent) return;
+      activeCharId = charId;
+      playChime(820, 0.14);
 
-      playChime(880, 0.14);
-      selectAgentForInspector(agentKey, true);
-
-      ag.waveTimer = 2.6;
-      ag.message = `👋 ${ag.cfg.greetingMsg}`;
-      updateBubbleContent(agentKey);
-      speakVietnamese(ag.cfg.greetingMsg, agentKey);
-      addActivityLog(ag.cfg.shortName, `Vẫy tay chào & báo cáo trực tiếp.`, ag.cfg.badgeBorder);
-    }
-
-    function selectAgentForInspector(agentKey, zoomCamera = false) {
-      selectedAgentKey = agentKey;
-      const ag = agents[agentKey];
-      if (!ag) return;
-
-      refreshInspectorUI(agentKey);
-
-      if (zoomCamera) {
-        const agentPos = ag.root.position.clone();
-        const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), ag.root.rotation.y);
-        cameraFocusState.lookAtPos.copy(agentPos).add(new THREE.Vector3(0, 1.25, 0));
-        cameraFocusState.targetPos.copy(agentPos)
-          .add(forward.multiplyScalar(4.8))
-          .add(new THREE.Vector3(1.2, 3.2, 1.2));
-        cameraFocusState.active = true;
-      }
-    }
-
-    function refreshInspectorUI(agentKey) {
-      const ag = agents[agentKey];
-      if (!ag) return;
-      const cfg = ag.cfg;
-
-      const card = document.getElementById('agent-inspector');
-      const badge = document.getElementById('inspector-badge');
-      const name = document.getElementById('inspector-name');
-      const role = document.getElementById('inspector-role');
-      const msg = document.getElementById('inspector-message');
-      const metric = document.getElementById('inspector-metric');
-      const coords = document.getElementById('inspector-coords');
-
-      if (card) card.style.borderLeftColor = cfg.badgeBorder;
-      if (badge) {
-        badge.textContent = `${ag.state} • ${ag.isMoving ? 'ĐANG DI CHUYỂN' : 'TẠI VỊ TRÍ'}`;
-        badge.style.background = cfg.badgeBg;
-        badge.style.color = cfg.textColor;
-        badge.style.borderColor = cfg.badgeBorder;
-      }
-      if (name) name.textContent = cfg.name;
-      if (role) role.textContent = cfg.department;
-      if (msg) msg.textContent = `"${ag.message}"`;
-      if (metric) metric.textContent = cfg.metric;
-      if (coords) {
-        coords.textContent = `X: ${ag.root.position.x.toFixed(1)}, Z: ${ag.root.position.z.toFixed(1)}`;
-      }
-    }
-
-    function resetCameraOverview() {
-      playChime(523.25, 0.12);
-      cameraFocusState.lookAtPos.set(0, 1.2, -1.2);
-      cameraFocusState.targetPos.set(0, 16.5, 22.5);
+      // Zoom camera mượt mà tới nhân vật
+      const pos = ent.root.position.clone();
+      const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), ent.root.rotation.y);
+      cameraFocusState.lookAtPos.copy(pos).add(new THREE.Vector3(0, 1.15, 0));
+      cameraFocusState.targetPos.copy(pos).add(forward.multiplyScalar(4.2)).add(new THREE.Vector3(1.0, 2.8, 1.0));
       cameraFocusState.active = true;
+
+      // Vẫy tay & mở cửa sổ Chat 1-1
+      ent.waveTimer = 2.4;
+      openChatDrawer16(charId);
+      speakVietnamese(ent.cfg.greeting, charId);
+      log3DActivity(ent.cfg.shortName, `Kết nối Hologram Chat 1-1 (${ent.cfg.deskNo}).`, ent.cfg.badgeBorder);
     }
 
-    function setupUIButtons() {
-      document.getElementById('btn-sim-handoff').addEventListener('click', runHandoffWorkflowSimulation);
-      document.getElementById('btn-sim-break').addEventListener('click', sendAllToBreakRoom);
-      document.getElementById('btn-sim-work').addEventListener('click', sendAllToWorkstations);
-      document.getElementById('btn-sim-meeting').addEventListener('click', startAllHandsMeeting);
+    function openChatDrawer16(charId) {
+      const ent = entities[charId];
+      if (!ent) return;
+      const cfg = ent.cfg;
+      const drawer = document.getElementById('direct-chat-drawer');
+      drawer.style.borderLeftColor = cfg.badgeBorder;
+      drawer.classList.remove('hidden');
+      drawer.classList.add('flex');
+
+      document.getElementById('chat-drawer-title').textContent = `${cfg.shortName} — ${cfg.name}`;
+      document.getElementById('chat-drawer-subtitle').textContent = `${cfg.title} • ${cfg.deptName} (${cfg.deskNo})`;
+      document.getElementById('chat-drawer-meta').textContent = `🔧 Tool: ${cfg.toolName}`;
+      document.getElementById('chat-drawer-emp-select').value = charId;
+
+      renderChatMessages16(charId);
+    }
+
+    function renderChatMessages16(charId) {
+      const ent = entities[charId];
+      const cfg = ent.cfg;
+      const box = document.getElementById('chat-drawer-messages');
+
+      if (!chatMemory16[charId]) {
+        chatMemory16[charId] = [
+          {
+            sender: 'ai',
+            name: cfg.name,
+            text: `${cfg.greeting} Anh Huy Mai cần em thực thi lệnh hay kiểm tra thông số nào bằng công cụ ${cfg.toolName} ạ?`
+          }
+        ];
+      }
+
+      box.innerHTML = '';
+      chatMemory16[charId].forEach(m => {
+        const d = document.createElement('div');
+        if (m.sender === 'ceo') {
+          d.className = 'p-2 rounded-xl bg-sky-500/20 border border-sky-500/40 text-slate-100 ml-4';
+          d.innerHTML = `<div class="text-[10px] font-bold text-amber-300">👑 Chủ tịch Huy Mai</div><div class="mt-0.5">${m.text}</div>`;
+        } else {
+          d.className = 'p-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 mr-4';
+          d.innerHTML = `<div class="text-[10px] font-bold" style="color:${cfg.textColor}">${cfg.shortName} (${cfg.deskNo})</div><div class="mt-0.5">${m.text}</div>`;
+          if (m.toolLog) {
+            d.innerHTML += `<div class="mt-1 px-2 py-1 rounded bg-slate-950 text-[9.5px] text-emerald-400 mono">${m.toolLog}</div>`;
+          }
+        }
+        box.appendChild(d);
+      });
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function sendChatToCharacter16(customPrompt = null) {
+      const input = document.getElementById('chat-drawer-input');
+      const text = (customPrompt !== null ? customPrompt : input.value).trim();
+      if (!text) return;
+      input.value = '';
+
+      const ent = entities[activeCharId];
+      const cfg = ent.cfg;
+      if (!chatMemory16[activeCharId]) chatMemory16[activeCharId] = [];
+      chatMemory16[activeCharId].push({ sender: 'ceo', text });
+
+      const reply = `Dạ thưa Chủ tịch Huy Mai, em (${cfg.name} - ${cfg.deskNo}) đã tiếp nhận chỉ đạo: "${text}". Em đã kích hoạt ngay công cụ ${cfg.toolName} và đồng bộ kết quả lên hệ thống 23 cột ạ!`;
+      const toolLog = `[EXEC ${cfg.toolName}] -> Hoàn tất 100% • Bảo toàn rào chắn 20/10/2026`;
+
+      chatMemory16[activeCharId].push({ sender: 'ai', name: cfg.name, text: reply, toolLog });
+      renderChatMessages16(activeCharId);
+
+      moveCharacterTo(activeCharId, 'WORKING', ent.homePos, ent.homeRotY, `⚡ Đang thực thi lệnh Chủ tịch: ${text.slice(0, 38)}...`);
+      speakVietnamese(`Dạ thưa Chủ tịch Huy Mai, em ${cfg.name} đã thực thi xong chỉ đạo của Anh ạ!`, activeCharId);
+    }
+
+    // ============================================================================
+    // 9. ĐIỀU KHIỂN DI CHUYỂN & ĐỒNG BỘ API VỚI STREAMLIT (`window.updateAgentStatus`)
+    // ============================================================================
+    function moveCharacterTo(charId, state, targetVec, targetRotY, message, options = {}) {
+      const ent = entities[charId];
+      if (!ent) return;
+      ent.state = state;
+      if (message) ent.message = message;
+      ent.targetPos.copy(targetVec);
+      ent.targetRotY = targetRotY !== undefined ? targetRotY : ent.root.rotation.y;
+      ent.lookAtVec = options.lookAtVec || null;
+      ent.onArrive = options.onArrive || null;
+      updateCharacterLabel(charId);
+    }
+
+    window.highlightActiveEmployeeIn3D = function(empId) {
+      if (entities[empId]) {
+        zoomAndOpenChatWithCharacter(empId);
+      }
+    };
+
+    window.updateAgentStatus = function(agentKeyOrEmpId, state, message) {
+      const raw = String(agentKeyOrEmpId || '').trim();
+      const normState = String(state || 'WORKING').toUpperCase();
+
+      if (raw === 'all' || raw === '*') {
+        if (normState.includes('MEET')) startAll16Meeting();
+        else if (normState.includes('BREAK') || normState.includes('IDLE')) sendAll16ToBreak();
+        else sendAll16ToWork();
+        return true;
+      }
+
+      // Tìm theo emp_id trực tiếp (1 trong 16 nhân vật) hoặc theo nhóm phòng ban
+      let targetIds = [];
+      if (entities[raw]) {
+        targetIds = [raw];
+      } else {
+        targetIds = CHARACTERS_16.filter(c => c.legacyGroup === raw.toLowerCase()).map(c => c.id);
+      }
+      if (targetIds.length === 0) targetIds = ['rd_lead'];
+
+      targetIds.forEach(cid => {
+        const ent = entities[cid];
+        const msg = message || ent.cfg.defaultTask;
+        if (normState.includes('MEET')) {
+          moveCharacterTo(cid, 'MEETING', new THREE.Vector3(ent.cfg.meetingSpot.x, 0, ent.cfg.meetingSpot.z), ent.cfg.meetingSpot.rotY, msg, {
+            lookAtVec: new THREE.Vector3(0, 0, 0.4)
+          });
+        } else if (normState.includes('BREAK') || normState.includes('IDLE')) {
+          moveCharacterTo(cid, 'IDLE', new THREE.Vector3(ent.cfg.breakPos.x, 0, ent.cfg.breakPos.z), ent.cfg.breakPos.rotY, msg);
+        } else if (normState.includes('HANDOFF') || normState.includes('COLLAB')) {
+          const partner = entities.seo_lead || entities.ceo_huy_mai;
+          moveCharacterTo(cid, 'COLLABORATING', partner.frontDeskPos, 0, msg, {
+            lookAtVec: partner.homePos
+          });
+        } else {
+          moveCharacterTo(cid, 'WORKING', ent.homePos, ent.homeRotY, msg);
+        }
+      });
+      return true;
+    };
+
+    // ============================================================================
+    // 10. KỊCH BẢN MÔ PHỎNG 16 NHÂN VẬT (BÀN GIAO, HỌP 16 GHẾ, PANTRY, LÀM VIỆC)
+    // ============================================================================
+    function startAll16Meeting() {
+      clearAllTimers();
+      playChime(784, 0.18);
+      document.getElementById('scenario-status-text').textContent = 'Trạng thái: Họp Giao Ban Toàn Công Ty (Đủ 16 Nhân Sự quanh Bàn Tròn)';
+
+      const centerHub = new THREE.Vector3(0, 0, 0.4);
+      CHARACTERS_16.forEach(cfg => {
+        const spot = cfg.meetingSpot;
+        moveCharacterTo(
+          cfg.id,
+          'MEETING',
+          new THREE.Vector3(spot.x, 0, spot.z),
+          spot.rotY,
+          `🗣️ ${cfg.shortName}: Họp giao ban cùng Chủ tịch Huy Mai`,
+          {
+            lookAtVec: centerHub,
+            onArrive: () => { entities[cfg.id].nodTimer = 2.0; }
+          }
+        );
+      });
+
+      speakVietnamese('Triệu tập toàn thể 15 nhân sự AI cùng Chủ tịch Huy Mai vào bàn tròn Hologram họp giao ban!', 'ceo_huy_mai');
+      log3DActivity('HỌP TOÀN THỂ 16 NGƯỜI', 'Chủ tịch Huy Mai và 15 nhân viên AI đã vây quanh bàn tròn 16 ghế.', '#facc15');
+    }
+
+    function sendAll16ToWork() {
+      clearAllTimers();
+      playChime(659, 0.14);
+      document.getElementById('scenario-status-text').textContent = 'Trạng thái: 16/16 Nhân sự làm việc tốc độ cao tại bàn riêng';
+
+      CHARACTERS_16.forEach(cfg => {
+        const ent = entities[cfg.id];
+        moveCharacterTo(cfg.id, 'WORKING', ent.homePos, ent.homeRotY, cfg.defaultTask);
+      });
+      log3DActivity('16 WORKSTATIONS', 'Toàn bộ 16 nhân vật đã trở về bàn làm việc chuyên trách.', '#34d399');
+    }
+
+    function sendAll16ToBreak() {
+      clearAllTimers();
+      playChime(523, 0.15);
+      document.getElementById('scenario-status-text').textContent = 'Trạng thái: Giải lao uống cà phê tại khu Pantry / Lounge';
+
+      CHARACTERS_16.forEach(cfg => {
+        moveCharacterTo(
+          cfg.id,
+          'IDLE',
+          new THREE.Vector3(cfg.breakPos.x, 0, cfg.breakPos.z),
+          cfg.breakPos.rotY,
+          '☕ Đang thưởng thức cà phê tại Pantry, sẵn sàng nhận lệnh mới!'
+        );
+      });
+      speakVietnamese('Anh em 5 phòng ban nghỉ giải lao uống cà phê tại khu Pantry nhé!', 'ceo_huy_mai');
+      log3DActivity('PANTRY BREAK', 'Đội ngũ nhân sự AI di chuyển sang khu Pantry thư giãn.', '#fbbf24');
+    }
+
+    function runMultiDeptHandoffSimulation() {
+      clearAllTimers();
+      sendAll16ToWork();
+      document.getElementById('scenario-status-text').textContent = 'Trạng thái: Đang chạy luồng Bóc tách B1-B6 -> Bàn giao SEO -> Haravan Guard';
+
+      scheduleTask(() => {
+        // Bàn 1 (Dr. Textile Tech) bước sang Bàn 4 (Marketing Lead Pro)
+        const targetSEO = entities.seo_lead;
+        const msg1 = '🔬 Dr. Textile Tech -> Marketing Lead: Đã duyệt xong B1-B6 cho 83 mã SKU hợp lệ, bàn giao viết 7 khối HTML!';
+        moveCharacterTo('rd_lead', 'COLLABORATING', targetSEO.frontDeskPos, 0, msg1, {
+          lookAtVec: targetSEO.homePos,
+          onArrive: () => {
+            entities.rd_lead.nodTimer = 2.2;
+            entities.seo_lead.nodTimer = 2.2;
+            speakVietnamese('Dr. Textile Tech đã thẩm định xong 6 bước B1 đến B6, bàn giao cho phòng Marketing viết 7 khối HTML!', 'rd_lead');
+          }
+        });
+
+        // Bàn 3 (Spec Data Analyst) bước sang Bàn 14 (API Payload Validator)
+        const targetVal = entities.ops_validator;
+        const msg2 = '📐 Spec Analyst -> API Validator: Bàn giao 23 cột thông số chuẩn SI để kiểm tra chống rỗng thuộc tính!';
+        moveCharacterTo('rd_spec', 'COLLABORATING', targetVal.frontDeskPos, 0, msg2, {
+          lookAtVec: targetVal.homePos
+        });
+      }, 900);
+
+      scheduleTask(() => {
+        // Bàn 13 (Haravan Ops Manager) bước tới Bàn Chủ Tịch Huy Mai báo cáo
+        const ceoEnt = entities.ceo_huy_mai;
+        const msg3 = '🛡️ Haravan Ops Manager: Báo cáo Chủ tịch Huy Mai, đã khóa 14 mã trùng và bảo vệ tuyệt đối mốc 20/10/2026!';
+        moveCharacterTo('ops_manager', 'REPORTING', ceoEnt.frontDeskPos, 0, msg3, {
+          lookAtVec: ceoEnt.homePos,
+          onArrive: () => {
+            entities.ops_manager.nodTimer = 2.5;
+            entities.ceo_huy_mai.nodTimer = 2.5;
+            speakVietnamese('Báo cáo Chủ tịch Huy Mai, phòng Vận hành đã khóa 14 mã trùng và giữ chặt rào chắn 20 tháng 10 năm 2026!', 'ops_manager');
+          }
+        });
+      }, 4200);
+    }
+
+    function setupHUDControls() {
+      document.getElementById('btn-sim-handoff').addEventListener('click', runMultiDeptHandoffSimulation);
+      document.getElementById('btn-sim-meeting').addEventListener('click', startAll16Meeting);
+      document.getElementById('btn-sim-work').addEventListener('click', sendAll16ToWork);
+      document.getElementById('btn-sim-break').addEventListener('click', sendAll16ToBreak);
 
       document.getElementById('btn-toggle-voice').addEventListener('click', () => {
         voiceEnabled = !voiceEnabled;
-        const icon = document.getElementById('voice-icon');
-        const label = document.getElementById('voice-label');
-        if (voiceEnabled) {
-          icon.textContent = '🔊';
-          label.textContent = 'Giọng nói: BẬT';
-          playChime(783.99, 0.12);
-        } else {
-          icon.textContent = '🔇';
-          label.textContent = 'Giọng nói: TẮT';
-          if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-        }
+        document.getElementById('voice-icon').textContent = voiceEnabled ? '🔊' : '🔇';
+        document.getElementById('voice-label').textContent = voiceEnabled ? 'Giọng nói: BẬT' : 'Giọng nói: TẮT';
+        if (!voiceEnabled && 'speechSynthesis' in window) window.speechSynthesis.cancel();
       });
 
-      document.getElementById('btn-reset-cam').addEventListener('click', resetCameraOverview);
-
-      document.getElementById('btn-toggle-panel').addEventListener('click', () => {
-        const panel = document.getElementById('side-panel');
-        if (panel.classList.contains('hidden')) {
-          panel.classList.remove('hidden');
-          panel.classList.add('flex');
-        } else {
-          panel.classList.add('hidden');
-          panel.classList.remove('flex');
-        }
+      document.getElementById('btn-reset-cam').addEventListener('click', () => {
+        cameraFocusState.lookAtPos.set(0, 1.0, -0.5);
+        cameraFocusState.targetPos.set(0, 21.5, 26.5);
+        cameraFocusState.active = true;
       });
 
-      document.getElementById('btn-Inspect-Speak').addEventListener('click', () => {
-        focusAndGreetAgent(selectedAgentKey);
+      document.getElementById('btn-toggle-right-panel').addEventListener('click', () => {
+        const p = document.getElementById('right-roster-panel');
+        p.classList.toggle('hidden');
       });
 
-      document.querySelectorAll('.agent-pill').forEach(btn => {
+      document.querySelectorAll('.dept-jump-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          const key = btn.getAttribute('data-agent');
-          focusAndGreetAgent(key);
+          zoomAndOpenChatWithCharacter(btn.getAttribute('data-focus'));
         });
       });
 
-      document.getElementById('btn-send-cmd').addEventListener('click', () => {
-        const aKey = document.getElementById('cmd-agent').value;
-        const aState = document.getElementById('cmd-state').value;
-        const aMsg = document.getElementById('cmd-msg').value;
-        window.updateAgentStatus(aKey, aState, aMsg);
+      document.getElementById('btn-close-chat-drawer').addEventListener('click', () => {
+        const d = document.getElementById('direct-chat-drawer');
+        d.classList.add('hidden');
+        d.classList.remove('flex');
+      });
+
+      document.getElementById('chat-drawer-emp-select').addEventListener('change', (e) => {
+        zoomAndOpenChatWithCharacter(e.target.value);
+      });
+
+      document.getElementById('btn-chat-drawer-send').addEventListener('click', () => sendChatToCharacter16());
+      document.getElementById('chat-drawer-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') sendChatToCharacter16();
+      });
+
+      document.querySelectorAll('.quick-3d-chat-btn').forEach(btn => {
+        btn.addEventListener('click', () => sendChatToCharacter16(btn.getAttribute('data-quick')));
       });
     }
 
@@ -2252,135 +1844,131 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    let screenFrameCounter = 0;
+    // ============================================================================
+    // 11. VÒNG LẶP RENDER 60 FPS MƯỢT MÀ CHO TOÀN BỘ 16 NHÂN VẬT
+    // ============================================================================
+    let frameTick = 0;
+
+    function lerpAngle(a, b, t) {
+      let d = b - a;
+      while (d < -Math.PI) d += Math.PI * 2;
+      while (d > Math.PI) d -= Math.PI * 2;
+      return a + d * Math.min(t, 1);
+    }
 
     function animate() {
       requestAnimationFrame(animate);
-
       const dt = Math.min(clock.getDelta(), 0.1);
       const elapsed = clock.getElapsedTime();
 
-      Object.keys(agents).forEach(key => {
-        const ag = agents[key];
-        const pos = ag.root.position;
-        const dx = ag.targetPos.x - pos.x;
-        const dz = ag.targetPos.z - pos.z;
+      CHARACTERS_16.forEach(cfg => {
+        const ent = entities[cfg.id];
+        if (!ent) return;
+        const pos = ent.root.position;
+        const dx = ent.targetPos.x - pos.x;
+        const dz = ent.targetPos.z - pos.z;
         const dist = Math.hypot(dx, dz);
 
         if (dist > 0.08) {
-          ag.isMoving = true;
-          const speed = 3.8;
+          ent.isMoving = true;
+          const speed = 4.1;
           const step = Math.min(dist, speed * dt);
           pos.x += (dx / dist) * step;
           pos.z += (dz / dist) * step;
 
-          const moveAngle = Math.atan2(dx, dz);
-          ag.root.rotation.y = lerpAngle(ag.root.rotation.y, moveAngle, 10 * dt);
+          const angle = Math.atan2(dx, dz);
+          ent.root.rotation.y = lerpAngle(ent.root.rotation.y, angle, 10 * dt);
 
-          const walkCycle = elapsed * 11 + ag.phaseOffset;
-          ag.leftLegPivot.rotation.x = Math.sin(walkCycle) * 0.65;
-          ag.rightLegPivot.rotation.x = -Math.sin(walkCycle) * 0.65;
-          ag.leftArmPivot.rotation.x = -Math.sin(walkCycle) * 0.55;
-          ag.rightArmPivot.rotation.x = Math.sin(walkCycle) * 0.55;
-          ag.root.position.y = Math.abs(Math.sin(walkCycle)) * 0.06;
+          const w = elapsed * 11 + ent.phase;
+          ent.leftLeg.rotation.x = Math.sin(w) * 0.65;
+          ent.rightLeg.rotation.x = -Math.sin(w) * 0.65;
+          ent.leftArm.rotation.x = -Math.sin(w) * 0.55;
+          ent.rightArm.rotation.x = Math.sin(w) * 0.55;
+          pos.y = Math.abs(Math.sin(w)) * 0.05;
         } else {
-          if (ag.isMoving) {
-            ag.isMoving = false;
-            pos.x = ag.targetPos.x;
-            pos.z = ag.targetPos.z;
-            ag.root.position.y = 0;
-            if (typeof ag.onArriveCallback === 'function') {
-              const cb = ag.onArriveCallback;
-              ag.onArriveCallback = null;
+          if (ent.isMoving) {
+            ent.isMoving = false;
+            pos.x = ent.targetPos.x;
+            pos.z = ent.targetPos.z;
+            pos.y = 0;
+            if (typeof ent.onArrive === 'function') {
+              const cb = ent.onArrive;
+              ent.onArrive = null;
               cb();
             }
           }
 
-          if (ag.lookAtTarget) {
-            const ldx = ag.lookAtTarget.x - pos.x;
-            const ldz = ag.lookAtTarget.z - pos.z;
-            const lookAngle = Math.atan2(ldx, ldz);
-            ag.root.rotation.y = lerpAngle(ag.root.rotation.y, lookAngle, 8 * dt);
+          if (ent.lookAtVec) {
+            const lookAngle = Math.atan2(ent.lookAtVec.x - pos.x, ent.lookAtVec.z - pos.z);
+            ent.root.rotation.y = lerpAngle(ent.root.rotation.y, lookAngle, 8 * dt);
           } else {
-            ag.root.rotation.y = lerpAngle(ag.root.rotation.y, ag.targetRotY, 8 * dt);
+            ent.root.rotation.y = lerpAngle(ent.root.rotation.y, ent.targetRotY, 8 * dt);
           }
 
-          if (ag.state === 'WORKING' || (ag.state === 'BREAK' && ag.cfg.breakSpot.sit)) {
-            ag.leftLegPivot.rotation.x = THREE.MathUtils.lerp(ag.leftLegPivot.rotation.x, -Math.PI / 2.2, 8 * dt);
-            ag.rightLegPivot.rotation.x = THREE.MathUtils.lerp(ag.rightLegPivot.rotation.x, -Math.PI / 2.2, 8 * dt);
+          // Tư thế ngồi gõ phím tại bàn hoặc đứng họp
+          if (ent.state === 'WORKING') {
+            ent.leftLeg.rotation.x = THREE.MathUtils.lerp(ent.leftLeg.rotation.x, -Math.PI / 2.2, 8 * dt);
+            ent.rightLeg.rotation.x = THREE.MathUtils.lerp(ent.rightLeg.rotation.x, -Math.PI / 2.2, 8 * dt);
+            const tCycle = elapsed * 15 + ent.phase;
+            ent.leftArm.rotation.x = -0.65 + Math.sin(tCycle) * 0.12;
+            ent.rightArm.rotation.x = -0.65 + Math.cos(tCycle) * 0.12;
           } else {
-            ag.leftLegPivot.rotation.x = THREE.MathUtils.lerp(ag.leftLegPivot.rotation.x, 0, 8 * dt);
-            ag.rightLegPivot.rotation.x = THREE.MathUtils.lerp(ag.rightLegPivot.rotation.x, 0, 8 * dt);
+            ent.leftLeg.rotation.x = THREE.MathUtils.lerp(ent.leftLeg.rotation.x, 0, 8 * dt);
+            ent.rightLeg.rotation.x = THREE.MathUtils.lerp(ent.rightLeg.rotation.x, 0, 8 * dt);
+            ent.leftArm.rotation.x = THREE.MathUtils.lerp(ent.leftArm.rotation.x, 0, 6 * dt);
+            ent.rightArm.rotation.x = THREE.MathUtils.lerp(ent.rightArm.rotation.x, 0, 6 * dt);
           }
 
-          if (ag.waveTimer > 0) {
-            ag.waveTimer -= dt;
-            ag.rightArmPivot.rotation.x = -Math.PI * 0.78;
-            ag.rightArmPivot.rotation.z = Math.sin(elapsed * 14) * 0.35 + 0.25;
-            ag.leftArmPivot.rotation.x = THREE.MathUtils.lerp(ag.leftArmPivot.rotation.x, 0, 8 * dt);
+          if (ent.waveTimer > 0) {
+            ent.waveTimer -= dt;
+            ent.rightArm.rotation.x = -Math.PI * 0.78;
+            ent.rightArm.rotation.z = Math.sin(elapsed * 14) * 0.32 + 0.2;
           } else {
-            ag.rightArmPivot.rotation.z = THREE.MathUtils.lerp(ag.rightArmPivot.rotation.z, 0, 8 * dt);
-            if (ag.state === 'WORKING') {
-              const typeCycle = elapsed * 16 + ag.phaseOffset;
-              ag.leftArmPivot.rotation.x = -0.65 + Math.sin(typeCycle) * 0.12;
-              ag.rightArmPivot.rotation.x = -0.65 + Math.cos(typeCycle) * 0.12;
-            } else if (ag.state === 'BREAK') {
-              ag.rightArmPivot.rotation.x = -0.85 + Math.sin(elapsed * 2 + ag.phaseOffset) * 0.15;
-              ag.leftArmPivot.rotation.x = THREE.MathUtils.lerp(ag.leftArmPivot.rotation.x, 0, 6 * dt);
-            } else {
-              const talkGesture = ag.isSpeaking ? Math.sin(elapsed * 9) * 0.25 - 0.35 : 0;
-              ag.leftArmPivot.rotation.x = THREE.MathUtils.lerp(ag.leftArmPivot.rotation.x, talkGesture, 6 * dt);
-              ag.rightArmPivot.rotation.x = THREE.MathUtils.lerp(ag.rightArmPivot.rotation.x, -talkGesture * 0.8, 6 * dt);
-            }
+            ent.rightArm.rotation.z = THREE.MathUtils.lerp(ent.rightArm.rotation.z, 0, 8 * dt);
           }
         }
 
-        if (ag.nodTimer > 0) {
-          ag.nodTimer -= dt;
-          ag.headPivot.rotation.x = Math.sin(elapsed * 12) * 0.22;
+        if (ent.nodTimer > 0) {
+          ent.nodTimer -= dt;
+          ent.headPivot.rotation.x = Math.sin(elapsed * 12) * 0.2;
         } else {
-          ag.headPivot.rotation.x = THREE.MathUtils.lerp(ag.headPivot.rotation.x, 0, 6 * dt);
+          ent.headPivot.rotation.x = THREE.MathUtils.lerp(ent.headPivot.rotation.x, 0, 6 * dt);
         }
-        ag.headPivot.rotation.y = Math.sin(elapsed * 1.6 + ag.phaseOffset) * 0.12;
+        ent.headPivot.rotation.y = Math.sin(elapsed * 1.5 + ent.phase) * 0.1;
 
-        const pulseScale = 1 + Math.sin(elapsed * 4 + ag.phaseOffset) * 0.08;
-        ag.auraRing.scale.set(pulseScale, pulseScale, 1);
+        const isHighlighted = (cfg.id === hoveredCharId || cfg.id === activeCharId);
+        const s = (isHighlighted ? 1.35 : 1.0) + Math.sin(elapsed * 4 + ent.phase) * 0.08;
+        ent.aura.scale.set(s, s, 1);
       });
 
       if (hologramGroup) {
         hologramGroup.rotation.y = elapsed * 0.65;
-        hologramGroup.position.y = 1.85 + Math.sin(elapsed * 2.2) * 0.08;
         hologramRings.forEach((r, idx) => {
           r.rotation.z = elapsed * (idx === 0 ? 1.2 : -0.9);
         });
       }
 
-      screenFrameCounter++;
-      if (screenFrameCounter % 12 === 0) {
-        const tick = Math.floor(screenFrameCounter / 12);
-        monitorMaterials.forEach(m => {
+      floorPulses.forEach(fp => {
+        const t = (elapsed * fp.speed + fp.offset) % 1;
+        fp.mesh.position.lerpVectors(fp.start, fp.end, t);
+      });
+
+      frameTick++;
+      if (frameTick % 16 === 0) {
+        const tick = Math.floor(frameTick / 16);
+        monitorScreens.forEach(m => {
           m.draw(tick);
           m.tex.needsUpdate = true;
         });
-        refreshInspectorUI(selectedAgentKey);
       }
 
-      serverLedMeshes.forEach((item, idx) => {
-        const blink = Math.sin(elapsed * 6 + idx * 1.3) > 0;
-        item.mesh.visible = blink || item.baseRow === 2;
+      serverLeds.forEach((l, i) => {
+        l.mesh.visible = Math.sin(elapsed * 6 + i) > 0 || l.row === 2;
       });
-
-      dataFloorPulses.forEach(p => {
-        const t = (elapsed * p.speed + p.offset) % 1;
-        p.mesh.position.lerpVectors(p.start, p.end, t);
-      });
-      if (ambientParticles) {
-        ambientParticles.rotation.y = elapsed * 0.03;
-      }
 
       if (cameraFocusState.active) {
-        camera.position.lerp(cameraFocusState.targetPos, 0.06);
-        controls.target.lerp(cameraFocusState.lookAtPos, 0.08);
+        camera.position.lerp(cameraFocusState.targetPos, 0.07);
+        controls.target.lerp(cameraFocusState.lookAtPos, 0.09);
         if (camera.position.distanceTo(cameraFocusState.targetPos) < 0.12) {
           cameraFocusState.active = false;
         }
@@ -2388,19 +1976,84 @@
 
       controls.update();
       renderer.render(scene, camera);
-      updateDOMOverlaysPosition();
+      updateAllDOMOverlays();
     }
 
-    function lerpAngle(current, target, alpha) {
-      let diff = target - current;
-      while (diff < -Math.PI) diff += Math.PI * 2;
-      while (diff > Math.PI) diff -= Math.PI * 2;
-      return current + diff * Math.min(alpha, 1);
-    }
-
-    window.onload = initScene;
     window.addEventListener('load', () => {
+      initScene();
       animate();
+    });
+  
+    window.syncInitialRosterFromStreamlit = function(rosterData) {
+      if (rosterData && typeof rosterData === 'object') {
+        window.BIS_EMPLOYEE_ROSTER = rosterData;
+        Object.keys(rosterData).forEach(empId => {
+          const r = rosterData[empId];
+          if (entities[empId]) {
+            if (r.current_task) entities[empId].cfg.defaultTask = r.current_task;
+            if (r.state) entities[empId].state = r.state;
+            updateCharacterLabel(empId);
+          }
+        });
+      }
+    };
+
+    window.moveUserToDepartment = function(deptKey) {
+      const normDept = String(deptKey || '').toLowerCase();
+      const targetMap = {
+        tech: 'rd_lead', rd: 'rd_lead',
+        mkt: 'seo_lead', marketing: 'seo_lead',
+        media: 'studio_lead', studio: 'studio_lead',
+        trans: 'trans_lead', translator: 'trans_lead',
+        ops: 'ops_manager', guard: 'ops_manager',
+        meeting: 'meeting', roundtable: 'meeting',
+        lounge: 'lounge', break: 'lounge',
+        desk: 'ceo_huy_mai', ceo: 'ceo_huy_mai'
+      };
+      const targetId = targetMap[normDept] || 'ceo_huy_mai';
+      if (targetId === 'meeting') {
+        startAll16Meeting();
+        return true;
+      }
+      if (targetId === 'lounge') {
+        sendAll16ToBreak();
+        return true;
+      }
+      const ceoEnt = entities.ceo_huy_mai;
+      if (!ceoEnt) return false;
+      if (targetId === 'ceo_huy_mai') {
+        moveCharacterTo('ceo_huy_mai', 'WORKING', ceoEnt.homePos, ceoEnt.homeRotY, '👑 Chủ tịch Huy Mai đang điều hành tại Bàn VIP');
+        zoomAndOpenChatWithCharacter('ceo_huy_mai');
+        return true;
+      }
+      const targetEnt = entities[targetId];
+      if (targetEnt) {
+        moveCharacterTo('ceo_huy_mai', 'WORKING', targetEnt.frontDeskPos, 0, '👑 Chủ tịch Huy Mai bước tới kiểm tra ' + targetEnt.cfg.shortName, {
+          lookAtVec: targetEnt.homePos,
+          onArrive: () => {
+            targetEnt.nodTimer = 2.0;
+            ceoEnt.nodTimer = 1.5;
+            speakVietnamese('Kính chào Chủ tịch Huy Mai đến thị sát phòng làm việc của ' + targetEnt.cfg.name + '!', targetId);
+            zoomAndOpenChatWithCharacter(targetId);
+          }
+        });
+        return true;
+      }
+      return false;
+    };
+
+    window.addEventListener('message', (event) => {
+      const data = event.data;
+      if (!data) return;
+      if (data.type === 'UPDATE_AGENT_STATUS') {
+        window.updateAgentStatus(data.agentKey || data.empId, data.state, data.message);
+      } else if (data.type === 'MOVE_USER') {
+        window.moveUserToDepartment(data.deptKey);
+      } else if (data.type === 'HIGHLIGHT_EMPLOYEE') {
+        window.highlightActiveEmployeeIn3D(data.empId);
+      } else if (data.type === 'SYNC_ROSTER') {
+        window.syncInitialRosterFromStreamlit(data.roster);
+      }
     });
   </script>
 </body>

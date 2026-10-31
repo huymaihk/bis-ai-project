@@ -615,6 +615,7 @@ class BISEmployeeOrchestrator:
 
         event_record = {
             "time": datetime.now().strftime("%H:%M:%S"),
+            "emp_id": chosen_emp.emp_id,
             "actor": f"{chosen_emp.name} ({chosen_emp.title})",
             "state": next_state,
             "text": msg_3d,
@@ -722,6 +723,7 @@ class BISEmployeeOrchestrator:
 
         return {
             "employee": emp,
+            "emp_id": emp.emp_id,
             "reply": reply_msg,
             "avatar_3d_key": emp.avatar_3d_key,
             "state_3d": STATE_TO_3D_MAP[emp.state],
