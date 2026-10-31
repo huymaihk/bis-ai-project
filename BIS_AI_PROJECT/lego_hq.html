@@ -419,13 +419,58 @@
         defaultWorkMsg: '📸 Ghép ảnh thiết bị vào nền phòng Lab chân thực, lưu trữ tiêu chuẩn & CO/CQ.',
         greetingMsg: 'Chào bạn! Tôi là LEGO Studio và Tri Thức. Tôi xử lý ghép ảnh thiết bị vào bối cảnh phòng Lab thực tế và quản lý kho hồ sơ CO, CQ.',
         meetingReportMsg: 'Studio & Tri Thức: Đã render xong bộ ảnh thiết bị trong phòng Lab tiêu chuẩn và đính kèm đầy đủ chứng nhận CO/CQ!'
+      },
+      user_avatar: {
+        key: 'user_avatar',
+        name: '👑 CHỦ TỊCH / CEO HUY MAI',
+        shortName: 'CEO Huy Mai (User)',
+        department: 'Ban Lãnh Đạo Tối Cao',
+        colorHex: 0xffffff,
+        accentHex: 0xf59e0b,
+        badgeBg: 'rgba(255, 255, 255, 0.28)',
+        badgeBorder: '#fbbf24',
+        textColor: '#ffffff',
+        metric: 'Quyền Điều Hành Tối Cao (100%)',
+        deskPos: { x: 1.6, z: -5.8, rotY: 0 },
+        seatOffset: { x: 0, z: -0.95 },
+        standFrontOffset: { x: 0, z: 1.55 },
+        meetingSpot: { x: 0, z: -3.6, rotY: 0 },
+        breakSpot: { x: -10.8, z: -5.5, rotY: Math.PI * 0.25, sit: true },
+        defaultWorkMsg: '👑 Đang điều hành tổng thể & kiểm tra các phòng ban.',
+        greetingMsg: 'Xin chào! Tôi là CEO Huy Mai, tôi đang trực tiếp thanh tra và điều phối các phòng ban.',
+        meetingReportMsg: 'CEO Huy Mai: Yêu cầu tất cả Trưởng phòng báo cáo ngắn gọn tiến độ và các điểm cần tối ưu!'
+      },
+      translator: {
+        key: 'translator',
+        name: 'LEGO Senior Translator (Dịch thuật)',
+        shortName: 'Trưởng phòng Dịch thuật',
+        department: 'Phòng Biên Dịch & Bản Địa Hóa Tiêu Chuẩn',
+        colorHex: 0x06b6d4,
+        accentHex: 0x67e8f9,
+        badgeBg: 'rgba(6, 182, 212, 0.22)',
+        badgeBorder: '#06b6d4',
+        textColor: '#a5f3fc',
+        metric: 'OCR & Chuẩn Hóa Bảng Biểu (100%)',
+        deskPos: { x: -2.8, z: 4.8, rotY: -Math.PI * 0.25 },
+        seatOffset: { x: -0.5, z: -0.5 },
+        standFrontOffset: { x: 0.8, z: 0.8 },
+        meetingSpot: { x: -1.4, z: -1.2, rotY: Math.PI * 0.2 },
+        breakSpot: { x: -12.5, z: -7.5, rotY: 0, sit: false },
+        defaultWorkMsg: '🌐 Đang bóc tách OCR & dịch tài liệu Manual & Standard sang tiếng Việt.',
+        greetingMsg: 'Chào Sếp! Phòng Dịch thuật đang phụ trách bóc tách tài liệu từ 23 Hãng, dịch 100% bảng biểu giữ nguyên cấu trúc.',
+        meetingReportMsg: 'Dịch thuật: Đã hoàn tất bóc tách OCR và dịch chuẩn các tài liệu kỹ thuật của 23 hãng!'
       }
     };
 
     const ZONE_LABELS = [
       { text: '🌐 BÀN HỌP TRÒN HOLOGRAM (CONFERENCE HUB)', x: 0, y: 3.1, z: 0 },
       { text: '☕ PHÒNG NGHỈ & PANTRY GIẢI LAO', x: -11.8, y: 2.8, z: -8.8 },
-      { text: '🛡️ SERVER RACK BẢO VỆ RÀO CHẮN 20/10/2026', x: 12.2, y: 3.4, z: -8.8 }
+      { text: '🛡️ SERVER RACK BẢO VỆ RÀO CHẮN 20/10/2026', x: 12.2, y: 3.4, z: -8.8 },
+      { text: '🔬 KHU VỰC KỸ THUẬT & R&D', x: -7.5, y: 3.2, z: -1.8 },
+      { text: '📢 KHU VỰC SEO & MARKETING', x: 7.5, y: 3.2, z: -1.8 },
+      { text: '🎨 KHU VỰC STUDIO & MEDIA', x: 6.5, y: 3.2, z: 4.8 },
+      { text: '🌐 KHU VỰC DỊCH THUẬT & BẢN ĐỊA HÓA', x: -2.8, y: 3.2, z: 4.8 },
+      { text: '👑 BÀN CHỦ TỊCH / CEO HUY MAI', x: 1.6, y: 3.2, z: -5.8 }
     ];
 
     let scene, camera, renderer, controls, clock;
@@ -1669,6 +1714,8 @@
       const k = String(rawKey).toLowerCase().trim();
       if (k === 'all' || k === '*') return 'all';
       if (k.includes('boss') || k.includes('ceo')) return 'boss';
+      if (k.includes('user') || k.includes('huy') || k.includes('admin') || k.includes('sep') || k.includes('chủ tịch')) return 'user_avatar';
+      if (k.includes('trans') || k.includes('dich')) return 'translator';
       if (k.includes('eng') || k.includes('rd') || k.includes('ky_thuat') || k.includes('kỹ thuật')) return 'engineer';
       if (k.includes('guard') || k.includes('haravan') || k.includes('van_hanh') || k.includes('ops')) return 'guard';
       if (k.includes('creat') || k.includes('seo') || k.includes('content') || k.includes('noi_dung')) return 'creator';
@@ -1781,6 +1828,46 @@
         addActivityLog(cfg.shortName, `[HANDOFF -> ${partnerCfg.shortName}] ${msg}`, cfg.badgeBorder);
       }
 
+      return true;
+    };
+
+    window.moveUserToDepartment = function(deptKey, customMsg) {
+      const spots = {
+        'tech': { x: -5.8, z: -1.8, rotY: Math.PI * 0.5, name: 'Phòng Kỹ Thuật R&D' },
+        'mkt': { x: 5.8, z: -1.8, rotY: -Math.PI * 0.5, name: 'Phòng Marketing & SEO' },
+        'media': { x: 5.8, z: 4.8, rotY: -Math.PI * 0.5, name: 'Phòng Studio & Media' },
+        'ops': { x: -5.8, z: 4.8, rotY: Math.PI * 0.5, name: 'Phòng Haravan Guard' },
+        'trans': { x: -2.0, z: 3.8, rotY: 0, name: 'Phòng Dịch Thuật' },
+        'know': { x: 3.5, z: 2.2, rotY: -Math.PI * 0.25, name: 'Phòng Tri Thức' },
+        'meeting': { x: 0, z: -3.6, rotY: 0, name: 'Phòng Họp Bàn Tròn' },
+        'lounge': { x: -10.8, z: -5.5, rotY: Math.PI * 0.25, name: 'Khu Nghỉ Ngơi Lounge' },
+        'desk': { x: 1.6, z: -6.75, rotY: 0, name: 'Bàn Làm Việc CEO' }
+      };
+
+      const target = spots[deptKey] || spots['desk'];
+      const msg = customMsg || `👑 CEO Huy Mai đang đến thanh tra & làm việc tại ${target.name}!`;
+
+      sendAgentTo('user_avatar', 'WORKING', target, msg);
+      addActivityLog('CEO HUY MAI', `[DI CHUYỂN] Đến ${target.name}`, '#fbbf24');
+
+      const deptAgentMap = {
+        'tech': 'engineer',
+        'mkt': 'creator',
+        'media': 'studio',
+        'ops': 'guard',
+        'trans': 'translator',
+        'know': 'studio'
+      };
+      const leadKey = deptAgentMap[deptKey];
+      if (leadKey && agents[leadKey]) {
+        setTimeout(() => {
+          const leadCfg = AGENT_CONFIGS[leadKey];
+          const greet = `Kính chào Sếp! ${leadCfg.shortName} xin báo cáo tiến độ công việc hôm nay...`;
+          agents[leadKey].message = greet;
+          updateBubbleContent(leadKey);
+          addActivityLog(leadCfg.shortName, `[BÁO CÁO CEO] ${greet}`, leadCfg.badgeBorder);
+        }, 1200);
+      }
       return true;
     };
 

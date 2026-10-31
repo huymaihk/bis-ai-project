@@ -1175,27 +1175,43 @@ def render_bis_3d_office(
     agent_key: str | None = None,
     state: str | None = None,
     message: str | None = None,
+    user_dept: str | None = None,
     height: int = 820,
 ) -> None:
     """
     Hàm render Văn phòng 3D BIS Textile lên giao diện Streamlit.
-    Hỗ trợ truyền lệnh điều khiển trực tiếp nhân vật AI qua window.updateAgentStatus().
+    Hỗ trợ truyền lệnh điều khiển trực tiếp nhân vật AI qua window.updateAgentStatus()
+    và di chuyển nhân vật đại diện của Người dùng (User Avatar) qua window.moveUserToDepartment().
     """
     html_content = load_3d_office_html()
+
+    scripts = []
+    if user_dept:
+        safe_dept = json.dumps(user_dept, ensure_ascii=False)
+        scripts.append(f"""
+        if (typeof window.moveUserToDepartment === 'function') {{
+            window.moveUserToDepartment({safe_dept});
+        }}
+        """)
 
     if agent_key and state:
         safe_agent = json.dumps(agent_key, ensure_ascii=False)
         safe_state = json.dumps(state, ensure_ascii=False)
         safe_msg = json.dumps(message or "", ensure_ascii=False)
+        scripts.append(f"""
+        if (typeof window.updateAgentStatus === 'function') {{
+            window.updateAgentStatus({safe_agent}, {safe_state}, {safe_msg});
+        }}
+        """)
 
+    if scripts:
+        inner = "\n".join(scripts)
         inject_script = f"""
         <script>
           window.addEventListener('load', function() {{
             setTimeout(function() {{
-              if (typeof window.updateAgentStatus === 'function') {{
-                window.updateAgentStatus({safe_agent}, {safe_state}, {safe_msg});
-              }}
-            }}, 700);
+              {inner}
+            }}, 800);
           }});
         </script>
         """
@@ -1203,62 +1219,230 @@ def render_bis_3d_office(
 
     components.html(html_content, height=height, scrolling=False)
 
+
 # ── TAB 1: VĂN PHÒNG 3D LEGO AI TEAM (3D METAVERSE HQ) ───────────────────────
 with tab_lego:
     st.markdown("### 🏢 Trung Tâm Điều Hành 3D Multi-Agent — BIS Textile Metaverse")
-    st.markdown("""
-    <div style='background: #090e1a; border: 1px solid #1e293b; border-left: 3px solid #38bdf8; padding: 10px 14px; border-radius: 8px; font-size: 12px; color: #94a3b8; margin-bottom: 12px;'>
-      🌐 <strong>Văn phòng tương tác 3D chân thật:</strong> Chuột trái để xoay (Orbit), chuột phải để trượt góc nhìn, lăn chuột để zoom. Bấm vào từng nhân vật hoặc bàn làm việc để điều khiển trực tiếp!
-    </div>
-    """, unsafe_allow_html=True)
 
-    col_3d_1, col_3d_2, col_3d_3, col_3d_4 = st.columns([1.5, 1.4, 2.5, 1.2])
-    with col_3d_1:
-        selected_3d_agent = st.selectbox(
-            "Chọn Nhân vật AI:",
-            options=["engineer", "boss", "guard", "creator", "studio", "all"],
-            format_func=lambda x: {
-                "boss": "👑 CEO Boss (Vàng Gold)",
-                "engineer": "🔬 Kỹ thuật R&D (Xanh Dương)",
-                "guard": "🛡️ Haravan Guard (Xanh Lá)",
-                "creator": "✍️ Nội dung & SEO (Tím)",
-                "studio": "📸 Studio & Tri Thức (Hồng/Cyan)",
-                "all": "🌐 Toàn bộ 5 Nhân vật",
-            }[x],
-            key="select_3d_agent"
+    # 1. KHỐI ĐỊNH DANH NGƯỜI DÙNG & NHÂN VẬT ĐẠI DIỆN TRONG 3D
+    c_user_profile, c_user_status = st.columns([2, 1])
+    with c_user_profile:
+        user_display_name = st.text_input(
+            "👑 Nhân vật đại diện của bạn (Chủ tịch / CEO Điều hành):",
+            value="👑 CEO Huy Mai (Tổng Giám Đốc)",
+            key="input_user_display_name"
         )
-    with col_3d_2:
-        selected_3d_state = st.selectbox(
-            "Trạng thái hoạt động:",
-            options=["WORKING", "HANDOFF", "BREAK", "MEETING"],
-            format_func=lambda x: {
-                "WORKING": "💻 WORKING (Tại bàn)",
-                "HANDOFF": "🤝 HANDOFF (Bàn giao)",
-                "BREAK": "☕ BREAK (Phòng nghỉ)",
-                "MEETING": "🗣️ MEETING (Bàn tròn)",
-            }[x],
-            key="select_3d_state"
-        )
-    with col_3d_3:
-        custom_3d_message = st.text_input(
-            "Thông điệp suy nghĩ / Giọng nói tiếng Việt:",
-            value="Đã bóc tách xong 17 mã SKU từ Catalogue 36 trang, bàn giao cho SEO nhé!",
-            key="input_3d_msg"
-        )
-    with col_3d_4:
+    with c_user_status:
         st.write("")
-        st.write("")
-        send_3d_cmd = st.button("🚀 Gửi lệnh vào 3D", key="btn_send_3d_cmd", use_container_width=True)
+        st.info("🟢 **TRẠNG THÁI:** Đang trực tuyến tại Tòa nhà trung tâm")
 
+    st.markdown("#### 🎯 Điều Hướng Nhân Vật Của Bạn (Đi tới Phòng Ban Nào, Nhân Vật Đi Tới Đó):")
+    c_nav1, c_nav2, c_nav3, c_nav4, c_nav5, c_nav6, c_nav7 = st.columns(7)
+    
+    selected_user_dept = None
+    with c_nav1:
+        if st.button("🔬 Phòng Kỹ Thuật", use_container_width=True, key="btn_go_tech"):
+            selected_user_dept = "tech"
+            st.session_state["user_active_dept"] = "tech"
+    with c_nav2:
+        if st.button("📢 Phòng Marketing", use_container_width=True, key="btn_go_mkt"):
+            selected_user_dept = "mkt"
+            st.session_state["user_active_dept"] = "mkt"
+    with c_nav3:
+        if st.button("🎨 Phòng Studio", use_container_width=True, key="btn_go_media"):
+            selected_user_dept = "media"
+            st.session_state["user_active_dept"] = "media"
+    with c_nav4:
+        if st.button("🌐 Phòng Dịch Thuật", use_container_width=True, key="btn_go_trans"):
+            selected_user_dept = "trans"
+            st.session_state["user_active_dept"] = "trans"
+    with c_nav5:
+        if st.button("🛡️ Haravan Guard", use_container_width=True, key="btn_go_ops"):
+            selected_user_dept = "ops"
+            st.session_state["user_active_dept"] = "ops"
+    with c_nav6:
+        if st.button("🏛️ Phòng Họp Bàn Tròn", use_container_width=True, key="btn_go_meeting"):
+            selected_user_dept = "meeting"
+            st.session_state["user_active_dept"] = "meeting"
+    with c_nav7:
+        if st.button("☕ Khu Nghỉ Lounge", use_container_width=True, key="btn_go_lounge"):
+            selected_user_dept = "lounge"
+            st.session_state["user_active_dept"] = "lounge"
+
+    active_dept_now = selected_user_dept or st.session_state.get("user_active_dept", "desk")
+
+    # 2. THANH ĐIỀU KHIỂN CHI TIẾT TỪNG NHÂN VẬT AI
+    with st.expander("⚙️ Bảng Điều Khiển Tác Vụ Từng Nhân Viên & Trưởng Phòng", expanded=False):
+        col_3d_1, col_3d_2, col_3d_3, col_3d_4 = st.columns([1.5, 1.4, 2.5, 1.2])
+        with col_3d_1:
+            selected_3d_agent = st.selectbox(
+                "Chọn Nhân vật AI:",
+                options=["user_avatar", "boss", "engineer", "creator", "studio", "translator", "guard", "all"],
+                format_func=lambda x: {
+                    "user_avatar": "👑 CEO Huy Mai (User Avatar)",
+                    "boss": "💼 CEO Boss (Điều Phối)",
+                    "engineer": "🔬 Kỹ thuật R&D (Mr. Tech)",
+                    "creator": "✍️ Marketing & SEO (Ms. Content)",
+                    "studio": "📸 Studio & Tri Thức (Mr. Art)",
+                    "translator": "🌐 Dịch thuật (Ms. Translator)",
+                    "guard": "🛡️ Haravan Guard (Mr. Ops)",
+                    "all": "🌐 Toàn bộ Đội ngũ",
+                }[x],
+                key="select_3d_agent"
+            )
+        with col_3d_2:
+            selected_3d_state = st.selectbox(
+                "Trạng thái hoạt động:",
+                options=["WORKING", "HANDOFF", "BREAK", "MEETING"],
+                format_func=lambda x: {
+                    "WORKING": "💻 WORKING (Tại bàn)",
+                    "HANDOFF": "🤝 HANDOFF (Bàn giao)",
+                    "BREAK": "☕ BREAK (Phòng nghỉ)",
+                    "MEETING": "🗣️ MEETING (Bàn tròn)",
+                }[x],
+                key="select_3d_state"
+            )
+        with col_3d_3:
+            custom_3d_message = st.text_input(
+                "Thông điệp suy nghĩ / Giọng nói tiếng Việt:",
+                value="Đã hoàn thành kiểm duyệt danh mục sản phẩm, đề nghị các bộ phận tiếp tục triển khai!",
+                key="input_3d_msg"
+            )
+        with col_3d_4:
+            st.write("")
+            st.write("")
+            send_3d_cmd = st.button("🚀 Gửi lệnh 3D", key="btn_send_3d_cmd", use_container_width=True)
+
+    # 3. RENDER 3D METAVERSE OFFICE
     if send_3d_cmd:
         render_bis_3d_office(
             agent_key=selected_3d_agent,
             state=selected_3d_state,
             message=custom_3d_message,
+            user_dept=active_dept_now,
             height=820,
         )
+    elif selected_user_dept:
+        render_bis_3d_office(user_dept=selected_user_dept, height=820)
     else:
         render_bis_3d_office(height=820)
+
+    # 4. KHU VỰC CƠ CẤU NHÂN SỰ & THẢO LUẬN TỰ HỌC TỪNG PHÒNG BAN
+    st.markdown("---")
+    c_struct_col, c_chat_col = st.columns([1.1, 1.3])
+
+    with c_struct_col:
+        st.markdown("#### 🏢 Cơ Cấu Nhân Sự Từng Phòng Ban (Khu Vực & Nhân Sự):")
+        st.markdown("""
+        <div style='background: #090e1a; border: 1px solid #1e293b; border-radius: 10px; padding: 14px; font-size: 13px;'>
+          <div style='margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;'>
+            <strong style='color: #38bdf8;'>🔬 1. Phòng Kỹ Thuật & Thẩm Định Catalog:</strong><br>
+            • <b>Trưởng phòng:</b> Kỹ sư Trưởng (Mr. Tech Lead) - Thẩm định 6 bước B1-B6<br>
+            • <b>Nhân viên:</b> AI Extractor (Bóc tách PDF) & QA Spec (Kiểm định thông số)
+          </div>
+          <div style='margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;'>
+            <strong style='color: #c084fc;'>📢 2. Phòng Nghiên Cứu Marketing & SEO:</strong><br>
+            • <b>Trưởng phòng:</b> Ms. Content (SEO Lead) - Chiến lược AIDA, USP độc quyền<br>
+            • <b>Nhân viên:</b> AI Copywriter & Keyword Specialist (Từ khóa dệt may)
+          </div>
+          <div style='margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;'>
+            <strong style='color: #f472b6;'>🎨 3. Phòng Studio & Xử Lý Ảnh Lab:</strong><br>
+            • <b>Trưởng phòng:</b> Mr. Art (Creative Director) - Chuẩn hóa màu sắc 2K<br>
+            • <b>Nhân viên:</b> Image Retoucher & 3D Lab Compositor (Phối cảnh Lab)
+          </div>
+          <div style='margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;'>
+            <strong style='color: #22d3ee;'>🌐 4. Phòng Dịch Thuật & Bản Địa Hóa (Agent_Translator):</strong><br>
+            • <b>Trưởng phòng:</b> Senior Translator (Ms. Linh) - Dịch thuật dệt may 23 hãng<br>
+            • <b>Nhân viên:</b> OCR Specialist (Quét ảnh) & Layout Formatter (Giữ 100% bảng biểu)
+          </div>
+          <div>
+            <strong style='color: #34d399;'>🛡️ 5. Phòng Vận Hành & Haravan Guard:</strong><br>
+            • <b>Trưởng phòng:</b> Mr. Guard (Security & Sync Master) - Rào chắn 20/10/2026<br>
+            • <b>Nhân viên:</b> Sync Operator (Đồng bộ API Haravan chế độ ẩn)
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with c_chat_col:
+        st.markdown("#### 💬 Hội Thoại & Thảo Luận Nội Bộ Tự Động Giữa Các Phòng Ban:")
+        st.markdown("""
+        <div style='background: #090e1a; border: 1px solid #1e293b; border-radius: 10px; padding: 14px; max-height: 380px; overflow-y: auto; font-family: monospace; font-size: 12px;'>
+          <div style='margin-bottom: 8px; color: #38bdf8;'>
+            <b>[08:30 Mr. Tech]:</b> "Đã hoàn tất bóc tách 17 mã SKU từ Catalog AATCC. Đã bàn giao dữ liệu kỹ thuật sang phòng Marketing."
+          </div>
+          <div style='margin-bottom: 8px; color: #c084fc;'>
+            <b>[08:35 Ms. Content]:</b> "Đã nhận dữ liệu! Marketing đang triển khai bài viết theo khung 7 khối chuẩn SEO, không dùng từ cấm."
+          </div>
+          <div style='margin-bottom: 8px; color: #f472b6;'>
+            <b>[08:42 Mr. Art]:</b> "Studio đã render xong ảnh thiết bị trong phòng Lab tiêu chuẩn 2K, sẵn sàng ghép vào Khối 1."
+          </div>
+          <div style='margin-bottom: 8px; color: #22d3ee;'>
+            <b>[08:50 Ms. Translator]:</b> "Phòng Dịch thuật đã kích hoạt OCR bóc tách tài liệu VeriVide VS1, hoàn tất bản dịch Word 100% bảng biểu."
+          </div>
+          <div style='margin-bottom: 8px; color: #34d399;'>
+            <b>[09:05 Mr. Guard]:</b> "Đã đối soát an toàn 2 chiều. Toàn bộ SKU trùng trước 20/10/2026 được khóa REJECTED an toàn!"
+          </div>
+          <div style='margin-bottom: 8px; color: #fbbf24;'>
+            <b>[09:15 👑 CEO Huy Mai]:</b> "Rất tốt! Cả đội tiếp tục quy trình tự học từ feedback khách hàng để tối ưu hóa tỷ lệ chuyển đổi."
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # 5. TỰ LÊN LỊCH HỌP & BỘ NHỚ TỰ HỌC CẢI THIỆN
+    st.markdown("---")
+    c_meet_sched, c_learn_loop = st.columns([1.2, 1])
+
+    with c_meet_sched:
+        st.markdown("#### 📅 Lịch Họp Giao Ban Tự Động & Họp Khẩn Cấp:")
+        st.markdown("""
+        - 🕗 **08:30:** Giao ban đầu giờ phân tích tài liệu kỹ thuật mới (Kỹ thuật + CEO).
+        - 🕐 **11:30:** Họp liên phòng duyệt nội dung SEO & Phối cảnh Studio (Marketing + Studio).
+        - 🕑 **14:00:** Họp đối soát an toàn Haravan & Kế hoạch đồng bộ (Ops + CEO).
+        - 🕔 **17:00:** Họp tổng kết bộ nhớ tự học & Báo cáo kết quả ngày (Toàn thể).
+        """)
+        if st.button("🔔 TRIỆU TẬP CUỘC HỌP GIAO BAN NGAY (TẤT CẢ VÀO BÀN TRÒN HỌP)", type="primary", use_container_width=True):
+            render_bis_3d_office(agent_key="all", state="MEETING", user_dept="meeting", height=820)
+            st.success("📢 Đã triệu tập toàn bộ Trưởng phòng và Nhân viên vào Bàn họp tròn trung tâm để báo cáo cho CEO!")
+
+    with c_learn_loop:
+        st.markdown("#### 🧠 Cơ Chế Tự Học & Cải Thiện Liên Tục (Learning Engine):")
+        st.markdown("""
+        <div style='background: #090e1a; border: 1px solid #1e293b; border-left: 3px solid #10b981; border-radius: 8px; padding: 12px; font-size: 13px;'>
+          • <b>Tích lũy tri thức:</b> Hệ thống tự động ghi nhận mọi điều chỉnh của CEO thành quy tắc Few-shot.<br>
+          • <b>Tránh lỗi lặp lại:</b> 100% phản hồi (loại bỏ từ cấm, chỉnh cột bảng) được lưu vào <code>feedback_memory.json</code>.<br>
+          • <b>Tự động cải thiện:</b> Lần bóc tách và dịch thuật tiếp theo sẽ áp dụng ngay quy chuẩn mới mà không cần nhắc lại.
+        </div>
+        """, unsafe_allow_html=True)
+
+    # 6. CÂU LỆNH & PROMPT HOÀN CHỈNH ĐỂ ĐƯA LÊN WEB GEMINI AI ARGON 4
+    st.markdown("---")
+    with st.expander("📋 CÂU LỆNH & PROMPT CHI TIẾT ĐỂ ĐƯA LÊN WEB GEMINI AI ARGON 4 (BẤM ĐỂ COPY)", expanded=False):
+        st.markdown("""
+        Nếu bạn muốn đưa toàn bộ hệ thống Multi-Agent và giao diện Văn phòng 3D lên web **Gemini AI Argon 4**, hãy sao chép toàn bộ khối lệnh prompt dưới đây và dán trực tiếp vào Gemini:
+        """)
+        gemini_argon_prompt = """Bạn là Kiến trúc sư Trưởng AI chuyên về Multi-Agent System và 3D Interactive Metaverse.
+Hãy xây dựng và tinh chỉnh hệ sinh thái BIS Textile AI Command Center với các yêu cầu sau:
+
+1. HỆ THỐNG PHÂN VAI MULTI-AGENT (TRƯỞNG PHÒNG & NHÂN VIÊN):
+- Ban Lãnh Đạo Tối Cao: Nhân vật đại diện của Người dùng (👑 CEO Huy Mai) với quyền điều hành tối cao.
+- Phòng Kỹ Thuật (R&D): Trưởng phòng Mr. Tech Lead + Nhân viên Extractor & QA Spec. Nhiệm vụ: bóc tách catalog PDF, kiểm định thông số 6 bước B1-B6.
+- Phòng Marketing & SEO: Trưởng phòng Ms. Content + Nhân viên Copywriter & SEO Specialist. Nhiệm vụ: viết bài chuẩn 7 khối AIDA, USP dệt may, chuẩn SEO.
+- Phòng Studio & Media: Trưởng phòng Mr. Art + Nhân viên Retoucher. Nhiệm vụ: tách nền, ghép ảnh vào bối cảnh phòng Lab chân thực 2K.
+- Phòng Dịch Thuật (Agent_Translator): Trưởng phòng Senior Translator + Nhân viên OCR Specialist. Nhiệm vụ: dịch tài liệu từ 23 hãng sang tiếng Việt giữ nguyên 100% bảng biểu, font, style.
+- Phòng Vận Hành (Haravan Guard): Trưởng phòng Mr. Guard + Nhân viên Sync Operator. Nhiệm vụ: đối soát 2 chiều, bảo vệ rào chắn 20/10/2026, đồng bộ ẩn lên Haravan.
+
+2. GIAO DIỆN VĂN PHÒNG 3D METAVERSE INTERACTION:
+- Xây dựng bằng Three.js WebGL: Văn phòng không gian tương tác 3D isometric góc nhìn 360 độ.
+- Khi người dùng đăng nhập hoặc chọn phòng ban nào, nhân vật đại diện của Người dùng (User Avatar) sẽ bước chân (walking animation) di chuyển tới đúng khu vực phòng ban đó.
+- Trưởng phòng của phòng ban đó sẽ cúi chào và báo cáo trực tiếp tiến độ công việc cho Người dùng.
+- Có Bàn Họp Tròn Trung Tâm (Conference Hub) để tự động lên lịch họp hoặc triệu tập cuộc họp giao ban toàn thể khi có lệnh.
+- Có khu vực Pantry giải lao (Breakroom) và Server Rack an ninh dữ liệu.
+
+3. TỰ ĐỘNG THẢO LUẬN & TỰ HỌC LIÊN TỤC:
+- Các Agent tự động thảo luận, bàn giao dữ liệu (Handoff) qua lại giữa các phòng ban theo thời gian thực.
+- Tích hợp bộ nhớ Few-shot learning, tự động rút kinh nghiệm từ mọi phản hồi của người dùng để cải thiện độ chính xác ở các lần xử lý sau."""
+        st.code(gemini_argon_prompt, language="markdown")
+        st.caption("💡 Mẹo: Bấm biểu tượng Copy ở góc trên bên phải khung code để sao chép toàn bộ prompt đưa lên web Gemini AI Argon 4!")
 
 # ── TAB 2: PHÒNG KỸ THUẬT (BÀN DUYỆT 2 CỘT) ──────────────────────────────────
 with tab_tech:
