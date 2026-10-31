@@ -2288,6 +2288,15 @@ with tab_trans:
             if doc_candidates and 0 <= selected_doc_idx < len(doc_candidates):
                 chosen_doc = doc_candidates[selected_doc_idx]
                 
+                # Kiểm tra khả năng đọc văn bản kỹ thuật số
+                fresh_translator = AgentTranslator(PROJECT_DIR) if AgentTranslator else translator_agent
+                if fresh_translator and hasattr(fresh_translator, "check_document_text_readability"):
+                    r_check = fresh_translator.check_document_text_readability(chosen_doc["path"])
+                    if r_check.get("is_image_pdf"):
+                        st.warning(f"⚠️ **Tài liệu dạng đồ họa/ảnh**: {r_check.get('message')}")
+                    else:
+                        st.success(f"{r_check.get('message')}")
+
                 c_opt1, c_opt2 = st.columns([2, 1])
                 with c_opt1:
                     trans_mode = st.radio(
