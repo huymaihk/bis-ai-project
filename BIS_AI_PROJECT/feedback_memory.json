@@ -1,10 +1,16 @@
 {
   "version": "1.0",
-  "last_updated": "2026-10-30T02:16:59.731492Z",
+  "last_updated": "2026-10-31T17:46:33.960919Z",
   "field_corrections": {
     "unit": {
       "cuon": "cuốn",
       "cái": "bộ"
+    },
+    "product_name": {
+      "test aatcc gray scale": "Thước xám AATCC Gray Scale for Color Change"
+    },
+    "brand": {
+      "aatcc": "AATCC (Hoa Kỳ)"
     }
   },
   "examples": [
@@ -47,6 +53,30 @@
       "ai_original": "cái",
       "human_corrected": "bộ",
       "context": "Trang 99"
+    },
+    {
+      "timestamp": "2026-10-31T17:46:33.778531Z",
+      "sku": "03026A",
+      "field": "product_name",
+      "ai_original": "Test AATCC Gray Scale",
+      "human_corrected": "Thước xám AATCC Gray Scale for Color Change",
+      "context": "Hãng AATCC"
+    },
+    {
+      "timestamp": "2026-10-31T17:46:33.789164Z",
+      "sku": "03026A",
+      "field": "unit",
+      "ai_original": "cái",
+      "human_corrected": "bộ",
+      "context": "Hãng AATCC"
+    },
+    {
+      "timestamp": "2026-10-31T17:46:33.804863Z",
+      "sku": "03026A",
+      "field": "brand",
+      "ai_original": "AATCC",
+      "human_corrected": "AATCC (Hoa Kỳ)",
+      "context": "Hãng AATCC"
     }
   ],
   "custom_rules": [
@@ -54,5 +84,28 @@
     "Phần mô tả sản phẩm (Khối 4) bắt buộc phải dịch 100% sang tiếng Việt chuẩn chuyên ngành dệt may, không để tiếng Anh",
     "Bảng thông số kỹ thuật (Khối 6) chỉ hiển thị SKU và Phạm vi áp dụng (tuyệt đối bỏ hàng Đơn vị tính và Trang nguồn tài liệu)",
     "Đặc điểm nổi bật (Khối 5): Tuyệt đối không để dòng 'Cung cấp chính ngạch bởi BIS Textile...'"
+  ],
+  "reflections": [
+    {
+      "timestamp": "2026-10-31T17:46:33.960907Z",
+      "sku": "03026A",
+      "brand": "AATCC",
+      "diff": {
+        "product_name": {
+          "ai_generated": "Test AATCC Gray Scale",
+          "human_fixed": "Thước xám AATCC Gray Scale for Color Change"
+        },
+        "unit": {
+          "ai_generated": "cái",
+          "human_fixed": "bộ"
+        },
+        "brand": {
+          "ai_generated": "AATCC",
+          "human_fixed": "AATCC (Hoa Kỳ)"
+        }
+      },
+      "reflection": "Tự động ghi nhận hiệu chỉnh cho các trường: product_name, unit, brand.",
+      "distilled_rule": "Ưu tiên chuẩn hóa các trường product_name, unit, brand theo mẫu của hãng AATCC."
+    }
   ]
 }

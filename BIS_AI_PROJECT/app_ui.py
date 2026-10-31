@@ -2113,6 +2113,36 @@ with tab_tech:
                     learned_changes = []
 
                     if edit_mode.startswith("📝"):
+                        # Vòng lặp Reflexion: So sánh dữ liệu AI bóc tách ban đầu với bản sửa của chuyên viên
+                        orig_snapshot = {
+                            "sku": p.get("sku"),
+                            "product_name": p.get("product_name"),
+                            "product_name_en": p.get("product_name_en"),
+                            "unit": p.get("unit"),
+                            "brand": p.get("brand") or p.get("brand_evidence"),
+                            "description": p.get("description"),
+                            "evidence_quote": p.get("evidence_quote") or ""
+                        }
+                        edited_snapshot = {
+                            "sku": p.get("sku"),
+                            "product_name": edit_name_vi,
+                            "product_name_en": edit_name_en,
+                            "unit": edit_unit,
+                            "brand": edit_vendor,
+                            "description": edit_desc
+                        }
+                        if learning_engine and hasattr(learning_engine, "record_correction_and_reflect"):
+                            try:
+                                ref_res = learning_engine.record_correction_and_reflect(
+                                    original_extracted=orig_snapshot,
+                                    human_edited=edited_snapshot,
+                                    brand=edit_vendor or p.get("brand") or "General",
+                                    evidence_quote=orig_snapshot.get("evidence_quote", "")
+                                )
+                                if ref_res.get("status") == "SUCCESS" and ref_res.get("rule"):
+                                    st.toast(f"💡 [Reflexion] Đã tự học quy tắc mới: {ref_res['rule']}", icon="🧠")
+                            except Exception as _e_ref:
+                                pass
                         if edit_name_vi != p.get("product_name"):
                             learning_engine.record_correction(p.get("sku"), "product_name", p.get("product_name"), edit_name_vi, f"Trang {page_num}")
                             p["product_name"] = edit_name_vi
@@ -3188,17 +3218,95 @@ with tab_ops:
                 st.info("Hiện không có sản phẩm nào ở trạng thái APPROVED cần đồng bộ. Hãy phê duyệt sản phẩm tại Bàn Kỹ thuật trước.")
 
 
-# ── TAB 6: BỘ NHỚ TỰ HỌC (FEW-SHOT CONTINUOUS FEEDBACK) ────────────────────────
+# ── TAB 8: BỘ NHỚ TỰ HỌC TIẾN HÓA & PHẢN TỈNH (EVOLVING LEARNING ENGINE) ───────
 with tab_learn:
-    st.markdown("### 🧠 Bộ Nhớ Tự Học & Quản Trị Quy Tắc (Learning Engine Dashboard)")
-    st.write("Trung tâm tri thức của AI: Lưu trữ các quy tắc chuẩn hóa chuyên môn và toàn bộ lịch sử sửa lỗi của bạn để Gemini tự động học tập, không bao giờ lặp lại sai sót.")
-    
-    mem_file = PROJECT_DIR / "feedback_memory.json"
-    mem_data = load_cached_learning_memory(str(mem_file))
-    custom_rules = mem_data.get("custom_rules", [])
-    examples = mem_data.get("examples", [])
+    st.markdown("### 🧠 Bộ Não Tự Học Tiến Hóa & Phản Tỉnh (Evolving Learning Engine)")
+    st.write("Kiến trúc tự học đa tầng kết hợp giữa **Voyager** (Kho kỹ năng theo Hãng), **Reflexion** (Tự suy ngẫm nguyên nhân sai sót) và **Generative Agents** (Nén tri thức không gây loãng prompt).")
 
-    c_lm1, c_lm2 = st.columns([6, 6])
+    mem_file = PROJECT_DIR / "feedback_memory.json"
+    rules_file = PROJECT_DIR / "consolidated_rules.json"
+    mem_data = load_cached_learning_memory(str(mem_file))
+    
+    # Đọc quy tắc phân vùng từ learning_engine
+    all_rules_data = learning_engine.load_rules() if hasattr(learning_engine, "load_rules") else {}
+    brand_rules_dict = all_rules_data.get("brand_rules", {})
+    global_rules_list = all_rules_data.get("global_rules", [])
+    examples = mem_data.get("examples", [])
+    reflections = mem_data.get("reflections", [])
+
+    c_lm1, c_lm2 = st.columns([6.2, 5.8])
+    with c_lm1:
+        st.markdown("#### 📌 1. Kho Quy Tắc Tiến Hóa Phân Vùng (Brand-Partitioned Rules)")
+        st.caption("Các 'micro-rules' độc lập được AI tự đúc kết riêng cho từng Hãng thiết bị:")
+
+        brand_options = ["GLOBAL (Toàn Hệ Thống)"] + sorted(list(brand_rules_dict.keys()))
+        selected_brand_tab = st.selectbox("Chọn Hãng để xem & quản lý quy tắc:", options=brand_options, key="sel_learning_brand")
+
+        if selected_brand_tab.startswith("GLOBAL"):
+            active_rules = global_rules_list
+            is_global = True
+            current_brand_key = "GLOBAL"
+        else:
+            active_rules = brand_rules_dict.get(selected_brand_tab, [])
+            is_global = False
+            current_brand_key = selected_brand_tab
+
+        if active_rules:
+            for idx, r in enumerate(active_rules):
+                col_r_txt, col_r_del = st.columns([10, 2])
+                with col_r_txt:
+                    st.markdown(f"**{idx+1}.** {r}")
+                with col_r_del:
+                    if st.button("🗑️", key=f"del_brule_{current_brand_key}_{idx}", help="Xóa quy tắc này"):
+                        if is_global:
+                            learning_engine.delete_custom_rule(idx)
+                        else:
+                            learning_engine.delete_brand_rule(current_brand_key, idx)
+                        load_cached_learning_memory.clear()
+                        st.toast("Đã xóa quy tắc thành công!", icon="🗑️")
+                        st.rerun()
+        else:
+            st.info(f"Chưa có quy tắc nào cho {current_brand_key}.")
+
+        c_add_r, c_cons_r = st.columns([7, 5])
+        with c_add_r:
+            with st.form(f"add_rule_form_{current_brand_key}"):
+                new_rule_input = st.text_input(f"Thêm quy tắc mới cho {current_brand_key}:", placeholder="Nhập quy tắc bóc tách bắt buộc...")
+                if st.form_submit_button("➕ THÊM QUY TẮC", use_container_width=True):
+                    if new_rule_input.strip():
+                        if is_global:
+                            learning_engine.add_custom_rule(new_rule_input.strip())
+                        else:
+                            learning_engine.add_brand_rule(current_brand_key, new_rule_input.strip())
+                        load_cached_learning_memory.clear()
+                        st.toast(f"✓ Đã thêm quy tắc cho {current_brand_key}!", icon="🧠")
+                        st.rerun()
+        with c_cons_r:
+            if not is_global and len(active_rules) >= 3:
+                st.write("")
+                st.write("")
+                if st.button("⚡ NÉN TRI THỨC (CONSOLIDATE)", key=f"btn_cons_{current_brand_key}", help="Gộp các quan sát nhỏ thành 2-3 nguyên lý cốt lõi cấp cao", use_container_width=True):
+                    with st.spinner("Đang chạy nén tri thức qua Gemini..."):
+                        c_msg = learning_engine.consolidate_brand_rules(current_brand_key)
+                        load_cached_learning_memory.clear()
+                        st.success(c_msg)
+                        st.rerun()
+
+        # Hiển thị khối Reflexion Audit Log
+        st.markdown("---")
+        st.markdown(f"#### 🔍 2. Nhật Ký Phản Tỉnh & Đúc Kết Lỗi (Reflexion Log - {len(reflections)} lượt)")
+        st.caption("AI tự phân tích nguyên nhân sai sót khi chuyên viên chỉnh sửa dữ liệu:")
+        if reflections:
+            ref_box = st.container(height=260)
+            with ref_box:
+                for rf in reversed(reflections[-8:]):
+                    with st.expander(f"Mã {rf.get('sku')} • {rf.get('brand')} ({rf.get('timestamp')[:19]})", expanded=False):
+                        st.markdown(f"**Lý do AI nhận diện chưa chuẩn:**\n_{rf.get('reflection', '')}_")
+                        if rf.get('distilled_rule'):
+                            st.markdown(f"**🎯 Quy tắc đúc kết:** `{rf.get('distilled_rule')}`")
+                        st.json(rf.get("diff", {}))
+        else:
+            st.info("Chưa có lượt tự suy ngẫm nào. Khi bạn chỉnh sửa và bấm lưu tại Tab 2, AI sẽ tự động phản tỉnh và hiển thị tại đây.")
     with c_lm1:
         st.markdown("#### 📌 1. Quy Tắc Kinh Doanh Chuyên Môn (Business Rules)")
         st.caption("Các luật chuẩn hóa bắt buộc AI phải tuân thủ trong toàn bộ quá trình đọc catalogue:")

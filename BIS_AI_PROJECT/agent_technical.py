@@ -112,13 +112,13 @@ class AgentTechnical:
         self.learning_engine = LearningEngine(self.storage_dir)
         self.client = genai.Client(api_key=GEMINI_API_KEY)
 
-    def _build_prompt(self, page_num: int, total_pages: int) -> str:
-        few_shot_context = self.learning_engine.get_few_shot_prompt_text()
+    def _build_prompt(self, page_num: int, total_pages: int, brand: str = "AATCC") -> str:
+        focused_guidelines = self.learning_engine.get_focused_guidelines(brand=brand)
         base_prompt = f"""
 Bạn là Trưởng phòng Kỹ thuật AI (Agent Technical) của BIS Textile.
 Nhiệm vụ: Trích xuất TOÀN BỘ sản phẩm/tài liệu tiêu chuẩn dệt may trên trang {page_num}/{total_pages} của catalogue.
 
-{few_shot_context}
+{focused_guidelines}
 
 QUY TẮC BẮT BUỘC (6 BƯỚC THẨM ĐỊNH KỸ THUẬT):
 1. B3 (Facts & Quotes): Mỗi sản phẩm bắt buộc phải có 'sku', 'product_name' (tiếng Việt), 'product_name_en' (tiếng Anh nguyên bản), 'description' (BẮT BUỘC PHẢI DỊCH SANG TIẾNG VIỆT CHUẨN XÁC, CHUYÊN NGÀNH DỆT MAY, TUYỆT ĐỐI KHÔNG ĐỂ TIẾNG ANH), 'source_page' ({page_num}) và 'evidence_quote' (câu trích dẫn tiếng Anh nguyên văn từ trang chứng minh).
@@ -152,8 +152,8 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
 """
         return base_prompt.strip()
 
-    def extract_page(self, img_bytes: bytes, page_num: int, total_pages: int) -> List[dict]:
-        prompt = self._build_prompt(page_num, total_pages)
+    def extract_page(self, img_bytes: bytes, page_num: int, total_pages: int, brand: str = "AATCC") -> List[dict]:
+        prompt = self._build_prompt(page_num, total_pages, brand=brand)
         max_retries = 3
 
         for attempt in range(max_retries):

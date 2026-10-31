@@ -1,0 +1,33 @@
+{
+  "version": "3.0",
+  "last_updated": "2026-10-31T17:46:33.969403Z",
+  "global_rules": [
+    "Đơn vị tính cho sách/catalogue/tiêu chuẩn phải luôn là 'cuốn'.",
+    "Định dạng tiêu chuẩn ASTM/AATCC/ISO: giữ nguyên mã số gốc trong tên tiếng Anh và dịch tên kỹ thuật chuyên ngành sang tiếng Việt."
+  ],
+  "brand_rules": {
+    "AATCC": [
+      "Hãng sản xuất chuẩn hóa là 'AATCC (Hoa Kỳ)'.",
+      "Với tài liệu AATCC Technical Manual, mã SKU chuẩn hóa theo định dạng AATCC-TM-YYYY hoặc AATCC-LP-YYYY.",
+      "Ưu tiên chuẩn hóa các trường product_name, unit, brand theo mẫu của hãng AATCC."
+    ],
+    "JAMES HEAL": [
+      "Thiết bị đo độ mài mòn Martindale và độ xù lông Nu-Martindale phải giữ nguyên thông số trạm kiểm tra (Head/Station).",
+      "Mã phụ tùng tiêu hao (Consumables) phải phân tách rõ ràng với mã máy chính."
+    ],
+    "TESTOMETRIC": [
+      "Máy đo lực kéo đứt điện tử Universal Testing Machine: ghi rõ công suất load cell (kN/kgf) vào mô tả kỹ thuật."
+    ],
+    "SDL ATLAS": [
+      "Các dòng máy kiểm tra độ co rút dệt QuickWash và máy thử độ bền màu giặt Launder-Ometer: bóc tách chính xác dải nhiệt độ và số lượng bình mẫu."
+    ]
+  },
+  "category_rules": {
+    "SÁCH TIÊU CHUẨN": [
+      "Đơn vị tính luôn là 'cuốn'."
+    ],
+    "THIẾT BỊ PHÒNG LAB": [
+      "Bắt buộc bóc tách nguồn điện áp (220V/50Hz hoặc 110V) và kích thước vật lý."
+    ]
+  }
+}
