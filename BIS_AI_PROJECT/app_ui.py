@@ -690,18 +690,62 @@ if "audit_logs" not in st.session_state:
         {"time": "15:15:30", "type": "PLUG", "text": "Kết nối thành công Agent_Marketing, Agent_Media & Agent_Knowledge."},
     ]
 
-# Nạp dữ liệu sản phẩm (Luôn ưu tiên đọc đồng bộ từ file cache trên đĩa để đảm bảo dữ liệu mới nhất)
+# Nạp dữ liệu sản phẩm (Ưu tiên nạp RAM và cache để đạt tốc độ tức thì < 0.05s)
 cache_file = PROJECT_DIR / "extracted_products_cache.json"
 pdf_file = PROJECT_DIR / "catalogue_sample.pdf"
-products = []
-if cache_file.exists():
-    try:
-        products = json.load(open(cache_file, encoding="utf-8"))
-        st.session_state["cached_products"] = products
-    except Exception:
-        pass
-if not products and "cached_products" in st.session_state and st.session_state["cached_products"]:
-    products = st.session_state["cached_products"]
+
+@st.cache_data(ttl=120, show_spinner=False)
+def load_products_from_file(file_path_str: str) -> list:
+    """Nạp file JSON từ đĩa có cache 120s trong RAM để loại bỏ độ trễ mạng Google Drive."""
+    p = Path(file_path_str)
+    if p.exists():
+        try:
+            with open(p, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return []
+    return []
+
+@st.cache_data(ttl=300, show_spinner=False)
+def load_store_products(file_path_str: str) -> list:
+    """Nạp danh sách sản phẩm sàn Haravan có cache 300s trong RAM."""
+    p = Path(file_path_str)
+    if p.exists():
+        try:
+            with open(p, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return []
+    return []
+
+@st.cache_data(ttl=300, show_spinner=False)
+def load_cached_marketing_knowledge(file_path_str: str) -> dict:
+    """Nạp tri thức marketing có cache 300s trong RAM."""
+    p = Path(file_path_str)
+    if p.exists():
+        try:
+            with open(p, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+@st.cache_data(ttl=60, show_spinner=False)
+def load_cached_learning_memory(file_path_str: str) -> dict:
+    """Nạp bộ nhớ tự học có cache 60s trong RAM."""
+    p = Path(file_path_str)
+    if p.exists():
+        try:
+            with open(p, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+if "cached_products" not in st.session_state or not st.session_state["cached_products"]:
+    st.session_state["cached_products"] = load_products_from_file(str(cache_file))
+
+products = st.session_state["cached_products"]
 
 # Khởi tạo an toàn (Safe Fallback nếu trên GitHub chưa kịp upload đủ các file phòng ban mới)
 try:
@@ -1354,8 +1398,6 @@ with tab_tech:
                         "Tên sản phẩm tiếng Việt": v.get("product_name"),
                         "Tên tiếng Anh": v.get("product_name_en"),
                         "Hãng sản xuất": v.get("brand") or "AATCC",
-                        "Đơn vị tính": v.get("unit") or "cuốn",
-                        "Trang PDF": v.get("source_page"),
                         "Trạng thái": v.get("status")
                     })
                 if valid_table_data:
@@ -1363,13 +1405,7 @@ with tab_tech:
 
             with tab_store_view:
                 store_file_p = PROJECT_DIR / "bistextile_existing_products.json"
-                store_items = []
-                if store_file_p.exists():
-                    try:
-                        with open(store_file_p, "r", encoding="utf-8") as f_st:
-                            store_items = json.load(f_st)
-                    except Exception:
-                        pass
+                store_items = load_store_products(str(store_file_p))
                 pub_cnt = sum(1 for it in store_items if it.get("published", True))
                 hid_cnt = len(store_items) - pub_cnt
                 st.markdown(f"**Tổng số sản phẩm đang có trên Haravan / bistextile.com:** `{len(store_items)} sản phẩm` (Đã đăng: `{pub_cnt}`, Đã ẩn/Draft: `{hid_cnt}`)")
@@ -1781,21 +1817,9 @@ with tab_mkt:
                     st.info("Đang nạp module nghiên cứu...")
                     st.rerun()
 
-    # Tải tri thức đã học được (Tự động chống lỗi cache RAM)
-    mkt_knowledge = {}
-    if marketing_agent and hasattr(marketing_agent, "load_marketing_knowledge"):
-        try:
-            mkt_knowledge = marketing_agent.load_marketing_knowledge()
-        except Exception:
-            mkt_knowledge = {}
-    if not mkt_knowledge:
-        know_file = PROJECT_DIR / "marketing_knowledge.json"
-        if know_file.exists():
-            try:
-                with open(know_file, "r", encoding="utf-8") as f:
-                    mkt_knowledge = json.load(f)
-            except Exception:
-                mkt_knowledge = {}
+    # Tải tri thức đã học được qua cache RAM
+    know_file = PROJECT_DIR / "marketing_knowledge.json"
+    mkt_knowledge = load_cached_marketing_knowledge(str(know_file))
     if mkt_knowledge:
         with st.expander("📚 XEM CHI TIẾT BỘ TRI THỨC VÀ QUY TẮC TRÌNH BÀY AI ĐÃ HỌC ĐƯỢC", expanded=True):
             col_kno1, col_kno2 = st.columns(2)
@@ -2286,7 +2310,8 @@ with tab_learn:
     st.markdown("### 🧠 Bộ Nhớ Tự Học & Quản Trị Quy Tắc (Learning Engine Dashboard)")
     st.write("Trung tâm tri thức của AI: Lưu trữ các quy tắc chuẩn hóa chuyên môn và toàn bộ lịch sử sửa lỗi của bạn để Gemini tự động học tập, không bao giờ lặp lại sai sót.")
     
-    mem_data = learning_engine.load_memory()
+    mem_file = PROJECT_DIR / "feedback_memory.json"
+    mem_data = load_cached_learning_memory(str(mem_file))
     custom_rules = mem_data.get("custom_rules", [])
     examples = mem_data.get("examples", [])
 
@@ -2302,6 +2327,7 @@ with tab_learn:
                 with col_r_del:
                     if st.button("🗑️", key=f"del_rule_{idx}", help="Xóa quy tắc này"):
                         learning_engine.delete_custom_rule(idx)
+                        load_cached_learning_memory.clear()
                         st.toast("Đã xóa quy tắc thành công!", icon="🗑️")
                         st.rerun()
         else:
@@ -2312,6 +2338,7 @@ with tab_learn:
             if st.form_submit_button("➕ THÊM QUY TẮC MỚI", use_container_width=True):
                 if new_rule_input.strip():
                     learning_engine.add_custom_rule(new_rule_input.strip())
+                    load_cached_learning_memory.clear()
                     st.toast("✓ Đã nạp quy tắc mới vào bộ nhớ AI!", icon="🧠")
                     st.rerun()
 
@@ -2330,6 +2357,7 @@ with tab_learn:
                     with col_ex_del:
                         if st.button("❌", key=f"del_ex_{real_idx}", help="Xóa bài học này"):
                             learning_engine.delete_example(real_idx)
+                            load_cached_learning_memory.clear()
                             st.toast("Đã xóa bài học!", icon="🗑️")
                             st.rerun()
             else:

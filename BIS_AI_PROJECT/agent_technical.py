@@ -362,7 +362,7 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
     </ul>
   </div>
 
-  <!-- KHỐI 6: Bảng thông số kỹ thuật 2 cột chuẩn 39%-61% (Đã bỏ Đơn vị tính & Trang nguồn tài liệu) -->
+  <!-- KHỐI 6: Bảng thông số kỹ thuật 2 cột chuẩn 39%-61% -->
   <div style="margin-bottom: 20px;">
     <div style="font-weight: 800; font-size: 14px; margin-bottom: 8px; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.02em;">
       ⚙️ Thông số kỹ thuật chính:
