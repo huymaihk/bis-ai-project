@@ -812,6 +812,11 @@ except Exception:
     AgentTranslator = None
 
 try:
+    from keep_form_translator import KeepFormTranslator
+except Exception:
+    KeepFormTranslator = None
+
+try:
     from agent_operations import AgentOperations
 except Exception:
     AgentOperations = None
@@ -2676,13 +2681,15 @@ with tab_know:
 with tab_trans:
     st.markdown("### 🌐 Phòng Biên Dịch & Bản Địa Hóa Tiêu Chuẩn Quốc Tế (Agent_Translator)")
     st.markdown("""
-    <div style='background: #090e1a; border: 1.5px solid #0284c7; border-radius: 10px; padding: 16px; margin-bottom: 18px;'>
-      <h4 style='color: #38bdf8; margin: 0 0 8px 0;'>📖 Giữ Nguyên 100% Cấu Trúc, Bảng Biểu, Cột Dữ Liệu, Ảnh & Style Bản Gốc</h4>
+    <div style='background: #090e1a; border: 1.5px solid #0284c7; border-radius: 12px; padding: 16px; margin-bottom: 18px;'>
+      <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;'>
+        <h4 style='color: #38bdf8; margin: 0;'>📖 Bộ Đôi Dịch Giữ 100% Format: PDFMathTranslate (MCP) & Keep-Form Agent Skill</h4>
+        <span style='background: #0369a1; color: #e0f2fe; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; font-family: monospace;'>MCP PROTOCOL ACTIVE</span>
+      </div>
       <p style='font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 0;'>
-        Chức năng chuyên biệt xử lý các tài liệu kỹ thuật, hướng dẫn sử dụng (Manuals) và tiêu chuẩn thử nghiệm (Standards) trong thư mục 
-        <code>Google_Drive_Storage/2_Manuals_Standards</code> phân theo từng hãng. Toàn bộ nội dung sẽ được dịch sang tiếng Việt chuyên ngành dệt may,
-        bảo toàn 100% bố cục cột, font chữ, style và bảng thông số. Bản dịch hoàn tất được tự động lưu trữ vào thư mục riêng: 
-        <code>Google_Drive_Storage/8_Translated_Documents/&lt;Tên_Hãng&gt;/</code> và cung cấp file Word (.docx) để tải xuống ngay lập tức.
+        • <b>PDFMathTranslate (pdf2zh qua giao thức MCP):</b> Bóc tách PDF bằng <code>DocLayout-YOLO</code>, bảo toàn công thức toán, biểu đồ và bảng kỹ thuật.<br>
+        • <b>Keep-Form Agent Skill (.docx, .xlsx, .html):</b> Can thiệp trực tiếp cấp độ XML <code>run.text</code>, <code>openpyxl cell</code> (bảo vệ công thức <code>=</code>) và <code>BeautifulSoup NavigableString</code>.<br>
+        • <b>Định dạng hỗ trợ toàn diện:</b> <code>.pdf</code>, <code>.docx</code>, <code>.xlsx</code>, <code>.html</code>, ảnh scan OCR. Bản dịch tự động lưu vào <code>8_Translated_Documents/&lt;Hãng&gt;/</code> và sẵn sàng tải xuống.
       </p>
     </div>
     """, unsafe_allow_html=True)
@@ -2811,7 +2818,7 @@ with tab_trans:
         with col_up_file:
             uploaded_trans_file = st.file_uploader(
                 "Chọn file tài liệu hoặc HÌNH ẢNH cần dịch (PDF, Word, PNG, JPG):",
-                type=["pdf", "docx", "png", "jpg", "jpeg", "webp"],
+                type=["pdf", "docx", "xlsx", "html", "htm", "png", "jpg", "jpeg", "webp"],
                 key="uploader_trans_doc"
             )
         with col_up_brand:
@@ -2858,24 +2865,46 @@ with tab_trans:
                         status_text_up.info(f"⏳ {msg}")
 
                     try:
-                        fresh_translator = AgentTranslator(PROJECT_DIR) if AgentTranslator else translator_agent
-                        res_path = fresh_translator.translate_document(
-                            doc_path=saved_target_path,
-                            brand_name=upload_brand_name,
-                            progress_callback=ui_up_progress_cb,
-                            max_pages=max_up_pages
-                        )
+                        ext_lower = saved_target_path.suffix.lower()
+                        trans_dest_dir = PROJECT_DIR / "Google_Drive_Storage" / "8_Translated_Documents" / clean_b_folder
+                        trans_dest_dir.mkdir(parents=True, exist_ok=True)
+
+                        if ext_lower in [".xlsx", ".html", ".htm"] or (ext_lower == ".docx" and KeepFormTranslator):
+                            ui_up_progress_cb(0.1, f"Khởi động Keep-Form Agent Skill bảo toàn định dạng {ext_lower}...")
+                            res_path = KeepFormTranslator.translate_any(
+                                src_path=saved_target_path,
+                                dst_dir=trans_dest_dir,
+                                target_lang="vi",
+                                progress_callback=ui_up_progress_cb
+                            )
+                        else:
+                            fresh_translator = AgentTranslator(PROJECT_DIR) if AgentTranslator else translator_agent
+                            res_path = fresh_translator.translate_document(
+                                doc_path=saved_target_path,
+                                brand_name=upload_brand_name,
+                                progress_callback=ui_up_progress_cb,
+                                max_pages=max_up_pages
+                            )
+
                         prog_bar_up.progress(1.0)
-                        status_text_up.success(f"🎉 Hoàn tất dịch thuật! File đã lưu vào thư mục riêng: `{res_path.relative_to(PROJECT_DIR)}`")
+                        status_text_up.success(f"🎉 Hoàn tất dịch thuật bảo toàn 100% format! File đã lưu vào: `{res_path.relative_to(PROJECT_DIR)}`")
 
                         if res_path.exists():
+                            mime_map = {
+                                ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                ".html": "text/html",
+                                ".htm": "text/html",
+                                ".pdf": "application/pdf"
+                            }
+                            target_mime = mime_map.get(res_path.suffix.lower(), "application/octet-stream")
                             with open(res_path, "rb") as f_out:
-                                docx_bytes = f_out.read()
+                                file_bytes = f_out.read()
                             st.download_button(
-                                label=f"📥 TẢI XUỐNG BẢN DỊCH: {res_path.name}",
-                                data=docx_bytes,
+                                label=f"📥 TẢI XUỐNG BẢN DỊCH ({res_path.suffix.upper()}): {res_path.name}",
+                                data=file_bytes,
                                 file_name=res_path.name,
-                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                mime=target_mime,
                                 type="primary",
                                 use_container_width=True
                             )
