@@ -1871,6 +1871,35 @@
       return true;
     };
 
+    window.highlightActiveEmployeeIn3D = function(empId) {
+      if (!empId) return false;
+      let targetAgentKey = null;
+      let empInfo = null;
+      if (window.BIS_EMPLOYEE_ROSTER && window.BIS_EMPLOYEE_ROSTER[empId]) {
+        empInfo = window.BIS_EMPLOYEE_ROSTER[empId];
+        targetAgentKey = normalizeAgentKey(empInfo.avatar_3d_key);
+      } else {
+        const fallbackMap = {
+          rd_lead: 'engineer', rd_qa: 'engineer', rd_spec: 'engineer',
+          seo_lead: 'creator', seo_spec: 'creator', seo_copy: 'creator',
+          studio_lead: 'studio', studio_render: 'studio', studio_editor: 'studio',
+          trans_lead: 'translator', trans_term: 'translator', trans_proof: 'translator',
+          ops_manager: 'guard', ops_validator: 'guard', ops_auditor: 'guard'
+        };
+        targetAgentKey = fallbackMap[empId] || normalizeAgentKey(empId);
+      }
+      if (!targetAgentKey || !agents[targetAgentKey]) return false;
+
+      selectAgentForInspector(targetAgentKey, true);
+      const ag = agents[targetAgentKey];
+      ag.waveTimer = 2.5;
+      if (empInfo) {
+        ag.message = `${empInfo.avatar_emoji} [${empInfo.title}] ${empInfo.name}: Dạ em đang nghe chỉ đạo của Chủ tịch Huy Mai ạ!`;
+      }
+      updateBubbleContent(targetAgentKey);
+      return true;
+    };
+
     window.addEventListener('message', (event) => {
       const data = event.data;
       if (data && data.type === 'UPDATE_AGENT_STATUS') {

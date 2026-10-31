@@ -38,6 +38,17 @@ from config import (
 from agent_leader import AgentLeader
 from learning_engine import LearningEngine
 
+try:
+    from agent_employee_pool import (
+        BISEmployeeOrchestrator,
+        EmployeeState,
+        STATE_TO_3D_MAP,
+    )
+except Exception:
+    BISEmployeeOrchestrator = None
+    EmployeeState = None
+    STATE_TO_3D_MAP = {}
+
 # ── Cấu hình trang Streamlit ──────────────────────────────────────────────────
 st.set_page_config(
     page_title="BIS Textile • AI Multi-Agent Command Center",
@@ -85,6 +96,22 @@ HUD_CSS = """
   }
 
   /* Glassmorphism Card cơ bản */
+  .emp-card {
+    background: linear-gradient(145deg, rgba(15,23,42,0.92), rgba(30,41,59,0.82));
+    border: 1px solid rgba(148,163,184,0.22);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.28);
+  }
+  .state-pill {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
   .glass-card {
     background: rgba(17, 24, 39, 0.68);
     backdrop-filter: blur(16px);
@@ -747,6 +774,22 @@ if "cached_products" not in st.session_state or not st.session_state["cached_pro
 
 products = st.session_state["cached_products"]
 
+if "orchestrator" not in st.session_state and BISEmployeeOrchestrator:
+    st.session_state.orchestrator = BISEmployeeOrchestrator()
+if "selected_dept_id" not in st.session_state:
+    st.session_state.selected_dept_id = "RD"
+if "selected_emp_id" not in st.session_state:
+    st.session_state.selected_emp_id = "rd_lead"
+if "chat_mode" not in st.session_state:
+    st.session_state.chat_mode = "DIRECT_1_1"
+if "last_3d_command" not in st.session_state:
+    st.session_state.last_3d_command = {
+        "agent_key": "engineer",
+        "state": "WORKING",
+        "message": "🔬 Dr. Textile Tech: Đang thẩm định tiêu chuẩn AATCC/ISO theo lệnh Chủ tịch Huy Mai!",
+        "selected_emp_id": "rd_lead",
+    }
+
 # Khởi tạo an toàn (Safe Fallback nếu trên GitHub chưa kịp upload đủ các file phòng ban mới)
 try:
     from agent_marketing import AgentMarketing
@@ -1176,16 +1219,37 @@ def render_bis_3d_office(
     state: str | None = None,
     message: str | None = None,
     user_dept: str | None = None,
-    height: int = 820,
+    selected_emp_id: str | None = None,
+    height: int = 700,
 ) -> None:
     """
     Hàm render Văn phòng 3D BIS Textile lên giao diện Streamlit.
-    Hỗ trợ truyền lệnh điều khiển trực tiếp nhân vật AI qua window.updateAgentStatus()
-    và di chuyển nhân vật đại diện của Người dùng (User Avatar) qua window.moveUserToDepartment().
+    Hỗ trợ truyền lệnh điều khiển trực tiếp nhân vật AI qua window.updateAgentStatus(),
+    di chuyển nhân vật đại diện của Người dùng qua window.moveUserToDepartment(),
+    và highlight nhân viên đang active qua window.highlightActiveEmployeeIn3D().
     """
     html_content = load_3d_office_html()
 
     scripts = []
+    if "orchestrator" in st.session_state and st.session_state.orchestrator:
+        orch_obj = st.session_state.orchestrator
+        emp_roster_payload = {
+            emp.emp_id: {
+                "emp_id": emp.emp_id,
+                "name": emp.name,
+                "title": emp.title,
+                "department_name": emp.department_name,
+                "avatar_3d_key": emp.avatar_3d_key,
+                "avatar_emoji": emp.avatar_emoji,
+                "badge_color": emp.badge_color,
+                "state": emp.state,
+                "current_task": emp.current_task,
+                "specialties": emp.specialties,
+            }
+            for emp in orch_obj.employees.values()
+        }
+        scripts.append(f"window.BIS_EMPLOYEE_ROSTER = {json.dumps(emp_roster_payload, ensure_ascii=False)};")
+
     if user_dept:
         safe_dept = json.dumps(user_dept, ensure_ascii=False)
         scripts.append(f"""
@@ -1204,6 +1268,14 @@ def render_bis_3d_office(
         }}
         """)
 
+    if selected_emp_id:
+        safe_eid = json.dumps(selected_emp_id, ensure_ascii=False)
+        scripts.append(f"""
+        if (typeof window.highlightActiveEmployeeIn3D === 'function') {{
+            window.highlightActiveEmployeeIn3D({safe_eid});
+        }}
+        """)
+
     if scripts:
         inner = "\n".join(scripts)
         inject_script = f"""
@@ -1211,7 +1283,7 @@ def render_bis_3d_office(
           window.addEventListener('load', function() {{
             setTimeout(function() {{
               {inner}
-            }}, 800);
+            }}, 700);
           }});
         </script>
         """
@@ -1220,9 +1292,14 @@ def render_bis_3d_office(
     components.html(html_content, height=height, scrolling=False)
 
 
-# ── TAB 1: VĂN PHÒNG 3D LEGO AI TEAM (3D METAVERSE HQ) ───────────────────────
+# ── TAB 1: VĂN PHÒNG 3D LEGO AI TEAM & ĐIỀU HÀNH 15 NHÂN SỰ AI ──────────────
 with tab_lego:
-    st.markdown("### 🏢 Trung Tâm Điều Hành 3D Multi-Agent — BIS Textile Metaverse")
+    st.markdown("### 🏢 Trung Tâm Điều Hành Multi-Agent 3D & 15 Nhân Sự AI Độc Lập — BIS Textile")
+
+    orch = st.session_state.get("orchestrator", None)
+    if not orch and BISEmployeeOrchestrator:
+        st.session_state.orchestrator = BISEmployeeOrchestrator()
+        orch = st.session_state.orchestrator
 
     # 1. KHỐI ĐỊNH DANH NGƯỜI DÙNG & NHÂN VẬT ĐẠI DIỆN TRONG 3D
     c_user_profile, c_user_status = st.columns([2, 1])
@@ -1234,36 +1311,47 @@ with tab_lego:
         )
     with c_user_status:
         st.write("")
-        st.info("🟢 **TRẠNG THÁI:** Đang trực tuyến tại Tòa nhà trung tâm")
+        st.info("🟢 **TRẠNG THÁI:** Đang trực tuyến • Điều hành 15 Nhân sự AI tại Tòa nhà trung tâm")
 
     st.markdown("#### 🎯 Điều Hướng Nhân Vật Của Bạn (Đi tới Phòng Ban Nào, Nhân Vật Đi Tới Đó):")
     c_nav1, c_nav2, c_nav3, c_nav4, c_nav5, c_nav6, c_nav7 = st.columns(7)
-    
+
     selected_user_dept = None
     with c_nav1:
         if st.button("🔬 Phòng Kỹ Thuật", use_container_width=True, key="btn_go_tech"):
             selected_user_dept = "tech"
             st.session_state["user_active_dept"] = "tech"
+            st.session_state["selected_dept_id"] = "RD"
+            st.session_state["selected_emp_id"] = "rd_lead"
     with c_nav2:
         if st.button("📢 Phòng Marketing", use_container_width=True, key="btn_go_mkt"):
             selected_user_dept = "mkt"
             st.session_state["user_active_dept"] = "mkt"
+            st.session_state["selected_dept_id"] = "MKT"
+            st.session_state["selected_emp_id"] = "seo_lead"
     with c_nav3:
         if st.button("🎨 Phòng Studio", use_container_width=True, key="btn_go_media"):
             selected_user_dept = "media"
             st.session_state["user_active_dept"] = "media"
+            st.session_state["selected_dept_id"] = "STUDIO"
+            st.session_state["selected_emp_id"] = "studio_lead"
     with c_nav4:
         if st.button("🌐 Phòng Dịch Thuật", use_container_width=True, key="btn_go_trans"):
             selected_user_dept = "trans"
             st.session_state["user_active_dept"] = "trans"
+            st.session_state["selected_dept_id"] = "TRANS"
+            st.session_state["selected_emp_id"] = "trans_lead"
     with c_nav5:
         if st.button("🛡️ Haravan Guard", use_container_width=True, key="btn_go_ops"):
             selected_user_dept = "ops"
             st.session_state["user_active_dept"] = "ops"
+            st.session_state["selected_dept_id"] = "OPS"
+            st.session_state["selected_emp_id"] = "ops_manager"
     with c_nav6:
         if st.button("🏛️ Phòng Họp Bàn Tròn", use_container_width=True, key="btn_go_meeting"):
             selected_user_dept = "meeting"
             st.session_state["user_active_dept"] = "meeting"
+            st.session_state["chat_mode"] = "ALL_HANDS"
     with c_nav7:
         if st.button("☕ Khu Nghỉ Lounge", use_container_width=True, key="btn_go_lounge"):
             selected_user_dept = "lounge"
@@ -1271,137 +1359,288 @@ with tab_lego:
 
     active_dept_now = selected_user_dept or st.session_state.get("user_active_dept", "desk")
 
-    # 2. THANH ĐIỀU KHIỂN CHI TIẾT TỪNG NHÂN VẬT AI
-    with st.expander("⚙️ Bảng Điều Khiển Tác Vụ Từng Nhân Viên & Trưởng Phòng", expanded=False):
-        col_3d_1, col_3d_2, col_3d_3, col_3d_4 = st.columns([1.5, 1.4, 2.5, 1.2])
-        with col_3d_1:
-            selected_3d_agent = st.selectbox(
-                "Chọn Nhân vật AI:",
-                options=["user_avatar", "boss", "engineer", "creator", "studio", "translator", "guard", "all"],
-                format_func=lambda x: {
-                    "user_avatar": "👑 CEO Huy Mai (User Avatar)",
-                    "boss": "💼 CEO Boss (Điều Phối)",
-                    "engineer": "🔬 Kỹ thuật R&D (Mr. Tech)",
-                    "creator": "✍️ Marketing & SEO (Ms. Content)",
-                    "studio": "📸 Studio & Tri Thức (Mr. Art)",
-                    "translator": "🌐 Dịch thuật (Ms. Translator)",
-                    "guard": "🛡️ Haravan Guard (Mr. Ops)",
-                    "all": "🌐 Toàn bộ Đội ngũ",
-                }[x],
-                key="select_3d_agent"
-            )
-        with col_3d_2:
-            selected_3d_state = st.selectbox(
-                "Trạng thái hoạt động:",
-                options=["WORKING", "HANDOFF", "BREAK", "MEETING"],
-                format_func=lambda x: {
-                    "WORKING": "💻 WORKING (Tại bàn)",
-                    "HANDOFF": "🤝 HANDOFF (Bàn giao)",
-                    "BREAK": "☕ BREAK (Phòng nghỉ)",
-                    "MEETING": "🗣️ MEETING (Bàn tròn)",
-                }[x],
-                key="select_3d_state"
-            )
-        with col_3d_3:
-            custom_3d_message = st.text_input(
-                "Thông điệp suy nghĩ / Giọng nói tiếng Việt:",
-                value="Đã hoàn thành kiểm duyệt danh mục sản phẩm, đề nghị các bộ phận tiếp tục triển khai!",
-                key="input_3d_msg"
-            )
-        with col_3d_4:
-            st.write("")
-            st.write("")
-            send_3d_cmd = st.button("🚀 Gửi lệnh 3D", key="btn_send_3d_cmd", use_container_width=True)
-
-    # 3. RENDER 3D METAVERSE OFFICE
-    if send_3d_cmd:
-        render_bis_3d_office(
-            agent_key=selected_3d_agent,
-            state=selected_3d_state,
-            message=custom_3d_message,
-            user_dept=active_dept_now,
-            height=820,
-        )
-    elif selected_user_dept:
-        render_bis_3d_office(user_dept=selected_user_dept, height=820)
-    else:
-        render_bis_3d_office(height=820)
-
-    # 4. KHU VỰC CƠ CẤU NHÂN SỰ & THẢO LUẬN TỰ HỌC TỪNG PHÒNG BAN
+    # 2. KHỐI ĐIỀU KHIỂN VÒNG LẶP TỰ ĐỘNG & BỘ LỌC CHAT 1-1
     st.markdown("---")
-    c_struct_col, c_chat_col = st.columns([1.1, 1.3])
+    col_ctrl1, col_ctrl2, col_ctrl3, col_ctrl4 = st.columns([1.2, 1.2, 1.6, 2.0])
+    with col_ctrl1:
+        if st.button("⚡ Chạy 1 Bước Tự Động", use_container_width=True, type="primary", key="btn_step_loop"):
+            if orch:
+                ev = orch.step_autonomous_loop()
+                st.session_state.last_3d_command = {
+                    "agent_key": ev["avatar_3d_key"],
+                    "state": ev["state_3d"],
+                    "message": ev["text"],
+                    "selected_emp_id": st.session_state.selected_emp_id,
+                }
+                st.rerun()
+    with col_ctrl2:
+        if st.button("🗣️ Triệu Tập Họp Toàn Thể", use_container_width=True, key="btn_all_hands_top"):
+            st.session_state.chat_mode = "ALL_HANDS"
+            st.session_state.last_3d_command = {
+                "agent_key": "all",
+                "state": "MEETING",
+                "message": "🗣️ Triệu tập Họp Giao Ban Toàn Thể với Chủ tịch Huy Mai!",
+                "selected_emp_id": st.session_state.selected_emp_id,
+            }
+            st.rerun()
 
-    with c_struct_col:
-        st.markdown("#### 🏢 Cơ Cấu Nhân Sự Từng Phòng Ban (Khu Vực & Nhân Sự):")
-        st.markdown("""
-        <div style='background: #090e1a; border: 1px solid #1e293b; border-radius: 10px; padding: 14px; font-size: 13px;'>
-          <div style='margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;'>
-            <strong style='color: #38bdf8;'>🔬 1. Phòng Kỹ Thuật & Thẩm Định Catalog:</strong><br>
-            • <b>Trưởng phòng:</b> Kỹ sư Trưởng (Mr. Tech Lead) - Thẩm định 6 bước B1-B6<br>
-            • <b>Nhân viên:</b> AI Extractor (Bóc tách PDF) & QA Spec (Kiểm định thông số)
-          </div>
-          <div style='margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;'>
-            <strong style='color: #c084fc;'>📢 2. Phòng Nghiên Cứu Marketing & SEO:</strong><br>
-            • <b>Trưởng phòng:</b> Ms. Content (SEO Lead) - Chiến lược AIDA, USP độc quyền<br>
-            • <b>Nhân viên:</b> AI Copywriter & Keyword Specialist (Từ khóa dệt may)
-          </div>
-          <div style='margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;'>
-            <strong style='color: #f472b6;'>🎨 3. Phòng Studio & Xử Lý Ảnh Lab:</strong><br>
-            • <b>Trưởng phòng:</b> Mr. Art (Creative Director) - Chuẩn hóa màu sắc 2K<br>
-            • <b>Nhân viên:</b> Image Retoucher & 3D Lab Compositor (Phối cảnh Lab)
-          </div>
-          <div style='margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;'>
-            <strong style='color: #22d3ee;'>🌐 4. Phòng Dịch Thuật & Bản Địa Hóa (Agent_Translator):</strong><br>
-            • <b>Trưởng phòng:</b> Senior Translator (Ms. Linh) - Dịch thuật dệt may 23 hãng<br>
-            • <b>Nhân viên:</b> OCR Specialist (Quét ảnh) & Layout Formatter (Giữ 100% bảng biểu)
-          </div>
-          <div>
-            <strong style='color: #34d399;'>🛡️ 5. Phòng Vận Hành & Haravan Guard:</strong><br>
-            • <b>Trưởng phòng:</b> Mr. Guard (Security & Sync Master) - Rào chắn 20/10/2026<br>
-            • <b>Nhân viên:</b> Sync Operator (Đồng bộ API Haravan chế độ ẩn)
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
+    dept_options = orch.get_departments() if orch else {}
+    with col_ctrl3:
+        if dept_options:
+            selected_dept = st.selectbox(
+                "Phòng ban:",
+                options=list(dept_options.keys()),
+                index=list(dept_options.keys()).index(st.session_state.selected_dept_id) if st.session_state.selected_dept_id in dept_options else 0,
+                format_func=lambda k: dept_options[k],
+                key="sb_dept_select"
+            )
+            if selected_dept != st.session_state.selected_dept_id:
+                st.session_state.selected_dept_id = selected_dept
+                filtered = orch.get_employees_by_dept(selected_dept)
+                if filtered:
+                    st.session_state.selected_emp_id = filtered[0].emp_id
+                st.session_state.chat_mode = "DIRECT_1_1"
+                st.rerun()
 
-    with c_chat_col:
-        st.markdown("#### 💬 Hội Thoại & Thảo Luận Nội Bộ Tự Động Giữa Các Phòng Ban:")
-        st.markdown("""
-        <div style='background: #090e1a; border: 1px solid #1e293b; border-radius: 10px; padding: 14px; max-height: 380px; overflow-y: auto; font-family: monospace; font-size: 12px;'>
-          <div style='margin-bottom: 8px; color: #38bdf8;'>
-            <b>[08:30 Mr. Tech]:</b> "Đã hoàn tất bóc tách 17 mã SKU từ Catalog AATCC. Đã bàn giao dữ liệu kỹ thuật sang phòng Marketing."
-          </div>
-          <div style='margin-bottom: 8px; color: #c084fc;'>
-            <b>[08:35 Ms. Content]:</b> "Đã nhận dữ liệu! Marketing đang triển khai bài viết theo khung 7 khối chuẩn SEO, không dùng từ cấm."
-          </div>
-          <div style='margin-bottom: 8px; color: #f472b6;'>
-            <b>[08:42 Mr. Art]:</b> "Studio đã render xong ảnh thiết bị trong phòng Lab tiêu chuẩn 2K, sẵn sàng ghép vào Khối 1."
-          </div>
-          <div style='margin-bottom: 8px; color: #22d3ee;'>
-            <b>[08:50 Ms. Translator]:</b> "Phòng Dịch thuật đã kích hoạt OCR bóc tách tài liệu VeriVide VS1, hoàn tất bản dịch Word 100% bảng biểu."
-          </div>
-          <div style='margin-bottom: 8px; color: #34d399;'>
-            <b>[09:05 Mr. Guard]:</b> "Đã đối soát an toàn 2 chiều. Toàn bộ SKU trùng trước 20/10/2026 được khóa REJECTED an toàn!"
-          </div>
-          <div style='margin-bottom: 8px; color: #fbbf24;'>
-            <b>[09:15 👑 CEO Huy Mai]:</b> "Rất tốt! Cả đội tiếp tục quy trình tự học từ feedback khách hàng để tối ưu hóa tỷ lệ chuyển đổi."
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
+    with col_ctrl4:
+        if orch:
+            filtered_employees = orch.get_employees_by_dept(st.session_state.selected_dept_id)
+            emp_ids = [e.emp_id for e in filtered_employees]
+            curr_idx = emp_ids.index(st.session_state.selected_emp_id) if st.session_state.selected_emp_id in emp_ids else 0
+            chosen_eid = st.selectbox(
+                "Nhân viên AI giao tiếp 1-1:",
+                options=emp_ids,
+                index=curr_idx,
+                format_func=lambda eid: f"{orch.employees[eid].avatar_emoji} {orch.employees[eid].name} ({orch.employees[eid].title})",
+                key="sb_emp_select"
+            )
+            if chosen_eid != st.session_state.selected_emp_id:
+                st.session_state.selected_emp_id = chosen_eid
+                st.session_state.chat_mode = "DIRECT_1_1"
+                emp_obj = orch.employees[chosen_eid]
+                st.session_state.last_3d_command = {
+                    "agent_key": emp_obj.avatar_3d_key,
+                    "state": STATE_TO_3D_MAP.get(emp_obj.state, "WORKING"),
+                    "message": f"{emp_obj.avatar_emoji} {emp_obj.name}: Sẵn sàng trao đổi 1-1 với Chủ tịch Huy Mai!",
+                    "selected_emp_id": emp_obj.emp_id,
+                }
+                st.rerun()
+
+    # 3. BỐ CỤC CHÍNH CHIA 2 CỘT: VĂN PHÒNG 3D & TRUNG TÂM CHAT 1-1
+    c_3d_viewport, c_chat_viewport = st.columns([1.35, 1.0], gap="medium")
+
+    cmd = st.session_state.last_3d_command
+    with c_3d_viewport:
+        st.markdown("#### 🌐 Không Gian 3D Metaverse (Click nhân vật để zoom & mở hội thoại)")
+        render_bis_3d_office(
+            agent_key=cmd.get("agent_key"),
+            state=cmd.get("state"),
+            message=cmd.get("message"),
+            user_dept=active_dept_now,
+            selected_emp_id=st.session_state.selected_emp_id,
+            height=700,
+        )
+
+    with c_chat_viewport:
+        mode_c1, mode_c2 = st.columns(2)
+        with mode_c1:
+            if st.button(
+                "👤 Chat Trực Tiếp 1-1",
+                type="primary" if st.session_state.chat_mode == "DIRECT_1_1" else "secondary",
+                use_container_width=True,
+                key="btn_mode_direct"
+            ):
+                st.session_state.chat_mode = "DIRECT_1_1"
+                st.rerun()
+        with mode_c2:
+            if st.button(
+                "🗣️ Họp Toàn Thể (5 Phòng)",
+                type="primary" if st.session_state.chat_mode == "ALL_HANDS" else "secondary",
+                use_container_width=True,
+                key="btn_mode_allhands"
+            ):
+                st.session_state.chat_mode = "ALL_HANDS"
+                st.session_state.last_3d_command = {
+                    "agent_key": "all",
+                    "state": "MEETING",
+                    "message": "🗣️ Toàn bộ 5 Phòng ban họp giao ban với Chủ tịch Huy Mai!",
+                    "selected_emp_id": st.session_state.selected_emp_id,
+                }
+                st.rerun()
+
+        if orch and st.session_state.chat_mode == "DIRECT_1_1":
+            active_emp = orch.employees.get(st.session_state.selected_emp_id, list(orch.employees.values())[0])
+            st.markdown(
+                f"""
+                <div class="emp-card" style="border-left: 5px solid {active_emp.badge_color};">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <span style="font-size:20px; margin-right:6px;">{active_emp.avatar_emoji}</span>
+                      <b style="font-size:16px; color:#f8fafc;">{active_emp.name}</b>
+                      <span style="font-size:12px; color:#94a3b8;"> — {active_emp.title}</span>
+                    </div>
+                    <span class="state-pill" style="background:{active_emp.badge_color}33; color:{active_emp.badge_color}; border:1px solid {active_emp.badge_color};">
+                      {active_emp.state} • {active_emp.progress_pct}%
+                    </span>
+                  </div>
+                  <div style="font-size:12px; color:#cbd5e1; margin-top:6px;">
+                    <b>Phòng ban:</b> {active_emp.department_name} &nbsp;|&nbsp;
+                    <b>Công cụ:</b> <code>{', '.join(active_emp.tools)}</code>
+                  </div>
+                  <div style="font-size:12px; color:#38bdf8; margin-top:4px;">
+                    <b>Tác vụ tự chạy:</b> {active_emp.current_task}
+                  </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            st.caption("⚡ **Lệnh chỉ đạo nhanh của Chủ tịch Huy Mai:**")
+            qcol1, qcol2, qcol3 = st.columns(3)
+            quick_prompt = None
+            with qcol1:
+                if st.button("🔍 Kiểm tra SKU", use_container_width=True, key="quick_sku"):
+                    quick_prompt = f"{active_emp.name} kiểm tra lại thông số và tiêu chuẩn mã SKU 03026A cho anh nhé!"
+            with qcol2:
+                if st.button("📄 Dịch chuẩn hóa", use_container_width=True, key="quick_doc"):
+                    quick_prompt = "Dịch và chuẩn hóa giúp anh tài liệu kỹ thuật Catalogue 36 trang giữ nguyên định dạng 100%."
+            with qcol3:
+                if st.button("⏸️ Rào chắn Haravan", use_container_width=True, key="quick_haravan"):
+                    quick_prompt = "Tạm dừng đồng bộ Haravan để anh rà soát giá, giữ chặt rào chắn bảo vệ trước 20/10/2026."
+
+            chat_box = st.container(height=340)
+            with chat_box:
+                for msg in active_emp.chat_memory:
+                    is_ceo = msg.sender == "ceo"
+                    with st.chat_message("user" if is_ceo else "assistant", avatar="👑" if is_ceo else active_emp.avatar_emoji):
+                        st.markdown(f"**{msg.sender_name}** *(lúc {msg.timestamp})*")
+                        st.markdown(msg.content)
+                        if msg.action_log:
+                            st.code(msg.action_log, language="bash")
+
+            user_input = st.chat_input(f"Nhắn chỉ đạo cho {active_emp.name} ({active_emp.title})...", key="input_emp_chat")
+            final_prompt = quick_prompt or user_input
+
+            if final_prompt:
+                result = orch.chat_with_employee(active_emp.emp_id, final_prompt)
+                st.session_state.last_3d_command = {
+                    "agent_key": result["avatar_3d_key"],
+                    "state": result["state_3d"],
+                    "message": result["bubble_3d"],
+                    "selected_emp_id": active_emp.emp_id,
+                }
+                st.rerun()
+
+        elif orch:
+            st.markdown(
+                """
+                <div class="emp-card" style="border-left: 5px solid #f59e0b;">
+                  <b style="font-size:15px; color:#fef08a;">🗣️ PHÒNG HỌP BÀN TRÒN — TRIỆU TẬP TOÀN THỂ 5 PHÒNG BAN</b>
+                  <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">
+                    Khi Chủ tịch ban hành chỉ đạo tại đây, cả 5 Trưởng phòng đại diện 15 nhân sự AI sẽ đồng loạt báo cáo phương án triển khai.
+                  </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            group_box = st.container(height=400)
+            with group_box:
+                if not orch.group_meeting_log:
+                    st.info("Chào Chủ tịch Huy Mai! Hãy nhập chỉ đạo bên dưới để triệu tập cả 5 Trưởng phòng báo cáo.")
+                for gmsg in orch.group_meeting_log:
+                    is_ceo = gmsg.sender == "ceo"
+                    emp_avatar = "👑" if is_ceo else (orch.employees[gmsg.sender].avatar_emoji if gmsg.sender in orch.employees else "🤖")
+                    with st.chat_message("user" if is_ceo else "assistant", avatar=emp_avatar):
+                        st.markdown(f"**{gmsg.sender_name}** • *{gmsg.role_badge}* ({gmsg.timestamp})")
+                        st.markdown(gmsg.content)
+                        if gmsg.action_log:
+                            st.code(gmsg.action_log, language="text")
+
+            group_directive = st.chat_input("Nhập chỉ đạo chung của Chủ tịch Huy Mai cho toàn bộ 5 Phòng ban...", key="input_group_chat")
+            if group_directive:
+                orch.summon_all_hands_meeting(group_directive)
+                st.session_state.last_3d_command = {
+                    "agent_key": "all",
+                    "state": "MEETING",
+                    "message": f"🗣️ Toàn công ty thực thi chỉ đạo của Chủ tịch: {group_directive[:40]}...",
+                    "selected_emp_id": st.session_state.selected_emp_id,
+                }
+                st.rerun()
+
+    # 4. NHẬT KÝ TỰ VẬN HÀNH THỜI GIAN THỰC & DANH BẠ 15 NHÂN SỰ
+    st.markdown("---")
+    tab_log_feed, tab_all_emps = st.tabs([
+        "📡 Nhật Ký Vòng Lặp Tự Vận Hành (Live Autonomous Task Stream)",
+        "📋 Danh Bạ Chi Tiết 15 Nhân Viên AI & Tác Vụ Đang Chạy",
+    ])
+
+    with tab_log_feed:
+        if orch:
+            st.markdown("##### 📡 Các tác vụ nền đang tự động kích hoạt bởi 15 nhân viên AI:")
+            for ev in orch.system_event_feed[:8]:
+                st.markdown(
+                    f"<div style='font-size:12.5px; padding:8px 12px; margin-bottom:8px; border-left:4px solid {ev['color']}; background:rgba(15,23,42,0.75); border-radius:8px;'>"
+                    f"<b>{ev['actor']}</b> <span style='color:#94a3b8;'>({ev['time']})</span> — <span class='state-pill' style='background:{ev['color']}28; color:{ev['color']};'>{ev['state']}</span><br/>{ev['text']}"
+                    f"</div>",
+                    unsafe_allow_html=True,
+                )
+
+    with tab_all_emps:
+        if orch:
+            dept_map = orch.get_departments()
+            for dcode in ["RD", "MKT", "STUDIO", "TRANS", "OPS"]:
+                st.markdown(f"**{dept_map[dcode]}**")
+                demps = orch.get_employees_by_dept(dcode)
+                dcols = st.columns(3)
+                for didx, demp in enumerate(demps):
+                    with dcols[didx % 3]:
+                        st.markdown(
+                            f"""
+                            <div class="emp-card" style="border-top: 3px solid {demp.badge_color};">
+                              <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <b>{demp.avatar_emoji} {demp.name}</b>
+                                <span class="state-pill" style="background:{demp.badge_color}25; color:{demp.badge_color}; border:1px solid {demp.badge_color};">
+                                  {demp.state}
+                                </span>
+                              </div>
+                              <div style="font-size:11.5px; color:#94a3b8; margin-top:2px;">{demp.title}</div>
+                              <div style="font-size:12px; color:#e2e8f0; margin-top:8px;">
+                                <b>Tác vụ:</b> {demp.current_task}
+                              </div>
+                              <div style="font-size:11px; color:#38bdf8; margin-top:6px;">
+                                Chuyên môn: {', '.join(demp.specialties[:2])}
+                              </div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+                        if st.button(f"💬 Chat 1-1 với {demp.name}", key=f"btn_jump_emp_{demp.emp_id}", use_container_width=True):
+                            st.session_state.selected_dept_id = demp.department_id
+                            st.session_state.selected_emp_id = demp.emp_id
+                            st.session_state.chat_mode = "DIRECT_1_1"
+                            st.session_state.last_3d_command = {
+                                "agent_key": demp.avatar_3d_key,
+                                "state": STATE_TO_3D_MAP.get(demp.state, "WORKING"),
+                                "message": f"{demp.avatar_emoji} {demp.name}: Dạ em nghe lệnh Chủ tịch Huy Mai ạ!",
+                                "selected_emp_id": demp.emp_id,
+                            }
+                            st.rerun()
 
     # 5. TỰ LÊN LỊCH HỌP & BỘ NHỚ TỰ HỌC CẢI THIỆN
     st.markdown("---")
     c_meet_sched, c_learn_loop = st.columns([1.2, 1])
 
     with c_meet_sched:
-        st.markdown("#### 📅 Lịch Họp Giao Ban Tự Động & Họp Khẩn Cấp:")
+        st.markdown("#### 📅 Lịch Họp Giao Ban Tự Động & Triệu Tập Khẩn Cấp:")
         st.markdown("""
         - 🕗 **08:30:** Giao ban đầu giờ phân tích tài liệu kỹ thuật mới (Kỹ thuật + CEO).
         - 🕐 **11:30:** Họp liên phòng duyệt nội dung SEO & Phối cảnh Studio (Marketing + Studio).
         - 🕑 **14:00:** Họp đối soát an toàn Haravan & Kế hoạch đồng bộ (Ops + CEO).
         - 🕔 **17:00:** Họp tổng kết bộ nhớ tự học & Báo cáo kết quả ngày (Toàn thể).
         """)
-        if st.button("🔔 TRIỆU TẬP CUỘC HỌP GIAO BAN NGAY (TẤT CẢ VÀO BÀN TRÒN HỌP)", type="primary", use_container_width=True):
-            render_bis_3d_office(agent_key="all", state="MEETING", user_dept="meeting", height=820)
+        if st.button("🔔 TRIỆU TẬP CUỘC HỌP GIAO BAN NGAY (TẤT CẢ VÀO BÀN TRÒN HỌP)", type="primary", use_container_width=True, key="btn_summon_roundtable"):
+            render_bis_3d_office(agent_key="all", state="MEETING", user_dept="meeting", height=700)
             st.success("📢 Đã triệu tập toàn bộ Trưởng phòng và Nhân viên vào Bàn họp tròn trung tâm để báo cáo cho CEO!")
 
     with c_learn_loop:
