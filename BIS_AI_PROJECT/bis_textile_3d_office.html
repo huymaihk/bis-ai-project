@@ -184,7 +184,7 @@
   </header>
 
   <!-- LEFT HOLOGRAM 1-1 CHAT DRAWER (MỞ KHI CLICK VÀO BẤT KỲ NHÂN VẬT NÀO TRONG 16 NHÂN VẬT) -->
-  <section id="direct-chat-drawer" class="fixed top-16 left-3 z-30 w-96 max-w-[calc(100vw-24px)] glass-panel rounded-2xl p-3.5 hidden flex-col gap-2.5 border-l-4 border-l-sky-400">
+  <section id="direct-chat-drawer" class="fixed top-14 left-3 z-30 w-80 max-w-[calc(100vw-24px)] glass-panel rounded-2xl p-3 hidden flex-col gap-2 border-l-4 border-l-sky-400 shadow-2xl">
     <div class="flex items-start justify-between gap-2">
       <div>
         <div class="flex items-center gap-1.5">
@@ -243,6 +243,7 @@
   <!-- BOTTOM HUD SCENARIO BAR -->
   <footer id="bottom-footer" class="fixed bottom-2 left-2 right-2 z-20 flex flex-col items-center pointer-events-none hidden">
     <div class="glass-panel rounded-2xl p-1.5 sm:px-3 sm:py-2 pointer-events-auto flex flex-wrap items-center justify-center gap-1.5 max-w-full">
+      <div id="scenario-status-text" class="w-full text-center text-[10.5px] text-amber-300 font-bold mb-1 mono"></div>
       <button id="btn-sim-handoff" class="hud-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-600/30 flex items-center gap-1.5 border border-blue-400/30">
         <span>🚶‍♂️</span>
         <span>Mô phỏng Bóc tách PDF -> Bàn giao Liên Phòng Ban</span>
@@ -934,11 +935,12 @@
     }
 
     function setupLights() {
-      const hemi = new THREE.HemisphereLight(0xdbeafe, 0x0f172a, 0.7);
+      // Ánh sáng môi trường tươi sáng, rõ nét toàn bộ 16 vị trí bàn
+      const hemi = new THREE.HemisphereLight(0xdbeafe, 0x1e293b, 1.15);
       hemi.position.set(0, 25, 0);
       scene.add(hemi);
 
-      const dir = new THREE.DirectionalLight(0xfffbeb, 0.95);
+      const dir = new THREE.DirectionalLight(0xfffbeb, 1.2);
       dir.position.set(16, 28, 18);
       dir.castShadow = true;
       dir.shadow.mapSize.width = 2048;
@@ -950,13 +952,13 @@
       dir.shadow.camera.bottom = -d;
       scene.add(dir);
 
-      // Spotlight Hoàng gia chiếu vào Bàn Chủ Tịch Huy Mai
-      const ceoLight = new THREE.PointLight(0xfacc15, 1.6, 12);
+      // Spotlight Hoàng gia chiếu sáng rực rỡ Bàn Chủ Tịch Huy Mai
+      const ceoLight = new THREE.PointLight(0xfacc15, 2.2, 16);
       ceoLight.position.set(0, 4.5, -8.6);
       scene.add(ceoLight);
 
       // Ánh sáng Hologram bàn họp tròn trung tâm
-      const holoLight = new THREE.PointLight(0x38bdf8, 1.5, 14);
+      const holoLight = new THREE.PointLight(0x38bdf8, 2.2, 16);
       holoLight.position.set(0, 3.2, 0.4);
       scene.add(holoLight);
     }
@@ -1531,7 +1533,7 @@
       });
     }
 
-    function zoomAndOpenChatWithCharacter(charId) {
+    function zoomAndOpenChatWithCharacter(charId, openDrawer = false) {
       const ent = entities[charId];
       if (!ent) return;
       activeCharId = charId;
@@ -1544,11 +1546,18 @@
       cameraFocusState.targetPos.copy(pos).add(forward.multiplyScalar(4.2)).add(new THREE.Vector3(1.0, 2.8, 1.0));
       cameraFocusState.active = true;
 
-      // Vẫy tay & mở cửa sổ Chat 1-1
+      // Vẫy tay chào Chủ tịch Huy Mai
       ent.waveTimer = 2.4;
-      openChatDrawer16(charId);
+      if (openDrawer) {
+        openChatDrawer16(charId);
+      }
       speakVietnamese(ent.cfg.greeting, charId);
-      log3DActivity(ent.cfg.shortName, `Kết nối Hologram Chat 1-1 (${ent.cfg.deskNo}).`, ent.cfg.badgeBorder);
+      log3DActivity(ent.cfg.shortName, `Tập trung vào ${ent.cfg.shortName} (${ent.cfg.deskNo}).`, ent.cfg.badgeBorder);
+
+      // Gửi thông báo đến giao diện Streamlit cha
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'SELECT_EMPLOYEE', empId: charId }, '*');
+      }
     }
 
     function openChatDrawer16(charId) {
@@ -1639,7 +1648,7 @@
 
     window.highlightActiveEmployeeIn3D = function(empId) {
       if (entities[empId]) {
-        zoomAndOpenChatWithCharacter(empId);
+        zoomAndOpenChatWithCharacter(empId, false);
       }
     };
 
@@ -1687,10 +1696,15 @@
     // ============================================================================
     // 10. KỊCH BẢN MÔ PHỎNG 16 NHÂN VẬT (BÀN GIAO, HỌP 16 GHẾ, PANTRY, LÀM VIỆC)
     // ============================================================================
+    function setScenarioStatus(txt) {
+      const el = document.getElementById("scenario-status-text");
+      if (el) el.textContent = txt;
+    }
+
     function startAll16Meeting() {
       clearAllTimers();
       playChime(784, 0.18);
-      document.getElementById('scenario-status-text').textContent = 'Trạng thái: Họp Giao Ban Toàn Công Ty (Đủ 16 Nhân Sự quanh Bàn Tròn)';
+      setScenarioStatus( 'Trạng thái: Họp Giao Ban Toàn Công Ty (Đủ 16 Nhân Sự quanh Bàn Tròn)');
 
       const centerHub = new THREE.Vector3(0, 0, 0.4);
       CHARACTERS_16.forEach(cfg => {
@@ -1715,7 +1729,7 @@
     function sendAll16ToWork() {
       clearAllTimers();
       playChime(659, 0.14);
-      document.getElementById('scenario-status-text').textContent = 'Trạng thái: 16/16 Nhân sự làm việc tốc độ cao tại bàn riêng';
+      setScenarioStatus( 'Trạng thái: 16/16 Nhân sự làm việc tốc độ cao tại bàn riêng');
 
       CHARACTERS_16.forEach(cfg => {
         const ent = entities[cfg.id];
@@ -1727,7 +1741,7 @@
     function sendAll16ToBreak() {
       clearAllTimers();
       playChime(523, 0.15);
-      document.getElementById('scenario-status-text').textContent = 'Trạng thái: Giải lao uống cà phê tại khu Pantry / Lounge';
+      setScenarioStatus( 'Trạng thái: Giải lao uống cà phê tại khu Pantry / Lounge');
 
       CHARACTERS_16.forEach(cfg => {
         moveCharacterTo(
@@ -1745,7 +1759,7 @@
     function runMultiDeptHandoffSimulation() {
       clearAllTimers();
       sendAll16ToWork();
-      document.getElementById('scenario-status-text').textContent = 'Trạng thái: Đang chạy luồng Bóc tách B1-B6 -> Bàn giao SEO -> Haravan Guard';
+      setScenarioStatus( 'Trạng thái: Đang chạy luồng Bóc tách B1-B6 -> Bàn giao SEO -> Haravan Guard');
 
       scheduleTask(() => {
         // Bàn 1 (Dr. Textile Tech) bước sang Bàn 4 (Marketing Lead Pro)
@@ -1784,57 +1798,64 @@
     }
 
     function setupHUDControls() {
-      document.getElementById('btn-sim-handoff').addEventListener('click', runMultiDeptHandoffSimulation);
-      document.getElementById('btn-sim-meeting').addEventListener('click', startAll16Meeting);
-      document.getElementById('btn-sim-work').addEventListener('click', sendAll16ToWork);
-      document.getElementById('btn-sim-break').addEventListener('click', sendAll16ToBreak);
+      const safeOn = (id, evt, fn) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener(evt, fn);
+      };
 
-      document.getElementById('btn-toggle-voice').addEventListener('click', () => {
+      safeOn('btn-sim-handoff', 'click', runMultiDeptHandoffSimulation);
+      safeOn('btn-sim-meeting', 'click', startAll16Meeting);
+      safeOn('btn-sim-work', 'click', sendAll16ToWork);
+      safeOn('btn-sim-break', 'click', sendAll16ToBreak);
+
+      safeOn('btn-toggle-voice', 'click', () => {
         voiceEnabled = !voiceEnabled;
-        document.getElementById('voice-icon').textContent = voiceEnabled ? '🔊' : '🔇';
-        document.getElementById('voice-label').textContent = voiceEnabled ? 'Giọng nói: BẬT' : 'Giọng nói: TẮT';
+        const vIcon = document.getElementById('voice-icon');
+        const vLabel = document.getElementById('voice-label');
+        if (vIcon) vIcon.textContent = voiceEnabled ? '🔊' : '🔇';
+        if (vLabel) vLabel.textContent = voiceEnabled ? 'Giọng nói: BẬT' : 'Giọng nói: TẮT';
         if (!voiceEnabled && 'speechSynthesis' in window) window.speechSynthesis.cancel();
       });
 
-      
-      const btnToggleHud = document.getElementById('btn-toggle-hud');
-      if (btnToggleHud) {
-        btnToggleHud.addEventListener('click', () => {
-          const footer = document.getElementById('bottom-footer');
-          const rightPanel = document.getElementById('right-roster-panel');
-          if (footer) footer.classList.toggle('hidden');
-          if (rightPanel) rightPanel.classList.toggle('hidden');
-        });
-      }
-      document.getElementById('btn-reset-cam').addEventListener('click', () => {
+      safeOn('btn-toggle-hud', 'click', () => {
+        const footer = document.getElementById('bottom-footer');
+        const rightPanel = document.getElementById('right-roster-panel');
+        if (footer) footer.classList.toggle('hidden');
+        if (rightPanel) rightPanel.classList.toggle('hidden');
+      });
+
+      safeOn('btn-reset-cam', 'click', () => {
         cameraFocusState.lookAtPos.set(0, 1.0, -0.5);
         cameraFocusState.targetPos.set(0, 18, 22.5);
         cameraFocusState.active = true;
       });
 
-      document.getElementById('btn-toggle-right-panel').addEventListener('click', () => {
+      safeOn('btn-toggle-right-panel', 'click', () => {
         const p = document.getElementById('right-roster-panel');
-        p.classList.toggle('hidden');
+        if (p) p.classList.toggle('hidden');
       });
 
       document.querySelectorAll('.dept-jump-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          zoomAndOpenChatWithCharacter(btn.getAttribute('data-focus'));
+          const fid = btn.getAttribute('data-focus');
+          if (fid) zoomAndOpenChatWithCharacter(fid, false);
         });
       });
 
-      document.getElementById('btn-close-chat-drawer').addEventListener('click', () => {
+      safeOn('btn-close-chat-drawer', 'click', () => {
         const d = document.getElementById('direct-chat-drawer');
-        d.classList.add('hidden');
-        d.classList.remove('flex');
+        if (d) {
+          d.classList.add('hidden');
+          d.classList.remove('flex');
+        }
       });
 
-      document.getElementById('chat-drawer-emp-select').addEventListener('change', (e) => {
-        zoomAndOpenChatWithCharacter(e.target.value);
+      safeOn('chat-drawer-emp-select', 'change', (e) => {
+        zoomAndOpenChatWithCharacter(e.target.value, true);
       });
 
-      document.getElementById('btn-chat-drawer-send').addEventListener('click', () => sendChatToCharacter16());
-      document.getElementById('chat-drawer-input').addEventListener('keydown', (e) => {
+      safeOn('btn-chat-drawer-send', 'click', () => sendChatToCharacter16());
+      safeOn('chat-drawer-input', 'keydown', (e) => {
         if (e.key === 'Enter') sendChatToCharacter16();
       });
 
@@ -1984,10 +2005,25 @@
       updateAllDOMOverlays();
     }
 
-    window.addEventListener('load', () => {
-      initScene();
-      animate();
-    });
+    let is3DStarted = false;
+    function start3DExperience() {
+      if (is3DStarted) return;
+      is3DStarted = true;
+      try {
+        initScene();
+        animate();
+        console.log("3D BIS Metaverse initialized successfully.");
+      } catch (err) {
+        console.error("Three.js Init Error:", err);
+      }
+    }
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      start3DExperience();
+    } else {
+      window.addEventListener('DOMContentLoaded', start3DExperience);
+      window.addEventListener('load', start3DExperience);
+    }
   
     window.syncInitialRosterFromStreamlit = function(rosterData) {
       if (rosterData && typeof rosterData === 'object') {

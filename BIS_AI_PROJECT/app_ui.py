@@ -1279,11 +1279,18 @@ def render_bis_3d_office(
         inner = "\n".join(scripts)
         inject_script = f"""
         <script>
-          window.addEventListener('load', function() {{
-            setTimeout(function() {{
-              {inner}
-            }}, 700);
-          }});
+          (function() {{
+            function runInjectedScripts() {{
+              setTimeout(function() {{
+                {inner}
+              }}, 350);
+            }}
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {{
+              runInjectedScripts();
+            }} else {{
+              window.addEventListener('load', runInjectedScripts);
+            }}
+          }})();
         </script>
         """
         html_content = html_content.replace("</body>", f"{inject_script}\n</body>")
