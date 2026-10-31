@@ -2256,73 +2256,157 @@ with tab_trans:
     st.markdown("---")
     st.markdown("#### 🚀 Khởi chạy dịch tài liệu sang tiếng Việt:")
 
-    if not brand_manuals_dict:
-        st.warning("⚠️ Không tìm thấy tài liệu nào trong thư mục Google_Drive_Storage/2_Manuals_Standards.")
-    else:
-        col_sel_brand, col_sel_doc = st.columns([1, 2])
-        brand_keys = list(brand_manuals_dict.keys())
+    tab_mode_select, tab_mode_upload = st.tabs([
+        "📚 1. Chọn Tài Liệu Có Sẵn Theo Hãng",
+        "📤 2. Tải Lên File Mới Từ Máy Tính (PDF / Word)"
+    ])
 
-        with col_sel_brand:
-            selected_brand = st.selectbox(
-                "1. Chọn Hãng sản xuất / Nhóm tiêu chuẩn:",
-                options=brand_keys,
-                key="trans_sel_brand"
+    with tab_mode_select:
+        if not brand_manuals_dict:
+            st.info("ℹ️ Hiện chưa có tài liệu nào trong thư mục máy chủ. Bạn có thể chuyển sang tab **'📤 2. Tải Lên File Mới Từ Máy Tính'** ở bên cạnh để tải file lên và dịch ngay!")
+        else:
+            col_sel_brand, col_sel_doc = st.columns([1, 2])
+            brand_keys = list(brand_manuals_dict.keys())
+
+            with col_sel_brand:
+                selected_brand = st.selectbox(
+                    "1. Chọn Hãng sản xuất / Nhóm tiêu chuẩn:",
+                    options=brand_keys,
+                    key="trans_sel_brand"
+                )
+
+            doc_candidates = brand_manuals_dict.get(selected_brand, [])
+            with col_sel_doc:
+                doc_labels = [f"{d['name']} ({d['size_kb']} KB, {d['ext'].upper()})" for d in doc_candidates]
+                selected_doc_idx = st.selectbox(
+                    "2. Chọn tài liệu cần dịch sang tiếng Việt:",
+                    options=range(len(doc_candidates)),
+                    format_func=lambda i: doc_labels[i] if i < len(doc_labels) else "",
+                    key="trans_sel_doc_idx"
+                )
+
+            if doc_candidates and 0 <= selected_doc_idx < len(doc_candidates):
+                chosen_doc = doc_candidates[selected_doc_idx]
+                
+                c_opt1, c_opt2 = st.columns([2, 1])
+                with c_opt1:
+                    trans_mode = st.radio(
+                        "3. Chọn phạm vi biên dịch:",
+                        options=["Toàn bộ tài liệu (Full Document)", "Thử nghiệm trang đầu (1-3 trang)"],
+                        horizontal=True,
+                        key="trans_mode_radio"
+                    )
+                with c_opt2:
+                    max_pages_to_trans = 3 if "Thử nghiệm" in trans_mode else None
+                    st.caption(f"📌 Chế độ: **{'Dịch mẫu 3 trang đầu' if max_pages_to_trans else 'Dịch 100% toàn bộ trang'}**")
+
+                st.write("")
+                btn_start_trans = st.button(
+                    f"🚀 DỊCH TÀI LIỆU '{chosen_doc['name']}' SANG TIẾNG VIỆT",
+                    type="primary",
+                    use_container_width=True,
+                    key="btn_run_translate"
+                )
+
+                if btn_start_trans:
+                    with st.spinner("Agent_Translator đang phân tích cấu trúc tài liệu và tiến hành biên dịch..."):
+                        prog_bar = st.progress(0.0)
+                        status_text = st.empty()
+
+                        def ui_progress_cb(pct, msg):
+                            prog_bar.progress(pct)
+                            status_text.info(f"⏳ {msg}")
+
+                        try:
+                            fresh_translator = AgentTranslator(PROJECT_DIR) if AgentTranslator else translator_agent
+                            res_path = fresh_translator.translate_document(
+                                doc_path=chosen_doc["path"],
+                                brand_name=selected_brand,
+                                progress_callback=ui_progress_cb,
+                                max_pages=max_pages_to_trans
+                            )
+                            prog_bar.progress(1.0)
+                            status_text.success(f"🎉 Hoàn tất dịch thuật! File đã lưu vào: `{res_path.relative_to(PROJECT_DIR)}`")
+
+                            if res_path.exists():
+                                with open(res_path, "rb") as f_out:
+                                    docx_bytes = f_out.read()
+                                st.download_button(
+                                    label=f"📥 TẢI XUỐNG BẢN DỊCH: {res_path.name}",
+                                    data=docx_bytes,
+                                    file_name=res_path.name,
+                                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                    type="primary",
+                                    use_container_width=True
+                                )
+                                load_cached_translated_docs.clear()
+                        except Exception as e:
+                            prog_bar.progress(1.0)
+                            status_text.error(f"❌ Có lỗi trong quá trình dịch thuật: {e}")
+
+    with tab_mode_upload:
+        st.markdown("##### 📤 Tải tài liệu từ máy tính lên để biên dịch tức thì:")
+        col_up_file, col_up_brand = st.columns([2, 1])
+        with col_up_file:
+            uploaded_trans_file = st.file_uploader(
+                "Chọn file Manual / Standard cần dịch (PDF hoặc DOCX):",
+                type=["pdf", "docx"],
+                key="uploader_trans_doc"
+            )
+        with col_up_brand:
+            upload_brand_name = st.text_input(
+                "Tên Hãng sản xuất / Tổ chức tiêu chuẩn:",
+                value="Tài liệu tải lên",
+                key="uploader_trans_brand"
             )
 
-        doc_candidates = brand_manuals_dict.get(selected_brand, [])
-        with col_sel_doc:
-            doc_labels = [f"{d['name']} ({d['size_kb']} KB, {d['ext'].upper()})" for d in doc_candidates]
-            selected_doc_idx = st.selectbox(
-                "2. Chọn tài liệu cần dịch sang tiếng Việt:",
-                options=range(len(doc_candidates)),
-                format_func=lambda i: doc_labels[i] if i < len(doc_labels) else "",
-                key="trans_sel_doc_idx"
-            )
-
-        if doc_candidates and 0 <= selected_doc_idx < len(doc_candidates):
-            chosen_doc = doc_candidates[selected_doc_idx]
-            
-            c_opt1, c_opt2 = st.columns([2, 1])
-            with c_opt1:
-                trans_mode = st.radio(
-                    "3. Chọn phạm vi biên dịch:",
+        if uploaded_trans_file is not None:
+            c_up_opt1, c_up_opt2 = st.columns([2, 1])
+            with c_up_opt1:
+                trans_up_mode = st.radio(
+                    "Chọn phạm vi biên dịch:",
                     options=["Toàn bộ tài liệu (Full Document)", "Thử nghiệm trang đầu (1-3 trang)"],
                     horizontal=True,
-                    key="trans_mode_radio"
+                    key="trans_up_mode_radio"
                 )
-            with c_opt2:
-                max_pages_to_trans = 3 if "Thử nghiệm" in trans_mode else None
-                st.caption(f"📌 Chế độ: **{'Dịch mẫu 3 trang đầu' if max_pages_to_trans else 'Dịch 100% toàn bộ trang'}**")
+            with c_up_opt2:
+                max_up_pages = 3 if "Thử nghiệm" in trans_up_mode else None
+                st.caption(f"📌 Chế độ: **{'Dịch mẫu 3 trang đầu' if max_up_pages else 'Dịch 100% toàn bộ trang'}**")
 
-            st.write("")
-            btn_start_trans = st.button(
-                f"🚀 DỊCH TÀI LIỆU '{chosen_doc['name']}' SANG TIẾNG VIỆT",
+            btn_upload_trans = st.button(
+                f"🚀 BẮT ĐẦU DỊCH FILE '{uploaded_trans_file.name}' SANG TIẾNG VIỆT",
                 type="primary",
                 use_container_width=True,
-                key="btn_run_translate"
+                key="btn_run_uploaded_trans"
             )
 
-            if btn_start_trans:
-                with st.spinner("Agent_Translator đang phân tích cấu trúc tài liệu và tiến hành biên dịch..."):
-                    prog_bar = st.progress(0.0)
-                    status_text = st.empty()
+            if btn_upload_trans:
+                with st.spinner("Đang lưu trữ file và phân tích dịch thuật..."):
+                    clean_b_folder = re.sub(r'[\\/*?:"<>|]', "", upload_brand_name).strip() or "General"
+                    save_dir = PROJECT_DIR / "Google_Drive_Storage" / "2_Manuals_Standards" / clean_b_folder
+                    save_dir.mkdir(parents=True, exist_ok=True)
+                    saved_target_path = save_dir / uploaded_trans_file.name
+                    with open(saved_target_path, "wb") as f_save:
+                        f_save.write(uploaded_trans_file.getbuffer())
 
-                    def ui_progress_cb(pct, msg):
-                        prog_bar.progress(pct)
-                        status_text.info(f"⏳ {msg}")
+                    prog_bar_up = st.progress(0.0)
+                    status_text_up = st.empty()
+
+                    def ui_up_progress_cb(pct, msg):
+                        prog_bar_up.progress(pct)
+                        status_text_up.info(f"⏳ {msg}")
 
                     try:
                         fresh_translator = AgentTranslator(PROJECT_DIR) if AgentTranslator else translator_agent
                         res_path = fresh_translator.translate_document(
-                            doc_path=chosen_doc["path"],
-                            brand_name=selected_brand,
-                            progress_callback=ui_progress_cb,
-                            max_pages=max_pages_to_trans
+                            doc_path=saved_target_path,
+                            brand_name=upload_brand_name,
+                            progress_callback=ui_up_progress_cb,
+                            max_pages=max_up_pages
                         )
-                        prog_bar.progress(1.0)
-                        status_text.success(f"🎉 Hoàn tất dịch thuật! File đã lưu vào: `{res_path.relative_to(PROJECT_DIR)}`")
+                        prog_bar_up.progress(1.0)
+                        status_text_up.success(f"🎉 Hoàn tất dịch thuật! File đã lưu vào thư mục riêng: `{res_path.relative_to(PROJECT_DIR)}`")
 
-                        # Nút tải xuống trực tiếp
                         if res_path.exists():
                             with open(res_path, "rb") as f_out:
                                 docx_bytes = f_out.read()
@@ -2334,11 +2418,11 @@ with tab_trans:
                                 type="primary",
                                 use_container_width=True
                             )
-                            # Xóa cache để cập nhật danh sách
+                            load_cached_manuals_by_brand.clear()
                             load_cached_translated_docs.clear()
                     except Exception as e:
-                        prog_bar.progress(1.0)
-                        status_text.error(f"❌ Có lỗi trong quá trình dịch thuật: {e}")
+                        prog_bar_up.progress(1.0)
+                        status_text_up.error(f"❌ Có lỗi trong quá trình dịch thuật: {e}")
 
     # 2. Danh sách kho tài liệu đã dịch hoàn tất trong thư mục riêng
     st.markdown("---")
