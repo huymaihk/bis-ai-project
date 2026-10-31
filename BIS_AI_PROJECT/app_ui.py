@@ -768,6 +768,11 @@ try:
 except Exception:
     AgentTranslator = None
 
+try:
+    from agent_operations import AgentOperations
+except Exception:
+    AgentOperations = None
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # BỘ NHỚ ĐỆM HIỆU SUẤT CAO (ULTRA-FAST CACHING & PERFORMANCE ENGINE)

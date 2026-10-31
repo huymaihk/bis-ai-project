@@ -16,9 +16,16 @@ import time
 from pathlib import Path
 from typing import List, Dict, Optional, Callable
 
-import docx
-from docx.shared import Inches, Pt, RGBColor
-from pdf2docx import Converter
+try:
+    import docx
+    from docx.shared import Inches, Pt, RGBColor
+except Exception:
+    docx = None
+
+try:
+    from pdf2docx import Converter
+except Exception:
+    Converter = None
 
 PROJECT_DIR = Path(__file__).parent.resolve()
 
@@ -155,6 +162,9 @@ class AgentTranslator:
         input_path = Path(doc_path)
         if not input_path.exists():
             raise FileNotFoundError(f"Không tìm thấy tài liệu: {doc_path}")
+
+        if docx is None:
+            raise RuntimeError("Thư viện 'python-docx' chưa được cài đặt. Vui lòng chạy: pip install python-docx pdf2docx translators")
 
         # Chuẩn bị thư mục đích riêng cho Hãng
         clean_brand_folder = re.sub(r'[\\/*?:"<>|]', "", brand_name).strip() or "General"
