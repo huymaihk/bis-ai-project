@@ -27,6 +27,15 @@ try:
 except Exception:
     Converter = None
 
+try:
+    import winocr
+    import asyncio
+    from PIL import Image
+    import io
+    HAS_WINOCR = True
+except Exception:
+    HAS_WINOCR = False
+
 PROJECT_DIR = Path(__file__).parent.resolve()
 
 # Thư mục nguồn và thư mục đích riêng biệt
@@ -180,6 +189,104 @@ class AgentTranslator:
 
         return brand_map
 
+    def translate_image_or_scanned_pdf(
+        self,
+        input_path: Path,
+        brand_name: str = "General",
+        progress_callback: Optional[Callable[[float, str], None]] = None,
+        max_pages: Optional[int] = None
+    ) -> Path:
+        """
+        Dịch tài liệu trực tiếp từ HÌNH ẢNH hoặc PDF quét/đồ họa thông qua OCR:
+        - Bóc tách toàn bộ văn bản trong ảnh bằng OCR (winocr).
+        - Dịch toàn bộ nội dung sang tiếng Việt chuyên ngành dệt may.
+        - Tạo file Word (.docx) chuẩn đẹp với tiêu đề, khối nội dung dịch và lưu vào 8_Translated_Documents.
+        """
+        clean_brand_folder = re.sub(r'[\\/*?:"<>|]', "", brand_name).strip() or "General"
+        target_brand_dir = self.translated_dir / clean_brand_folder
+        target_brand_dir.mkdir(parents=True, exist_ok=True)
+
+        base_stem = input_path.stem
+        output_docx_name = f"{base_stem}_TiengViet.docx"
+        output_docx_path = target_brand_dir / output_docx_name
+
+        if progress_callback:
+            progress_callback(0.1, f"Bắt đầu xử lý OCR trích xuất chữ từ hình ảnh '{input_path.name}'...")
+
+        doc_word = docx.Document()
+        doc_word.add_heading(f"BẢN DỊCH TIẾNG VIỆT TỪ HÌNH ẢNH: {base_stem}", level=1)
+        doc_word.add_paragraph(f"Tài liệu gốc: {input_path.name} • Hãng: {brand_name}")
+        doc_word.add_paragraph("─" * 40)
+
+        ext = input_path.suffix.lower()
+
+        # TRƯỜNG HỢP 1: File ảnh đơn lẻ (.png, .jpg, .jpeg)
+        if ext in [".png", ".jpg", ".jpeg", ".webp", ".bmp"]:
+            lines = []
+            if HAS_WINOCR:
+                img_pil = Image.open(str(input_path))
+                ocr_res = asyncio.run(winocr.recognize_pil(img_pil, "en"))
+                lines = [l.text.strip() for l in ocr_res.lines if l.text.strip()]
+            
+            if not lines:
+                lines = ["(Không thể kích hoạt bộ nhận diện OCR trên hệ thống hoặc ảnh không chứa chữ)"]
+
+            if progress_callback:
+                progress_callback(0.4, f"Đã nhận diện {len(lines)} dòng chữ từ ảnh, đang dịch sang tiếng Việt...")
+
+            # Dịch theo từng cụm hoặc dòng
+            for idx, l in enumerate(lines):
+                tr = translate_text_vi(l, self.translation_cache)
+                p = doc_word.add_paragraph()
+                p.add_run(tr)
+                if progress_callback and (idx + 1) % 5 == 0:
+                    prog = 0.4 + (idx / max(len(lines), 1)) * 0.5
+                    progress_callback(min(prog, 0.92), f"Đang dịch dòng {idx+1}/{len(lines)}...")
+
+        # TRƯỜNG HỢP 2: File PDF đồ họa / quét (chứa nhiều trang ảnh)
+        elif ext == ".pdf":
+            import pymupdf
+            doc_pdf = pymupdf.open(str(input_path))
+            total_pages = len(doc_pdf)
+            pages_to_process = min(total_pages, max_pages) if max_pages and max_pages > 0 else total_pages
+
+            for p_idx in range(pages_to_process):
+                page = doc_pdf[p_idx]
+                if progress_callback:
+                    prog = 0.15 + (p_idx / max(pages_to_process, 1)) * 0.7
+                    progress_callback(prog, f"Đang quét OCR & Dịch trang {p_idx+1}/{pages_to_process}...")
+
+                doc_word.add_heading(f"=== TRANG {p_idx+1} ===", level=2)
+
+                lines = []
+                if HAS_WINOCR:
+                    pix = page.get_pixmap(dpi=180)
+                    img_bytes = pix.tobytes("png")
+                    pil_img = Image.open(io.BytesIO(img_bytes))
+                    ocr_res = asyncio.run(winocr.recognize_pil(pil_img, "en"))
+                    lines = [l.text.strip() for l in ocr_res.lines if l.text.strip()]
+
+                if not lines:
+                    raw_txt = page.get_text()
+                    lines = [l.strip() for l in raw_txt.split("\n") if l.strip()]
+
+                for l in lines:
+                    tr = translate_text_vi(l, self.translation_cache)
+                    p = doc_word.add_paragraph()
+                    p.add_run(tr)
+
+            doc_pdf.close()
+
+        if progress_callback:
+            progress_callback(0.95, "Đang hoàn tất đóng gói file Word bản dịch OCR...")
+
+        doc_word.save(str(output_docx_path))
+
+        if progress_callback:
+            progress_callback(1.0, f"✅ Đã dịch xong từ ảnh! Bản dịch lưu tại: {output_docx_path.name}")
+
+        return output_docx_path
+
     def translate_document(
         self,
         doc_path: str | Path,
@@ -203,6 +310,22 @@ class AgentTranslator:
         clean_brand_folder = re.sub(r'[\\/*?:"<>|]', "", brand_name).strip() or "General"
         target_brand_dir = self.translated_dir / clean_brand_folder
         target_brand_dir.mkdir(parents=True, exist_ok=True)
+
+        # TỰ ĐỘNG CHUYỂN SANG DỊCH TỪ ẢNH (OCR) NẾU FILE LÀ ẢNH HOẶC PDF QUÉT/VECTOR
+        ext = input_path.suffix.lower()
+        is_pure_image = ext in [".png", ".jpg", ".jpeg", ".webp", ".bmp"]
+        is_scanned_pdf = False
+        if ext == ".pdf":
+            r_info = self.check_document_text_readability(input_path)
+            is_scanned_pdf = r_info.get("is_image_pdf", False)
+
+        if is_pure_image or is_scanned_pdf:
+            return self.translate_image_or_scanned_pdf(
+                input_path,
+                brand_name=brand_name,
+                progress_callback=progress_callback,
+                max_pages=max_pages
+            )
 
         base_stem = input_path.stem
         output_docx_name = f"{base_stem}_TiengViet.docx"

@@ -2358,8 +2358,8 @@ with tab_trans:
         col_up_file, col_up_brand = st.columns([2, 1])
         with col_up_file:
             uploaded_trans_file = st.file_uploader(
-                "Chọn file Manual / Standard cần dịch (PDF hoặc DOCX):",
-                type=["pdf", "docx"],
+                "Chọn file tài liệu hoặc HÌNH ẢNH cần dịch (PDF, Word, PNG, JPG):",
+                type=["pdf", "docx", "png", "jpg", "jpeg", "webp"],
                 key="uploader_trans_doc"
             )
         with col_up_brand:
