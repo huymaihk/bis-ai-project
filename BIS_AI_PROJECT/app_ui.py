@@ -2715,9 +2715,10 @@ with tab_trans:
     st.markdown("---")
     st.markdown("#### 🚀 Khởi chạy dịch tài liệu sang tiếng Việt:")
 
-    tab_mode_select, tab_mode_upload = st.tabs([
+    tab_mode_select, tab_mode_upload, tab_mode_image = st.tabs([
         "📚 1. Chọn Tài Liệu Có Sẵn Theo Hãng",
-        "📤 2. Tải Lên File Mới Từ Máy Tính (PDF / Word)"
+        "📤 2. Tải Lên File Mới (PDF / Word / Excel / HTML)",
+        "🖼️ 3. Dịch Ảnh & Sơ Đồ Thiết Bị Giữ Nguyên Form"
     ])
 
     with tab_mode_select:
@@ -2913,6 +2914,71 @@ with tab_trans:
                     except Exception as e:
                         prog_bar_up.progress(1.0)
                         status_text_up.error(f"❌ Có lỗi trong quá trình dịch thuật: {e}")
+
+
+    with tab_mode_image:
+        st.markdown("##### 🖼️ Dịch Ảnh / Sơ Đồ Kỹ Thuật / Catalogue Giữ Nguyên Form 100%:")
+        st.markdown("""
+        <div style='background: #090e1a; border: 1px solid #1e293b; border-left: 3px solid #06b6d4; border-radius: 8px; padding: 12px; margin-bottom: 14px;'>
+          <p style='font-size: 13px; color: #cbd5e1; margin: 0; line-height: 1.6;'>
+            • <b>Thuật toán Inpainting & Auto-fit Typography:</b> Nhận diện OCR vị trí chữ tiếng Anh trên sơ đồ máy móc, tự động xóa nền chữ cũ và vẽ đè bản dịch tiếng Việt.<br>
+            • <b>Bảo toàn 100% đồ họa:</b> Không làm méo mó sơ đồ, giữ nguyên các mũi tên liên kết, màu nền, đường biên và kích thước bounding box.<br>
+            • <b>Skill Antigravity:</b> Kích hoạt tự động qua Skill <code>image-layout-translator</code>.
+          </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        col_img_up, col_img_brand = st.columns([2, 1])
+        with col_img_up:
+            uploaded_img = st.file_uploader(
+                "Tải lên hình ảnh catalogue / sơ đồ kỹ thuật (PNG, JPG, JPEG, WEBP):",
+                type=["png", "jpg", "jpeg", "webp"],
+                key="uploader_single_image_trans"
+            )
+        with col_img_brand:
+            img_brand_name = st.text_input(
+                "Tên Hãng / Thiết bị (để phân loại thư mục):",
+                value="General",
+                key="uploader_img_brand_input"
+            )
+
+        if uploaded_img is not None:
+            btn_run_img_trans = st.button("🚀 BẮT ĐẦU DỊCH & BẢO TOÀN BỐ CỤC ẢNH", type="primary", use_container_width=True, key="btn_run_img_trans")
+
+            if btn_run_img_trans:
+                with st.spinner("Agent đang chạy OCR bóc tách tọa độ, tẩy chữ cũ và vẽ đè bản dịch tiếng Việt..."):
+                    clean_ib = re.sub(r'[\\/*?:"<>|]', "", img_brand_name).strip() or "General"
+                    img_save_dir = PROJECT_DIR / "Google_Drive_Storage" / "8_Translated_Documents" / clean_ib
+                    img_save_dir.mkdir(parents=True, exist_ok=True)
+                    
+                    temp_in = img_save_dir / f"orig_{uploaded_img.name}"
+                    temp_out = img_save_dir / f"translated_{uploaded_img.name}"
+
+                    with open(temp_in, "wb") as f_in:
+                        f_in.write(uploaded_img.getbuffer())
+
+                    from agent_translator import AgentTranslator
+                    ag_tr = AgentTranslator(PROJECT_DIR)
+                    out_img_path = ag_tr.translate_image_keep_form(temp_in, temp_out)
+
+                st.success(f"🎉 Đã dịch ảnh thành công! File lưu tại: `{out_img_path.relative_to(PROJECT_DIR)}`")
+                col_img_orig, col_img_trans = st.columns(2)
+                with col_img_orig:
+                    st.caption("📷 Ảnh gốc (English)")
+                    st.image(str(temp_in), use_container_width=True)
+                with col_img_trans:
+                    st.caption("🇻🇳 Ảnh đã dịch (Tiếng Việt Giữ Form)")
+                    st.image(str(out_img_path), use_container_width=True)
+                    with open(out_img_path, "rb") as f_dl:
+                        img_bytes = f_dl.read()
+                    st.download_button(
+                        label=f"📥 TẢI ẢNH TIẾNG VIỆT: {out_img_path.name}",
+                        data=img_bytes,
+                        file_name=out_img_path.name,
+                        mime="image/png" if out_img_path.suffix.lower() == ".png" else "image/jpeg",
+                        type="primary",
+                        use_container_width=True
+                    )
 
     # 2. Danh sách kho tài liệu đã dịch hoàn tất trong thư mục riêng
     st.markdown("---")

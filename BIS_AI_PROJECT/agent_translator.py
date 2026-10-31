@@ -28,6 +28,14 @@ except Exception:
     Converter = None
 
 try:
+    import cv2
+    import numpy as np
+    from PIL import ImageDraw, ImageFont
+    HAS_CV2 = True
+except Exception:
+    HAS_CV2 = False
+
+try:
     import winocr
     import asyncio
     from PIL import Image
@@ -455,3 +463,123 @@ class AgentTranslator:
                     "created_at": time.strftime("%Y-%m-%d %H:%M", time.localtime(f.stat().st_mtime))
                 })
         return sorted(results, key=lambda x: x["created_at"], reverse=True)
+
+    def translate_image_keep_form(
+        self,
+        image_path: Path | str,
+        output_path: Path | str,
+        font_path: Optional[str] = None
+    ) -> Path:
+        """
+        Tool dành cho Agent: Nhận diện chữ tiếng Anh trên ảnh, tẩy chữ gốc (Inpainting)
+        và vẽ chữ tiếng Việt giữ đúng khung, vị trí và kích thước ban đầu.
+        """
+        image_path = Path(image_path)
+        output_path = Path(output_path)
+
+        if font_path is None:
+            win_font = Path("C:/Windows/Fonts/arial.ttf")
+            font_path = str(win_font) if win_font.exists() else "arial.ttf"
+
+        img_path_str = str(image_path)
+        if HAS_CV2:
+            img_cv = cv2.imread(img_path_str)
+            if img_cv is None:
+                pil_temp = Image.open(image_path).convert("RGB")
+                img_cv = cv2.cvtColor(np.array(pil_temp), cv2.COLOR_RGB2BGR)
+        else:
+            img_cv = None
+
+        if img_cv is None:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            import shutil
+            shutil.copy2(image_path, output_path)
+            return output_path
+
+        h_img, w_img, _ = img_cv.shape
+        boxes_text = []
+
+        # 1. Trích xuất text và bounding box
+        # Thử PaddleOCR nếu có
+        try:
+            from paddleocr import PaddleOCR
+            ocr_engine = PaddleOCR(use_angle_cls=True, lang='en', show_log=False)
+            ocr_res = ocr_engine.ocr(img_path_str, cls=True)
+            if ocr_res and ocr_res[0]:
+                for line in ocr_res[0]:
+                    box, (text_val, conf) = line
+                    xs = [pt[0] for pt in box]
+                    ys = [pt[1] for pt in box]
+                    x_min, x_max = int(min(xs)), int(max(xs))
+                    y_min, y_max = int(min(ys)), int(max(ys))
+                    boxes_text.append(((x_min, y_min, x_max - x_min, y_max - y_min), text_val))
+        except Exception:
+            pass
+
+        # Fallback qua Windows Native OCR (winocr)
+        if not boxes_text and HAS_WINOCR:
+            try:
+                img_pil_for_ocr = Image.open(image_path).convert("RGB")
+                ocr_result = asyncio.run(winocr.recognize_pil(img_pil_for_ocr, lang='en'))
+                for line in ocr_result.lines:
+                    if line.words:
+                        x_min = int(min(w.bounding_rect.x for w in line.words))
+                        y_min = int(min(w.bounding_rect.y for w in line.words))
+                        x_max = int(max(w.bounding_rect.x + w.bounding_rect.width for w in line.words))
+                        y_max = int(max(w.bounding_rect.y + w.bounding_rect.height for w in line.words))
+                        boxes_text.append(((x_min, y_min, x_max - x_min, y_max - y_min), line.text))
+            except Exception as e:
+                print(f"WinOCR error in translate_image_keep_form: {e}")
+
+        if not boxes_text:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            import shutil
+            shutil.copy2(image_path, output_path)
+            return output_path
+
+        # 2. Tạo mặt nạ và tẩy chữ cũ (Inpainting)
+        mask = np.zeros((h_img, w_img), dtype=np.uint8)
+        for (x, y, w, h), _ in boxes_text:
+            cv2.rectangle(
+                mask,
+                (max(0, x - 2), max(0, y - 2)),
+                (min(w_img, x + w + 2), min(h_img, y + h + 2)),
+                255,
+                -1
+            )
+
+        cleaned_cv = cv2.inpaint(img_cv, mask, inpaintRadius=3, flags=cv2.INPAINT_TELEA)
+        img_pil = Image.fromarray(cv2.cvtColor(cleaned_cv, cv2.COLOR_BGR2RGB))
+        draw = ImageDraw.Draw(img_pil)
+
+        # 3. Dịch văn bản qua Glossary và vẽ chữ tự co giãn
+        try:
+            from keep_form_translator import translate_phrase
+        except ImportError:
+            translate_phrase = lambda t, target_lang="vi": translate_text_vi(t)
+
+        for (x, y, w, h), en_text in boxes_text:
+            vi_text = translate_phrase(en_text, target_lang="vi")
+
+            best_font = None
+            for font_size in range(max(10, h + 2), 8, -1):
+                try:
+                    cur_font = ImageFont.truetype(font_path, font_size)
+                except Exception:
+                    cur_font = ImageFont.load_default()
+                bbox = draw.textbbox((0, 0), vi_text, font=cur_font)
+                if (bbox[2] - bbox[0]) <= w + 45 and (bbox[3] - bbox[1]) <= h + 10:
+                    best_font = cur_font
+                    break
+
+            if not best_font:
+                try:
+                    best_font = ImageFont.truetype(font_path, max(9, h // 2))
+                except Exception:
+                    best_font = ImageFont.load_default()
+
+            draw.text((x, y), vi_text, fill=(15, 23, 42), font=best_font)
+
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        img_pil.save(str(output_path))
+        return output_path

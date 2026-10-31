@@ -274,8 +274,20 @@ class KeepFormTranslator:
             return res.get("status") == "success"
 
     @classmethod
+    def translate_image(cls, src_path: Path, dst_path: Path, target_lang: str = "vi", progress_callback: Optional[Callable[[float, str], None]] = None) -> Path:
+        """Dịch hình ảnh/sơ đồ giữ nguyên 100% bố cục, khung viền, nền và mũi tên liên kết."""
+        if progress_callback:
+            progress_callback(0.2, f"Đang nhận diện OCR và phân tích hộp tọa độ trên ảnh {src_path.name}...")
+        from agent_translator import AgentTranslator
+        agent = AgentTranslator(src_path.parent.parent.parent)
+        out = agent.translate_image_keep_form(src_path, dst_path)
+        if progress_callback:
+            progress_callback(1.0, f"Đã hoàn tất dịch ảnh: {dst_path.name}")
+        return out
+
+    @classmethod
     def translate_any(cls, src_path: Path, dst_dir: Path, target_lang: str = "vi", progress_callback: Optional[Callable[[float, str], None]] = None) -> Path:
-        """Tự động nhận diện định dạng đuôi file (.pdf, .docx, .xlsx, .html) và thực thi dịch giữ form."""
+        """Tự động nhận diện định dạng đuôi file (.pdf, .docx, .xlsx, .html, .png, .jpg) và thực thi dịch giữ form."""
         ext = src_path.suffix.lower()
         dst_dir.mkdir(parents=True, exist_ok=True)
 
@@ -295,5 +307,10 @@ class KeepFormTranslator:
             out_file = dst_dir / f"{src_path.stem}_VI_Dich.docx"
             cls.translate_pdf(src_path, out_file, target_lang, progress_callback)
             return out_file
+        elif ext in [".png", ".jpg", ".jpeg", ".webp"]:
+            out_file = dst_dir / f"{src_path.stem}_VI_Dich{ext}"
+            cls.translate_image(src_path, out_file, target_lang, progress_callback)
+            return out_file
         else:
-            raise ValueError(f"Định dạng {ext} chưa được hỗ trợ. Vui lòng chọn .pdf, .docx, .xlsx, hoặc .html")
+            raise ValueError(f"Định dạng {ext} chưa được hỗ trợ. Vui lòng chọn .pdf, .docx, .xlsx, .html, hoặc ảnh .png/.jpg")
+
