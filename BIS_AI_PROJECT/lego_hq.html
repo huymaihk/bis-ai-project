@@ -177,11 +177,21 @@
       <button id="btn-reset-cam" class="hud-btn px-2 py-0.5 rounded-lg text-[10.5px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600/50">
         🎥 Toàn Cảnh
       </button>
+      <button id="btn-toggle-chat-drawer" class="hud-btn px-2.5 py-0.5 rounded-lg text-[10.5px] font-bold bg-gradient-to-r from-emerald-500/25 to-teal-600/25 hover:from-emerald-500/40 hover:to-teal-600/40 text-emerald-200 border border-emerald-400/40 flex items-center gap-1 shadow-md">
+        <span class="text-xs">☰</span>
+        <span>Bảng Giao Tiếp 1-1</span>
+      </button>
       <button id="btn-toggle-hud" class="hud-btn px-2.5 py-0.5 rounded-lg text-[10.5px] font-bold bg-gradient-to-r from-sky-500/25 to-blue-600/25 hover:from-sky-500/40 hover:to-blue-600/40 text-sky-200 border border-sky-400/40">
         ☰ Menu HUD (Ẩn/Hiện)
       </button>
     </div>
   </header>
+
+    <!-- NÚT 3 GẠCH BẬT/MỞ BẢNG GIAO TIẾP GÓC TRÁI -->
+  <button id="btn-float-chat-toggle" class="fixed top-12 left-2.5 z-25 px-2.5 py-1 rounded-xl glass-panel text-sky-300 hover:text-white border border-sky-400/40 shadow-xl flex items-center gap-1.5 text-xs font-bold pointer-events-auto transition hover:scale-105 active:scale-95">
+    <span class="text-sm font-black">☰</span>
+    <span class="text-[10.5px] font-extrabold tracking-wide">BẢNG GIAO TIẾP 1-1</span>
+  </button>
 
   <!-- LEFT HOLOGRAM 1-1 CHAT DRAWER (MỞ KHI CLICK VÀO BẤT KỲ NHÂN VẬT NÀO TRONG 16 NHÂN VẬT) -->
   <section id="direct-chat-drawer" class="fixed top-14 left-3 z-30 w-80 max-w-[calc(100vw-24px)] glass-panel rounded-2xl p-3 hidden flex-col gap-2 border-l-4 border-l-sky-400 shadow-2xl">
@@ -1816,6 +1826,24 @@
         if (vLabel) vLabel.textContent = voiceEnabled ? 'Giọng nói: BẬT' : 'Giọng nói: TẮT';
         if (!voiceEnabled && 'speechSynthesis' in window) window.speechSynthesis.cancel();
       });
+
+      const toggleChatDrawer = () => {
+        const d = document.getElementById('direct-chat-drawer');
+        if (d) {
+          const isHidden = d.classList.contains('hidden');
+          if (isHidden) {
+            d.classList.remove('hidden');
+            d.classList.add('flex');
+            openChatDrawer16(activeCharId || 'rd_lead');
+          } else {
+            d.classList.add('hidden');
+            d.classList.remove('flex');
+          }
+        }
+      };
+
+      safeOn('btn-toggle-chat-drawer', 'click', toggleChatDrawer);
+      safeOn('btn-float-chat-toggle', 'click', toggleChatDrawer);
 
       safeOn('btn-toggle-hud', 'click', () => {
         const footer = document.getElementById('bottom-footer');

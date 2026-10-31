@@ -1434,206 +1434,227 @@ with tab_lego:
                 }
                 st.rerun()
 
-    # 3. BỐ CỤC CHÍNH CHIA 2 CỘT: VĂN PHÒNG 3D & TRUNG TÂM CHAT 1-1
-    c_3d_viewport, c_chat_viewport = st.columns([1.35, 1.0], gap="medium")
+    # 3. BỐ CỤC CHÍNH: VĂN PHÒNG 3D & TRUNG TÂM CHAT 1-1 (CÓ NÚT 3 GẠCH BẬT/MỞ)
+    if "show_chat_panel" not in st.session_state:
+        st.session_state.show_chat_panel = True
+
+    c_hdr_info, c_hdr_toggle = st.columns([3.0, 1.2])
+    with c_hdr_info:
+        st.markdown("#### 🌐 Không Gian 3D Metaverse (Click nhân vật để zoom & mở hội thoại)")
+    with c_hdr_toggle:
+        toggle_chat_label = "☰ Ẩn Bảng Giao Tiếp" if st.session_state.show_chat_panel else "☰ Mở Bảng Giao Tiếp (1-1)"
+        if st.button(toggle_chat_label, key="toggle_chat_panel_btn", use_container_width=True):
+            st.session_state.show_chat_panel = not st.session_state.show_chat_panel
+            st.rerun()
 
     cmd = st.session_state.last_3d_command
-    with c_3d_viewport:
-        st.markdown("#### 🌐 Không Gian 3D Metaverse (Click nhân vật để zoom & mở hội thoại)")
+
+    if st.session_state.show_chat_panel:
+        c_3d_viewport, c_chat_viewport = st.columns([1.35, 1.0], gap="medium")
+        with c_3d_viewport:
+            render_bis_3d_office(
+                agent_key=cmd.get("agent_key"),
+                state=cmd.get("state"),
+                message=cmd.get("message"),
+                user_dept=active_dept_now,
+                selected_emp_id=st.session_state.selected_emp_id,
+                height=700,
+            )
+        with c_chat_viewport:
+            mode_c1, mode_c2 = st.columns(2)
+            with mode_c1:
+                if st.button(
+                    "👤 Chat Trực Tiếp 1-1",
+                    type="primary" if st.session_state.chat_mode == "DIRECT_1_1" else "secondary",
+                    use_container_width=True,
+                    key="btn_mode_direct"
+                ):
+                    st.session_state.chat_mode = "DIRECT_1_1"
+                    st.rerun()
+            with mode_c2:
+                if st.button(
+                    "🗣️ Họp Toàn Thể (5 Phòng)",
+                    type="primary" if st.session_state.chat_mode == "ALL_HANDS" else "secondary",
+                    use_container_width=True,
+                    key="btn_mode_allhands"
+                ):
+                    st.session_state.chat_mode = "ALL_HANDS"
+                    st.session_state.last_3d_command = {
+                        "agent_key": "all",
+                        "state": "MEETING",
+                        "message": "🗣️ Toàn bộ 5 Phòng ban họp giao ban với Chủ tịch Huy Mai!",
+                        "selected_emp_id": st.session_state.selected_emp_id,
+                    }
+                    st.rerun()
+
+            if orch and st.session_state.chat_mode == "DIRECT_1_1":
+                active_emp = orch.employees.get(st.session_state.selected_emp_id, list(orch.employees.values())[0])
+                st.markdown(
+                    f"""
+                    <div class="emp-card" style="border-left: 5px solid {active_emp.badge_color};">
+                      <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                          <span style="font-size:20px; margin-right:6px;">{active_emp.avatar_emoji}</span>
+                          <b style="font-size:16px; color:#f8fafc;">{active_emp.name}</b>
+                          <span style="font-size:12px; color:#94a3b8;"> — {active_emp.title}</span>
+                        </div>
+                        <span class="state-pill" style="background:{active_emp.badge_color}33; color:{active_emp.badge_color}; border:1px solid {active_emp.badge_color};">
+                          {active_emp.state} • {active_emp.progress_pct}%
+                        </span>
+                      </div>
+                      <div style="font-size:12px; color:#cbd5e1; margin-top:6px;">
+                        <b>Phòng ban:</b> {active_emp.department_name} &nbsp;|&nbsp;
+                        <b>Công cụ:</b> <code>{', '.join(active_emp.tools)}</code>
+                      </div>
+                      <div style="font-size:12px; color:#38bdf8; margin-top:4px;">
+                        <b>Tác vụ tự chạy:</b> {active_emp.current_task}
+                      </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                st.caption("⚡ **Lệnh chỉ đạo nhanh của Chủ tịch Huy Mai:**")
+                qcol1, qcol2, qcol3 = st.columns(3)
+                quick_prompt = None
+                with qcol1:
+                    if st.button("🔍 Kiểm tra SKU", use_container_width=True, key="quick_sku"):
+                        quick_prompt = f"{active_emp.name} kiểm tra lại thông số và tiêu chuẩn mã SKU 03026A cho anh nhé!"
+                with qcol2:
+                    if st.button("📄 Dịch chuẩn hóa", use_container_width=True, key="quick_doc"):
+                        quick_prompt = "Dịch và chuẩn hóa giúp anh tài liệu kỹ thuật Catalogue 36 trang giữ nguyên định dạng 100%."
+                with qcol3:
+                    if st.button("⏸️ Rào chắn Haravan", use_container_width=True, key="quick_haravan"):
+                        quick_prompt = "Tạm dừng đồng bộ Haravan để anh rà soát giá, giữ chặt rào chắn bảo vệ trước 20/10/2026."
+
+                chat_box = st.container(height=340)
+                with chat_box:
+                    for msg in active_emp.chat_memory:
+                        is_ceo = msg.sender == "ceo"
+                        with st.chat_message("user" if is_ceo else "assistant", avatar="👑" if is_ceo else active_emp.avatar_emoji):
+                            st.markdown(f"**{msg.sender_name}** *(lúc {msg.timestamp})*")
+                            st.markdown(msg.content)
+                            if msg.action_log:
+                                st.code(msg.action_log, language="bash")
+
+                user_input = st.chat_input(f"Nhắn chỉ đạo cho {active_emp.name} ({active_emp.title})...", key="input_emp_chat")
+                final_prompt = quick_prompt or user_input
+
+                if final_prompt:
+                    result = orch.chat_with_employee(active_emp.emp_id, final_prompt)
+                    st.session_state.last_3d_command = {
+                        "agent_key": result.get("emp_id", active_emp.emp_id),
+                        "state": result["state_3d"],
+                        "message": result["bubble_3d"],
+                        "selected_emp_id": active_emp.emp_id,
+                    }
+                    st.rerun()
+
+            elif orch:
+                st.markdown(
+                    """
+                    <div class="emp-card" style="border-left: 5px solid #f59e0b;">
+                      <b style="font-size:15px; color:#fef08a;">🗣️ PHÒNG HỌP BÀN TRÒN — TRIỆU TẬP TOÀN THỂ 5 PHÒNG BAN</b>
+                      <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">
+                        Khi Chủ tịch ban hành chỉ đạo tại đây, cả 5 Trưởng phòng đại diện 15 nhân sự AI sẽ đồng loạt báo cáo phương án triển khai.
+                      </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                group_box = st.container(height=400)
+                with group_box:
+                    if not orch.group_meeting_log:
+                        st.info("Chào Chủ tịch Huy Mai! Hãy nhập chỉ đạo bên dưới để triệu tập cả 5 Trưởng phòng báo cáo.")
+                    for gmsg in orch.group_meeting_log:
+                        is_ceo = gmsg.sender == "ceo"
+                        emp_avatar = "👑" if is_ceo else (orch.employees[gmsg.sender].avatar_emoji if gmsg.sender in orch.employees else "🤖")
+                        with st.chat_message("user" if is_ceo else "assistant", avatar=emp_avatar):
+                            st.markdown(f"**{gmsg.sender_name}** • *{gmsg.role_badge}* ({gmsg.timestamp})")
+                            st.markdown(gmsg.content)
+                            if gmsg.action_log:
+                                st.code(gmsg.action_log, language="text")
+
+                group_directive = st.chat_input("Nhập chỉ đạo chung của Chủ tịch Huy Mai cho toàn bộ 5 Phòng ban...", key="input_group_chat")
+                if group_directive:
+                    orch.summon_all_hands_meeting(group_directive)
+                    st.session_state.last_3d_command = {
+                        "agent_key": "all",
+                        "state": "MEETING",
+                        "message": f"🗣️ Toàn công ty thực thi chỉ đạo của Chủ tịch: {group_directive[:40]}...",
+                        "selected_emp_id": st.session_state.selected_emp_id,
+                    }
+                    st.rerun()
+
+        # 4. NHẬT KÝ TỰ VẬN HÀNH THỜI GIAN THỰC & DANH BẠ 15 NHÂN SỰ
+        st.markdown("---")
+        tab_log_feed, tab_all_emps = st.tabs([
+            "📡 Nhật Ký Vòng Lặp Tự Vận Hành (Live Autonomous Task Stream)",
+            "📋 Danh Bạ Chi Tiết 15 Nhân Viên AI & Tác Vụ Đang Chạy",
+        ])
+
+        with tab_log_feed:
+            if orch:
+                st.markdown("##### 📡 Các tác vụ nền đang tự động kích hoạt bởi 15 nhân viên AI:")
+                for ev in orch.system_event_feed[:8]:
+                    st.markdown(
+                        f"<div style='font-size:12.5px; padding:8px 12px; margin-bottom:8px; border-left:4px solid {ev['color']}; background:rgba(15,23,42,0.75); border-radius:8px;'>"
+                        f"<b>{ev['actor']}</b> <span style='color:#94a3b8;'>({ev['time']})</span> — <span class='state-pill' style='background:{ev['color']}28; color:{ev['color']};'>{ev['state']}</span><br/>{ev['text']}"
+                        f"</div>",
+                        unsafe_allow_html=True,
+                    )
+
+        with tab_all_emps:
+            if orch:
+                dept_map = orch.get_departments()
+                for dcode in ["RD", "MKT", "STUDIO", "TRANS", "OPS"]:
+                    st.markdown(f"**{dept_map[dcode]}**")
+                    demps = orch.get_employees_by_dept(dcode)
+                    dcols = st.columns(3)
+                    for didx, demp in enumerate(demps):
+                        with dcols[didx % 3]:
+                            st.markdown(
+                                f"""
+                                <div class="emp-card" style="border-top: 3px solid {demp.badge_color};">
+                                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <b>{demp.avatar_emoji} {demp.name}</b>
+                                    <span class="state-pill" style="background:{demp.badge_color}25; color:{demp.badge_color}; border:1px solid {demp.badge_color};">
+                                      {demp.state}
+                                    </span>
+                                  </div>
+                                  <div style="font-size:11.5px; color:#94a3b8; margin-top:2px;">{demp.title}</div>
+                                  <div style="font-size:12px; color:#e2e8f0; margin-top:8px;">
+                                    <b>Tác vụ:</b> {demp.current_task}
+                                  </div>
+                                  <div style="font-size:11px; color:#38bdf8; margin-top:6px;">
+                                    Chuyên môn: {', '.join(demp.specialties[:2])}
+                                  </div>
+                                </div>
+                                """,
+                                unsafe_allow_html=True,
+                            )
+                            if st.button(f"💬 Chat 1-1 với {demp.name}", key=f"btn_jump_emp_{demp.emp_id}", use_container_width=True):
+                                st.session_state.selected_dept_id = demp.department_id
+                                st.session_state.selected_emp_id = demp.emp_id
+                                st.session_state.chat_mode = "DIRECT_1_1"
+                                st.session_state.last_3d_command = {
+                                    "agent_key": demp.emp_id,
+                                    "state": STATE_TO_3D_MAP.get(demp.state, "WORKING"),
+                                    "message": f"{demp.avatar_emoji} {demp.name}: Dạ em nghe lệnh Chủ tịch Huy Mai ạ!",
+                                    "selected_emp_id": demp.emp_id,
+                                }
+                                st.rerun()
+    else:
+        # Khi Chủ tịch bấm ẩn bảng giao tiếp, văn phòng 3D bung toàn màn hình cực rộng
         render_bis_3d_office(
             agent_key=cmd.get("agent_key"),
             state=cmd.get("state"),
             message=cmd.get("message"),
             user_dept=active_dept_now,
             selected_emp_id=st.session_state.selected_emp_id,
-            height=700,
+            height=760,
         )
-
-    with c_chat_viewport:
-        mode_c1, mode_c2 = st.columns(2)
-        with mode_c1:
-            if st.button(
-                "👤 Chat Trực Tiếp 1-1",
-                type="primary" if st.session_state.chat_mode == "DIRECT_1_1" else "secondary",
-                use_container_width=True,
-                key="btn_mode_direct"
-            ):
-                st.session_state.chat_mode = "DIRECT_1_1"
-                st.rerun()
-        with mode_c2:
-            if st.button(
-                "🗣️ Họp Toàn Thể (5 Phòng)",
-                type="primary" if st.session_state.chat_mode == "ALL_HANDS" else "secondary",
-                use_container_width=True,
-                key="btn_mode_allhands"
-            ):
-                st.session_state.chat_mode = "ALL_HANDS"
-                st.session_state.last_3d_command = {
-                    "agent_key": "all",
-                    "state": "MEETING",
-                    "message": "🗣️ Toàn bộ 5 Phòng ban họp giao ban với Chủ tịch Huy Mai!",
-                    "selected_emp_id": st.session_state.selected_emp_id,
-                }
-                st.rerun()
-
-        if orch and st.session_state.chat_mode == "DIRECT_1_1":
-            active_emp = orch.employees.get(st.session_state.selected_emp_id, list(orch.employees.values())[0])
-            st.markdown(
-                f"""
-                <div class="emp-card" style="border-left: 5px solid {active_emp.badge_color};">
-                  <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                      <span style="font-size:20px; margin-right:6px;">{active_emp.avatar_emoji}</span>
-                      <b style="font-size:16px; color:#f8fafc;">{active_emp.name}</b>
-                      <span style="font-size:12px; color:#94a3b8;"> — {active_emp.title}</span>
-                    </div>
-                    <span class="state-pill" style="background:{active_emp.badge_color}33; color:{active_emp.badge_color}; border:1px solid {active_emp.badge_color};">
-                      {active_emp.state} • {active_emp.progress_pct}%
-                    </span>
-                  </div>
-                  <div style="font-size:12px; color:#cbd5e1; margin-top:6px;">
-                    <b>Phòng ban:</b> {active_emp.department_name} &nbsp;|&nbsp;
-                    <b>Công cụ:</b> <code>{', '.join(active_emp.tools)}</code>
-                  </div>
-                  <div style="font-size:12px; color:#38bdf8; margin-top:4px;">
-                    <b>Tác vụ tự chạy:</b> {active_emp.current_task}
-                  </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-            st.caption("⚡ **Lệnh chỉ đạo nhanh của Chủ tịch Huy Mai:**")
-            qcol1, qcol2, qcol3 = st.columns(3)
-            quick_prompt = None
-            with qcol1:
-                if st.button("🔍 Kiểm tra SKU", use_container_width=True, key="quick_sku"):
-                    quick_prompt = f"{active_emp.name} kiểm tra lại thông số và tiêu chuẩn mã SKU 03026A cho anh nhé!"
-            with qcol2:
-                if st.button("📄 Dịch chuẩn hóa", use_container_width=True, key="quick_doc"):
-                    quick_prompt = "Dịch và chuẩn hóa giúp anh tài liệu kỹ thuật Catalogue 36 trang giữ nguyên định dạng 100%."
-            with qcol3:
-                if st.button("⏸️ Rào chắn Haravan", use_container_width=True, key="quick_haravan"):
-                    quick_prompt = "Tạm dừng đồng bộ Haravan để anh rà soát giá, giữ chặt rào chắn bảo vệ trước 20/10/2026."
-
-            chat_box = st.container(height=340)
-            with chat_box:
-                for msg in active_emp.chat_memory:
-                    is_ceo = msg.sender == "ceo"
-                    with st.chat_message("user" if is_ceo else "assistant", avatar="👑" if is_ceo else active_emp.avatar_emoji):
-                        st.markdown(f"**{msg.sender_name}** *(lúc {msg.timestamp})*")
-                        st.markdown(msg.content)
-                        if msg.action_log:
-                            st.code(msg.action_log, language="bash")
-
-            user_input = st.chat_input(f"Nhắn chỉ đạo cho {active_emp.name} ({active_emp.title})...", key="input_emp_chat")
-            final_prompt = quick_prompt or user_input
-
-            if final_prompt:
-                result = orch.chat_with_employee(active_emp.emp_id, final_prompt)
-                st.session_state.last_3d_command = {
-                    "agent_key": result.get("emp_id", active_emp.emp_id),
-                    "state": result["state_3d"],
-                    "message": result["bubble_3d"],
-                    "selected_emp_id": active_emp.emp_id,
-                }
-                st.rerun()
-
-        elif orch:
-            st.markdown(
-                """
-                <div class="emp-card" style="border-left: 5px solid #f59e0b;">
-                  <b style="font-size:15px; color:#fef08a;">🗣️ PHÒNG HỌP BÀN TRÒN — TRIỆU TẬP TOÀN THỂ 5 PHÒNG BAN</b>
-                  <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">
-                    Khi Chủ tịch ban hành chỉ đạo tại đây, cả 5 Trưởng phòng đại diện 15 nhân sự AI sẽ đồng loạt báo cáo phương án triển khai.
-                  </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-            group_box = st.container(height=400)
-            with group_box:
-                if not orch.group_meeting_log:
-                    st.info("Chào Chủ tịch Huy Mai! Hãy nhập chỉ đạo bên dưới để triệu tập cả 5 Trưởng phòng báo cáo.")
-                for gmsg in orch.group_meeting_log:
-                    is_ceo = gmsg.sender == "ceo"
-                    emp_avatar = "👑" if is_ceo else (orch.employees[gmsg.sender].avatar_emoji if gmsg.sender in orch.employees else "🤖")
-                    with st.chat_message("user" if is_ceo else "assistant", avatar=emp_avatar):
-                        st.markdown(f"**{gmsg.sender_name}** • *{gmsg.role_badge}* ({gmsg.timestamp})")
-                        st.markdown(gmsg.content)
-                        if gmsg.action_log:
-                            st.code(gmsg.action_log, language="text")
-
-            group_directive = st.chat_input("Nhập chỉ đạo chung của Chủ tịch Huy Mai cho toàn bộ 5 Phòng ban...", key="input_group_chat")
-            if group_directive:
-                orch.summon_all_hands_meeting(group_directive)
-                st.session_state.last_3d_command = {
-                    "agent_key": "all",
-                    "state": "MEETING",
-                    "message": f"🗣️ Toàn công ty thực thi chỉ đạo của Chủ tịch: {group_directive[:40]}...",
-                    "selected_emp_id": st.session_state.selected_emp_id,
-                }
-                st.rerun()
-
-    # 4. NHẬT KÝ TỰ VẬN HÀNH THỜI GIAN THỰC & DANH BẠ 15 NHÂN SỰ
-    st.markdown("---")
-    tab_log_feed, tab_all_emps = st.tabs([
-        "📡 Nhật Ký Vòng Lặp Tự Vận Hành (Live Autonomous Task Stream)",
-        "📋 Danh Bạ Chi Tiết 15 Nhân Viên AI & Tác Vụ Đang Chạy",
-    ])
-
-    with tab_log_feed:
-        if orch:
-            st.markdown("##### 📡 Các tác vụ nền đang tự động kích hoạt bởi 15 nhân viên AI:")
-            for ev in orch.system_event_feed[:8]:
-                st.markdown(
-                    f"<div style='font-size:12.5px; padding:8px 12px; margin-bottom:8px; border-left:4px solid {ev['color']}; background:rgba(15,23,42,0.75); border-radius:8px;'>"
-                    f"<b>{ev['actor']}</b> <span style='color:#94a3b8;'>({ev['time']})</span> — <span class='state-pill' style='background:{ev['color']}28; color:{ev['color']};'>{ev['state']}</span><br/>{ev['text']}"
-                    f"</div>",
-                    unsafe_allow_html=True,
-                )
-
-    with tab_all_emps:
-        if orch:
-            dept_map = orch.get_departments()
-            for dcode in ["RD", "MKT", "STUDIO", "TRANS", "OPS"]:
-                st.markdown(f"**{dept_map[dcode]}**")
-                demps = orch.get_employees_by_dept(dcode)
-                dcols = st.columns(3)
-                for didx, demp in enumerate(demps):
-                    with dcols[didx % 3]:
-                        st.markdown(
-                            f"""
-                            <div class="emp-card" style="border-top: 3px solid {demp.badge_color};">
-                              <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <b>{demp.avatar_emoji} {demp.name}</b>
-                                <span class="state-pill" style="background:{demp.badge_color}25; color:{demp.badge_color}; border:1px solid {demp.badge_color};">
-                                  {demp.state}
-                                </span>
-                              </div>
-                              <div style="font-size:11.5px; color:#94a3b8; margin-top:2px;">{demp.title}</div>
-                              <div style="font-size:12px; color:#e2e8f0; margin-top:8px;">
-                                <b>Tác vụ:</b> {demp.current_task}
-                              </div>
-                              <div style="font-size:11px; color:#38bdf8; margin-top:6px;">
-                                Chuyên môn: {', '.join(demp.specialties[:2])}
-                              </div>
-                            </div>
-                            """,
-                            unsafe_allow_html=True,
-                        )
-                        if st.button(f"💬 Chat 1-1 với {demp.name}", key=f"btn_jump_emp_{demp.emp_id}", use_container_width=True):
-                            st.session_state.selected_dept_id = demp.department_id
-                            st.session_state.selected_emp_id = demp.emp_id
-                            st.session_state.chat_mode = "DIRECT_1_1"
-                            st.session_state.last_3d_command = {
-                                "agent_key": demp.emp_id,
-                                "state": STATE_TO_3D_MAP.get(demp.state, "WORKING"),
-                                "message": f"{demp.avatar_emoji} {demp.name}: Dạ em nghe lệnh Chủ tịch Huy Mai ạ!",
-                                "selected_emp_id": demp.emp_id,
-                            }
-                            st.rerun()
 
     # 5. TỰ LÊN LỊCH HỌP & BỘ NHỚ TỰ HỌC CẢI THIỆN
     st.markdown("---")
