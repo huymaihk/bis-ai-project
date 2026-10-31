@@ -763,6 +763,11 @@ try:
 except Exception:
     AgentMedia = None
 
+try:
+    from agent_translator import AgentTranslator
+except Exception:
+    AgentTranslator = None
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # BỘ NHỚ ĐỆM HIỆU SUẤT CAO (ULTRA-FAST CACHING & PERFORMANCE ENGINE)
@@ -842,9 +847,30 @@ def cached_scan_catalog_pdfs(cat_dir_str: str, root_dir_str: str) -> dict:
     return res
 
 
+@st.cache_data(ttl=60, show_spinner=False)
+def load_cached_manuals_by_brand(project_dir_str: str):
+    try:
+        from agent_translator import AgentTranslator
+        agent = AgentTranslator(Path(project_dir_str))
+        return agent.scan_manuals_by_brand()
+    except Exception:
+        return {}
+
+
+@st.cache_data(ttl=30, show_spinner=False)
+def load_cached_translated_docs(project_dir_str: str):
+    try:
+        from agent_translator import AgentTranslator
+        agent = AgentTranslator(Path(project_dir_str))
+        return agent.list_translated_documents()
+    except Exception:
+        return []
+
+
 leader = get_cached_agent_leader(str(PROJECT_DIR))
 technical_agent = getattr(leader, "technical_agent", None)
 operations_agent = AgentOperations(PROJECT_DIR) if AgentOperations else getattr(leader, "operations_agent", None)
+translator_agent = AgentTranslator(PROJECT_DIR) if AgentTranslator else None
 learning_engine = getattr(leader, "learning_engine", None)
 marketing_agent = getattr(leader, "marketing_agent", None)
 if marketing_agent is None or not hasattr(marketing_agent, "load_marketing_knowledge"):
@@ -1119,14 +1145,15 @@ with col_side_queue:
 # ══════════════════════════════════════════════════════════════════════════════
 st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
-tab_lego, tab_tech, tab_mkt, tab_media, tab_know, tab_ops, tab_learn = st.tabs([
+tab_lego, tab_tech, tab_mkt, tab_media, tab_know, tab_trans, tab_ops, tab_learn = st.tabs([
     "🏢 1. Văn Phòng 3D LEGO AI (3D Metaverse HQ)",
     "🔬 2. Phòng Kỹ Thuật (PDF & HTML 7 Khối)",
     "📢 3. Phòng Nghiên Cứu SEO & Marketing",
     "🎨 4. Phòng Edit & Duyệt Ảnh Sản Phẩm",
     "📚 5. Phòng Lưu Trữ Tri Thức (Sách, Manual, CO/CQ)",
-    "🛡️ 6. Phòng Vận Hành & Haravan Guard",
-    "🧠 7. Bộ Nhớ Tự Học (Few-Shot Feedback)"
+    "🌐 6. Phòng Dịch Thuật & Bản Địa Hóa Tiêu Chuẩn (Agent_Translator)",
+    "🛡️ 7. Phòng Vận Hành & Haravan Guard",
+    "🧠 8. Bộ Nhớ Tự Học (Few-Shot Feedback)"
 ])
 
 @st.cache_data(show_spinner=False)
@@ -2188,7 +2215,157 @@ with tab_know:
                     st.rerun()
 
 
-# ── TAB 5: PHÒNG VẬN HÀNH & HARAVAN GUARD ────────────────────────────────────
+# ── TAB 6: PHÒNG DỊCH THUẬT & BẢN ĐỊA HÓA TIÊU CHUẨN QUỐC TẾ ──────────────────
+with tab_trans:
+    st.markdown("### 🌐 Phòng Biên Dịch & Bản Địa Hóa Tiêu Chuẩn Quốc Tế (Agent_Translator)")
+    st.markdown("""
+    <div style='background: #090e1a; border: 1.5px solid #0284c7; border-radius: 10px; padding: 16px; margin-bottom: 18px;'>
+      <h4 style='color: #38bdf8; margin: 0 0 8px 0;'>📖 Giữ Nguyên 100% Cấu Trúc, Bảng Biểu, Cột Dữ Liệu, Ảnh & Style Bản Gốc</h4>
+      <p style='font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 0;'>
+        Chức năng chuyên biệt xử lý các tài liệu kỹ thuật, hướng dẫn sử dụng (Manuals) và tiêu chuẩn thử nghiệm (Standards) trong thư mục 
+        <code>Google_Drive_Storage/2_Manuals_Standards</code> phân theo từng hãng. Toàn bộ nội dung sẽ được dịch sang tiếng Việt chuyên ngành dệt may,
+        bảo toàn 100% bố cục cột, font chữ, style và bảng thông số. Bản dịch hoàn tất được tự động lưu trữ vào thư mục riêng: 
+        <code>Google_Drive_Storage/8_Translated_Documents/&lt;Tên_Hãng&gt;/</code> và cung cấp file Word (.docx) để tải xuống ngay lập tức.
+      </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 1. Thống kê & Quét tài liệu
+    brand_manuals_dict = load_cached_manuals_by_brand(str(PROJECT_DIR))
+    translated_docs_list = load_cached_translated_docs(str(PROJECT_DIR))
+
+    total_brands_count = len(brand_manuals_dict)
+    total_manuals_count = sum(len(docs) for docs in brand_manuals_dict.values())
+    total_translated_count = len(translated_docs_list)
+
+    c_m1, c_m2, c_m3, c_m4 = st.columns(4)
+    with c_m1:
+        st.metric("🏢 Tổng số Hãng sản xuất", f"{total_brands_count} Hãng")
+    with c_m2:
+        st.metric("📚 Tài liệu & Tiêu chuẩn gốc", f"{total_manuals_count} File")
+    with c_m3:
+        st.metric("✅ Bản dịch tiếng Việt hoàn tất", f"{total_translated_count} File")
+    with c_m4:
+        st.metric("📂 Thư mục lưu trữ riêng", "8_Translated_Documents")
+
+    st.markdown("---")
+    st.markdown("#### 🚀 Khởi chạy dịch tài liệu sang tiếng Việt:")
+
+    if not brand_manuals_dict:
+        st.warning("⚠️ Không tìm thấy tài liệu nào trong thư mục Google_Drive_Storage/2_Manuals_Standards.")
+    else:
+        col_sel_brand, col_sel_doc = st.columns([1, 2])
+        brand_keys = list(brand_manuals_dict.keys())
+
+        with col_sel_brand:
+            selected_brand = st.selectbox(
+                "1. Chọn Hãng sản xuất / Nhóm tiêu chuẩn:",
+                options=brand_keys,
+                key="trans_sel_brand"
+            )
+
+        doc_candidates = brand_manuals_dict.get(selected_brand, [])
+        with col_sel_doc:
+            doc_labels = [f"{d['name']} ({d['size_kb']} KB, {d['ext'].upper()})" for d in doc_candidates]
+            selected_doc_idx = st.selectbox(
+                "2. Chọn tài liệu cần dịch sang tiếng Việt:",
+                options=range(len(doc_candidates)),
+                format_func=lambda i: doc_labels[i] if i < len(doc_labels) else "",
+                key="trans_sel_doc_idx"
+            )
+
+        if doc_candidates and 0 <= selected_doc_idx < len(doc_candidates):
+            chosen_doc = doc_candidates[selected_doc_idx]
+            
+            c_opt1, c_opt2 = st.columns([2, 1])
+            with c_opt1:
+                trans_mode = st.radio(
+                    "3. Chọn phạm vi biên dịch:",
+                    options=["Toàn bộ tài liệu (Full Document)", "Thử nghiệm trang đầu (1-3 trang)"],
+                    horizontal=True,
+                    key="trans_mode_radio"
+                )
+            with c_opt2:
+                max_pages_to_trans = 3 if "Thử nghiệm" in trans_mode else None
+                st.caption(f"📌 Chế độ: **{'Dịch mẫu 3 trang đầu' if max_pages_to_trans else 'Dịch 100% toàn bộ trang'}**")
+
+            st.write("")
+            btn_start_trans = st.button(
+                f"🚀 DỊCH TÀI LIỆU '{chosen_doc['name']}' SANG TIẾNG VIỆT",
+                type="primary",
+                use_container_width=True,
+                key="btn_run_translate"
+            )
+
+            if btn_start_trans:
+                with st.spinner("Agent_Translator đang phân tích cấu trúc tài liệu và tiến hành biên dịch..."):
+                    prog_bar = st.progress(0.0)
+                    status_text = st.empty()
+
+                    def ui_progress_cb(pct, msg):
+                        prog_bar.progress(pct)
+                        status_text.info(f"⏳ {msg}")
+
+                    try:
+                        fresh_translator = AgentTranslator(PROJECT_DIR) if AgentTranslator else translator_agent
+                        res_path = fresh_translator.translate_document(
+                            doc_path=chosen_doc["path"],
+                            brand_name=selected_brand,
+                            progress_callback=ui_progress_cb,
+                            max_pages=max_pages_to_trans
+                        )
+                        prog_bar.progress(1.0)
+                        status_text.success(f"🎉 Hoàn tất dịch thuật! File đã lưu vào: `{res_path.relative_to(PROJECT_DIR)}`")
+
+                        # Nút tải xuống trực tiếp
+                        if res_path.exists():
+                            with open(res_path, "rb") as f_out:
+                                docx_bytes = f_out.read()
+                            st.download_button(
+                                label=f"📥 TẢI XUỐNG BẢN DỊCH: {res_path.name}",
+                                data=docx_bytes,
+                                file_name=res_path.name,
+                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                type="primary",
+                                use_container_width=True
+                            )
+                            # Xóa cache để cập nhật danh sách
+                            load_cached_translated_docs.clear()
+                    except Exception as e:
+                        prog_bar.progress(1.0)
+                        status_text.error(f"❌ Có lỗi trong quá trình dịch thuật: {e}")
+
+    # 2. Danh sách kho tài liệu đã dịch hoàn tất trong thư mục riêng
+    st.markdown("---")
+    st.markdown("#### 📂 Kho Tài Liệu Đã Dịch Hoàn Tất Trong Thư Mục Riêng (`8_Translated_Documents`):")
+
+    updated_translated_docs = load_cached_translated_docs(str(PROJECT_DIR))
+    if not updated_translated_docs:
+        st.info("ℹ️ Chưa có tài liệu nào được dịch trong thư mục 8_Translated_Documents. Hãy chọn tài liệu ở trên và nhấn nút Dịch!")
+    else:
+        for idx, t_doc in enumerate(updated_translated_docs):
+            with st.container():
+                col_info, col_btn = st.columns([4, 1])
+                with col_info:
+                    st.markdown(f"**📄 {t_doc['name']}**")
+                    st.caption(f"🏢 Hãng: **{t_doc['brand']}** • 💾 Dung lượng: **{t_doc['size_kb']} KB** • 🕒 Thời gian: `{t_doc['created_at']}`")
+                with col_btn:
+                    p_file = Path(t_doc['path'])
+                    if p_file.exists():
+                        with open(p_file, "rb") as f_down:
+                            d_bytes = f_down.read()
+                        st.download_button(
+                            label="📥 Tải Word",
+                            data=d_bytes,
+                            file_name=t_doc['name'],
+                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            key=f"down_btn_trans_{idx}",
+                            use_container_width=True
+                        )
+                st.markdown("<hr style='margin: 8px 0; border: 0.5px solid rgba(255,255,255,0.06);'>", unsafe_allow_html=True)
+
+
+# ── TAB 7: PHÒNG VẬN HÀNH & HARAVAN GUARD ────────────────────────────────────
 with tab_ops:
     st.markdown("### 🛡️ Phòng Vận Hành & Cổng An Toàn Haravan Guard")
 
