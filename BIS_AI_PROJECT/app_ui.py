@@ -1276,7 +1276,7 @@ def render_bis_3d_office(
         safe_eid = json.dumps(selected_emp_id, ensure_ascii=False)
         scripts.append(f"""
         if (typeof window.highlightActiveEmployeeIn3D === 'function') {{
-            window.highlightActiveEmployeeIn3D({safe_eid});
+            window.highlightActiveEmployeeIn3D({safe_eid}, false);
         }}
         """)
 
@@ -2403,6 +2403,26 @@ with tab_media:
             name_vi_media = p_media.get("product_name") or ""
             title_media = name_en_media or name_vi_media or ""
 
+            # Nút chạy Smart Pipeline tự động 3 bước (PyMuPDF -> Web Fallback -> Ghép Mockup)
+            if st.button(
+                f"🚀 CHẠY SMART PIPELINE CHO {clean_sku} (BÓC TÁCH PDF ➔ FALLBACK TÌM WEB ➔ GHÉP MOCKUP)",
+                type="primary",
+                use_container_width=True,
+                key=f"btn_smart_pipe_{clean_sku}",
+                help="Tự động bóc ảnh gốc nét nhất từ Catalogue PDF. Nếu thiếu ảnh sẽ tự động cào ảnh web và ghép nền phòng Lab chuẩn 2K."
+            ):
+                with st.spinner(f"Agent_Media đang thực thi Smart Pipeline 3 bước cho mã {clean_sku}..."):
+                    active_pdf_for_media = active_pdf if 'active_pdf' in locals() and active_pdf else pdf_file
+                    pipe_res = media_agent.smart_media_pipeline(
+                        sku=clean_sku,
+                        product_name=title_media,
+                        brand=brand_name_media,
+                        pdf_path=active_pdf_for_media,
+                        page_num=page_num_media
+                    )
+                    st.success(f"🎉 Hoàn tất Pipeline! Nguồn ảnh: **{pipe_res.get('source_type')}** | Trạng thái: **{pipe_res.get('status')}**")
+                    st.rerun()
+
             # Ô nhập từ khóa tìm ảnh (Tự động kết hợp Tên hãng + Mã SKU + Tên sản phẩm)
             default_search_query = f"{brand_name_media} {clean_sku} {title_media}".strip()
             custom_img_query = st.text_input(
@@ -2597,6 +2617,47 @@ with tab_media:
                         st.rerun()
             else:
                 st.info(f"Chưa có ảnh ghép thành phẩm cho mã {clean_sku}. Vui lòng bấm 'AI GHÉP NỀN & TĂNG ĐỘ CHÂN THỰC' ở cột bên trái.")
+
+
+
+    # ── KHỐI BÓC TÁCH TOÀN BỘ ẢNH GỐC TỪ CATALOGUE PDF (PYMUPDF) ────────────────
+    st.markdown("---")
+    with st.expander("📸 BÓC TÁCH TOÀN BỘ ẢNH GỐC TỪ FILE CATALOGUE PDF (PYMUPDF BATCH EXTRACTOR)", expanded=False):
+        st.markdown("""
+        **Công cụ trích xuất ảnh siêu nét chuẩn thiết bị gốc của Nhà sản xuất:**
+        - Sử dụng công nghệ **PyMuPDF (fitz)** quét qua toàn bộ 36+ trang catalogue.
+        - Tự động lọc bỏ icon rác, đường kẻ, logo nhỏ (< 250px), khử trùng lặp MD5.
+        - Trích xuất ảnh gốc không nén (lossless PNG/JPEG) lưu về `Raw_Catalog_Extracted/`.
+        """)
+        c_pdf_pick, c_pdf_btn = st.columns([3, 1])
+        with c_pdf_pick:
+            pdf_choices = list(PROJECT_DIR.glob("*.pdf")) + list((PROJECT_DIR / "Google_Drive_Storage" / "1_Catalog_PDF").glob("*.pdf"))
+            pdf_choices_dict = {p.name: str(p) for p in pdf_choices}
+            selected_pdf_name = st.selectbox(
+                "Chọn file Catalogue PDF để trích xuất ảnh hàng loạt:",
+                options=list(pdf_choices_dict.keys()) if pdf_choices_dict else ["Chưa có file PDF"],
+                key="sel_batch_pdf_catalogue"
+            )
+        with c_pdf_btn:
+            st.write("")
+            st.write("")
+            btn_run_pdf_extract = st.button("🚀 BÓC TÁCH TOÀN BỘ ẢNH", type="primary", use_container_width=True, key="btn_run_batch_pdf_extract")
+
+        if btn_run_pdf_extract and selected_pdf_name in pdf_choices_dict:
+            target_pdf_path = Path(pdf_choices_dict[selected_pdf_name])
+            with st.spinner(f"Đang bóc tách ảnh thiết bị từ file {selected_pdf_name} qua PyMuPDF..."):
+                extracted_results = media_agent.extract_all_images_from_pdf(target_pdf_path, min_width=250, min_height=250)
+                if extracted_results:
+                    st.success(f"✓ Đã bóc tách thành công {len(extracted_results)} ảnh thiết bị độ phân giải cao từ {selected_pdf_name}!")
+                    # Hiển thị lưới xem trước
+                    grid_cols = st.columns(4)
+                    for idx, img_info in enumerate(extracted_results[:12]):
+                        with grid_cols[idx % 4]:
+                            st.image(img_info["path"], caption=f"Trang {img_info['page']} ({img_info['width']}x{img_info['height']})", use_container_width=True)
+                    if len(extracted_results) > 12:
+                        st.info(f"... và {len(extracted_results) - 12} ảnh khác đã lưu tại thư mục Google_Drive_Storage/4_Product_Images/Raw_Catalog_Extracted/")
+                else:
+                    st.warning("Không tìm thấy ảnh thiết bị nào đạt kích thước chuẩn (> 250px) trong file PDF.")
 
 
 # ── TAB 5: PHÒNG LƯU TRỮ TRI THỨC (KNOWLEDGE VAULT) ──────────────────────────

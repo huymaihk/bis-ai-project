@@ -436,3 +436,119 @@ class AgentMedia:
             "background": str(bg_path)
         }
 
+
+    def extract_all_images_from_pdf(
+        self,
+        pdf_path: str | Path,
+        output_dir: Optional[Path] = None,
+        min_width: int = 250,
+        min_height: int = 250
+    ) -> List[Dict[str, Any]]:
+        """
+        Trích xuất toàn bộ ảnh nhúng nguyên bản (raw embedded) chất lượng cao từ file PDF Catalogue:
+        - Lọc bỏ icon rác/đường kẻ nhỏ theo ngưỡng min_width và min_height (mặc định > 250px).
+        - Khử trùng lặp ảnh (Deduplication) theo mã băm MD5.
+        - Trả về danh sách metadata và lưu vào thư mục Raw_Catalog_Extracted.
+        """
+        import pymupdf
+        import hashlib
+
+        pdf_path = Path(pdf_path)
+        if not pdf_path.exists():
+            return []
+
+        if output_dir is None:
+            output_dir = self.gdrive_storage / "4_Product_Images" / "Raw_Catalog_Extracted" / pdf_path.stem
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        doc = pymupdf.open(str(pdf_path))
+        extracted_list = []
+        seen_hashes = set()
+        img_idx_counter = 0
+
+        for page_idx in range(len(doc)):
+            page = doc[page_idx]
+            for img in page.get_images(full=True):
+                xref = img[0]
+                base_image = doc.extract_image(xref)
+                w, h = base_image.get("width", 0), base_image.get("height", 0)
+                image_bytes = base_image.get("image", b"")
+                ext = base_image.get("ext", "jpg")
+
+                if w >= min_width and h >= min_height and image_bytes:
+                    img_hash = hashlib.md5(image_bytes).hexdigest()
+                    if img_hash in seen_hashes:
+                        continue
+                    seen_hashes.add(img_hash)
+
+                    img_idx_counter += 1
+                    file_name = f"page_{page_idx+1:02d}_img_{img_idx_counter:03d}_{w}x{h}.{ext}"
+                    out_file = output_dir / file_name
+
+                    with open(out_file, "wb") as f_out:
+                        f_out.write(image_bytes)
+
+                    extracted_list.append({
+                        "file_name": file_name,
+                        "path": str(out_file),
+                        "page": page_idx + 1,
+                        "width": w,
+                        "height": h,
+                        "size_kb": round(len(image_bytes) / 1024, 1),
+                        "format": ext.upper()
+                    })
+
+        return extracted_list
+
+    def smart_media_pipeline(
+        self,
+        sku: str,
+        product_name: str = "",
+        brand: str = "",
+        pdf_path: Optional[str | Path] = None,
+        page_num: int = 1,
+        bg_path: Optional[Path] = None
+    ) -> Dict[str, Any]:
+        """
+        Kiến trúc kết hợp thông minh 3 bước cho AI Agent Media Studio:
+        1. Ưu tiên 1 (Nội tại): Dùng PyMuPDF quét trang PDF chứa sản phẩm lấy ảnh gốc độ nét cao nhất.
+        2. Dự phòng (Fallback): Nếu không tìm thấy hoặc ảnh dưới 250px -> Tự động tìm bổ sung ảnh Web (Bing/DuckDuckGo) theo Brand + SKU + Tên SP.
+        3. Hậu xử lý (Composite): Ghép ảnh sản phẩm vào bối cảnh Mockup Studio/Lab dệt may chân thực.
+        """
+        clean_sku = sku.strip().replace(" ", "_")
+        target_brand_img = self.brand_dir / f"{clean_sku}_brand_1.jpg"
+        source_type = "NONE"
+
+        # Bước 1: Ưu tiên bóc tách từ PDF
+        if pdf_path and Path(pdf_path).exists():
+            extracted = self.extract_image_from_pdf(clean_sku, pdf_path, page_num, product_name)
+            if extracted and extracted.exists() and extracted.stat().st_size > 8000:
+                source_type = "PDF_EMBEDDED"
+
+        # Bước 2: Fallback tìm ảnh Web nếu chưa có ảnh
+        if not target_brand_img.exists() or source_type == "NONE":
+            query = f"{brand} {clean_sku} {product_name}".strip()
+            web_results = self.search_web_images(query, max_results=5)
+            if web_results:
+                top_img = web_results[0]
+                dl_path = self.download_and_save_brand_image(clean_sku, top_img["image_url"], index=1)
+                if dl_path and dl_path.exists():
+                    source_type = f"WEB_SEARCH ({top_img.get('domain', 'Web')})"
+
+        # Bước 3: Ghép vào mockup nền Studio/Lab
+        composite_res = None
+        if target_brand_img.exists():
+            if bg_path is None or not Path(bg_path).exists():
+                bg_list = self.get_backgrounds()
+                bg_path = bg_list[0] if bg_list else (self.bg_dir / "modern_textile_lab.jpg")
+
+            final_path = self.composite_product_image(clean_sku, target_brand_img, Path(bg_path))
+            composite_res = str(final_path)
+
+        return {
+            "sku": clean_sku,
+            "source_type": source_type,
+            "raw_brand_image": str(target_brand_img) if target_brand_img.exists() else None,
+            "composite_image": composite_res,
+            "status": "READY_FOR_APPROVAL" if composite_res else "NEEDS_IMAGE"
+        }

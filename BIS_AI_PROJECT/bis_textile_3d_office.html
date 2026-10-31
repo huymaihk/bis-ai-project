@@ -901,11 +901,11 @@
     function initScene() {
       const container = document.getElementById('canvas-container');
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x040711);
-      scene.fog = new THREE.FogExp2(0x040711, 0.012);
+      scene.background = new THREE.Color(0x060b18);
+      scene.fog = new THREE.Fog(0x060b18, 45, 120);
 
-      camera = new THREE.PerspectiveCamera(44, window.innerWidth / window.innerHeight, 0.1, 220);
-      camera.position.set(0, 18, 22.5);
+      camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 240);
+      camera.position.set(0, 19.0, 23.5);
 
       renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -942,71 +942,142 @@
       setupHUDControls();
 
       log3DActivity('HỆ THỐNG', 'Đã dựng đủ 16 bàn làm việc & 16 nhân vật 3D (Chủ tịch Huy Mai + 15 AI Agents).', '#facc15');
+
+      window.scene = scene;
+      window.camera = camera;
+      window.renderer = renderer;
+      window.controls = controls;
+      window.entities = entities;
     }
 
     function setupLights() {
-      // Ánh sáng môi trường tươi sáng, rõ nét toàn bộ 16 vị trí bàn
-      const hemi = new THREE.HemisphereLight(0xdbeafe, 0x1e293b, 1.15);
-      hemi.position.set(0, 25, 0);
+      // 1. Ánh sáng môi trường tươi sáng, rõ nét toàn bộ 16 vị trí bàn
+      const hemi = new THREE.HemisphereLight(0xdbeafe, 0x1e293b, 1.35);
+      hemi.position.set(0, 30, 0);
       scene.add(hemi);
 
-      const dir = new THREE.DirectionalLight(0xfffbeb, 1.2);
+      const amb = new THREE.AmbientLight(0x334155, 0.85);
+      scene.add(amb);
+
+      const dir = new THREE.DirectionalLight(0xfffbeb, 1.25);
       dir.position.set(16, 28, 18);
       dir.castShadow = true;
       dir.shadow.mapSize.width = 2048;
       dir.shadow.mapSize.height = 2048;
-      const d = 24;
+      const d = 26;
       dir.shadow.camera.left = -d;
       dir.shadow.camera.right = d;
       dir.shadow.camera.top = d;
       dir.shadow.camera.bottom = -d;
       scene.add(dir);
 
-      // Spotlight Hoàng gia chiếu sáng rực rỡ Bàn Chủ Tịch Huy Mai
-      const ceoLight = new THREE.PointLight(0xfacc15, 2.2, 16);
-      ceoLight.position.set(0, 4.5, -8.6);
+      // 2. Spotlight Hoàng gia chiếu sáng rực rỡ Bàn Chủ Tịch Huy Mai
+      const ceoLight = new THREE.PointLight(0xfef08a, 2.5, 20);
+      ceoLight.position.set(0, 5.0, -8.6);
       scene.add(ceoLight);
 
-      // Ánh sáng Hologram bàn họp tròn trung tâm
-      const holoLight = new THREE.PointLight(0x38bdf8, 2.2, 16);
-      holoLight.position.set(0, 3.2, 0.4);
+      // 3. Ánh sáng Hologram bàn họp tròn trung tâm 16 ghế
+      const holoLight = new THREE.PointLight(0x38bdf8, 2.4, 20);
+      holoLight.position.set(0, 3.8, 0.4);
       scene.add(holoLight);
+
+      // 4. Ánh sáng chuyên biệt cho 5 Khối Phòng Ban (Đảm bảo 15 bàn đều sáng rực rỡ, không bị tối)
+      const deptLights = [
+        { name: 'RD_ZONE', x: -11.5, y: 4.5, z: -2.0, col: 0x60a5fa, intensity: 2.2 },
+        { name: 'MKT_ZONE', x: -7.5, y: 4.5, z: 6.8, col: 0xc084fc, intensity: 2.2 },
+        { name: 'STUDIO_ZONE', x: 7.5, y: 4.5, z: 6.8, col: 0xf472b6, intensity: 2.2 },
+        { name: 'TRANS_ZONE', x: 11.5, y: 4.5, z: -2.0, col: 0xfbbf24, intensity: 2.2 },
+        { name: 'GUARD_ZONE', x: 9.5, y: 4.5, z: -8.2, col: 0x34d399, intensity: 2.2 },
+        { name: 'PANTRY_ZONE', x: -12.2, y: 4.5, z: -9.2, col: 0x38bdf8, intensity: 1.8 }
+      ];
+
+      deptLights.forEach(dl => {
+        const pl = new THREE.PointLight(dl.col, dl.intensity, 22);
+        pl.position.set(dl.x, dl.y, dl.z);
+        scene.add(pl);
+      });
     }
 
     function buildArchitecture() {
-      // Sàn gỗ rộng 36x28 cho 16 bàn làm việc
+      // 1. Sàn gỗ rộng 38x28 cho 16 bàn làm việc sang trọng
       const floor = new THREE.Mesh(
-        new THREE.PlaneGeometry(36, 26),
+        new THREE.PlaneGeometry(38, 28),
         new THREE.MeshStandardMaterial({ map: createWoodFloorTexture(), roughness: 0.28, metalness: 0.08 })
       );
       floor.rotation.x = -Math.PI / 2;
       floor.receiveShadow = true;
       scene.add(floor);
 
-      // Bầu trời đêm Cyberpunk phía sau
-      const sky = new THREE.Mesh(
-        new THREE.PlaneGeometry(40, 14),
-        new THREE.MeshBasicMaterial({ map: createCyberpunkSkyTexture() })
+      // Viền kim loại & dải LED xung quanh sàn
+      const floorBorder = new THREE.Mesh(
+        new THREE.BoxGeometry(38.4, 0.08, 28.4),
+        new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4, metalness: 0.7 })
       );
-      sky.position.set(0, 5.5, -14.5);
-      scene.add(sky);
+      floorBorder.position.y = -0.05;
+      scene.add(floorBorder);
 
-      // Vách kính lớn phía Bắc
-      const glass = new THREE.Mesh(
-        new THREE.PlaneGeometry(36, 8.5),
-        new THREE.MeshPhysicalMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.14, roughness: 0.05 })
-      );
-      glass.position.set(0, 4.25, -13.0);
-      scene.add(glass);
+      // 2. Toàn cảnh bầu trời đêm Cyberpunk 4 hướng (Không bao giờ bị màn hình đen khi xoay camera)
+      const skyTex = createCyberpunkSkyTexture();
+
+      // Bầu trời Bắc
+      const skyNorth = new THREE.Mesh(new THREE.PlaneGeometry(42, 16), new THREE.MeshBasicMaterial({ map: skyTex }));
+      skyNorth.position.set(0, 6.5, -14.8);
+      scene.add(skyNorth);
+
+      // Bầu trời Tây (Phòng R&D nhìn ra)
+      const skyWest = new THREE.Mesh(new THREE.PlaneGeometry(32, 16), new THREE.MeshBasicMaterial({ map: skyTex }));
+      skyWest.rotation.y = Math.PI / 2;
+      skyWest.position.set(-19.5, 6.5, 0);
+      scene.add(skyWest);
+
+      // Bầu trời Đông (Phòng Dịch Thuật nhìn ra)
+      const skyEast = new THREE.Mesh(new THREE.PlaneGeometry(32, 16), new THREE.MeshBasicMaterial({ map: skyTex }));
+      skyEast.rotation.y = -Math.PI / 2;
+      skyEast.position.set(19.5, 6.5, 0);
+      scene.add(skyEast);
+
+      // Bầu trời Nam
+      const skySouth = new THREE.Mesh(new THREE.PlaneGeometry(42, 16), new THREE.MeshBasicMaterial({ map: skyTex }));
+      skySouth.rotation.y = Math.PI;
+      skySouth.position.set(0, 6.5, 14.8);
+      scene.add(skySouth);
+
+      // 3. Vách kính cường lực & Lan can LED bảo vệ 4 cạnh
+      const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.16, roughness: 0.05 });
+      const ledRailMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+
+      // Vách kính phía Bắc
+      const glassNorth = new THREE.Mesh(new THREE.PlaneGeometry(38, 8.5), glassMat);
+      glassNorth.position.set(0, 4.25, -13.5);
+      scene.add(glassNorth);
+
+      // Lan can kính Tây & Đông
+      const glassWest = new THREE.Mesh(new THREE.PlaneGeometry(28, 2.2), glassMat);
+      glassWest.rotation.y = Math.PI / 2;
+      glassWest.position.set(-18.5, 1.1, 0);
+      scene.add(glassWest);
+
+      const railWest = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 28), ledRailMat);
+      railWest.position.set(-18.5, 2.2, 0);
+      scene.add(railWest);
+
+      const glassEast = new THREE.Mesh(new THREE.PlaneGeometry(28, 2.2), glassMat);
+      glassEast.rotation.y = -Math.PI / 2;
+      glassEast.position.set(18.5, 1.1, 0);
+      scene.add(glassEast);
+
+      const railEast = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 28), ledRailMat);
+      railEast.position.set(18.5, 2.2, 0);
+      scene.add(railEast);
 
       // Vòng đèn LED Halo trên trần
       const halos = [
-        { x: 0, z: -8.6, r: 2.2, col: 0xfacc15 },
-        { x: 0, z: 0.4, r: 3.6, col: 0x38bdf8 },
-        { x: -11.5, z: -2.0, r: 2.0, col: 0x3b82f6 },
-        { x: -7.5, z: 6.8, r: 2.0, col: 0xa855f7 },
-        { x: 7.5, z: 6.8, r: 2.0, col: 0xec4899 },
-        { x: 11.5, z: -2.0, r: 2.0, col: 0xf59e0b }
+        { x: 0, z: -8.6, r: 2.4, col: 0xfacc15 },
+        { x: 0, z: 0.4, r: 3.8, col: 0x38bdf8 },
+        { x: -11.5, z: -2.0, r: 2.2, col: 0x3b82f6 },
+        { x: -7.5, z: 6.8, r: 2.2, col: 0xa855f7 },
+        { x: 7.5, z: 6.8, r: 2.2, col: 0xec4899 },
+        { x: 11.5, z: -2.0, r: 2.2, col: 0xf59e0b }
       ];
       halos.forEach(h => {
         const ring = new THREE.Mesh(
@@ -1014,7 +1085,7 @@
           new THREE.MeshBasicMaterial({ color: h.col })
         );
         ring.rotation.x = Math.PI / 2;
-        ring.position.set(h.x, 6.2, h.z);
+        ring.position.set(h.x, 6.4, h.z);
         scene.add(ring);
       });
     }
@@ -1549,11 +1620,11 @@
       activeCharId = charId;
       playChime(820, 0.14);
 
-      // Zoom camera mượt mà tới nhân vật
+      // Zoom camera mượt mà tới nhân vật từ góc cao studio nhìn về phía bàn làm việc
       const pos = ent.root.position.clone();
       const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), ent.root.rotation.y);
       cameraFocusState.lookAtPos.copy(pos).add(new THREE.Vector3(0, 1.15, 0));
-      cameraFocusState.targetPos.copy(pos).add(forward.multiplyScalar(4.2)).add(new THREE.Vector3(1.0, 2.8, 1.0));
+      cameraFocusState.targetPos.copy(pos).add(forward.multiplyScalar(4.5)).add(new THREE.Vector3(1.2, 3.4, 1.2));
       cameraFocusState.active = true;
 
       // Vẫy tay chào Chủ tịch Huy Mai
@@ -1656,8 +1727,13 @@
       updateCharacterLabel(charId);
     }
 
-    window.highlightActiveEmployeeIn3D = function(empId) {
-      if (entities[empId]) {
+    window.highlightActiveEmployeeIn3D = function(empId, shouldZoom = false) {
+      const ent = entities[empId];
+      if (!ent) return;
+      activeCharId = empId;
+      ent.waveTimer = 2.4;
+      updateCharacterLabel(empId);
+      if (shouldZoom) {
         zoomAndOpenChatWithCharacter(empId, false);
       }
     };
@@ -1853,8 +1929,8 @@
       });
 
       safeOn('btn-reset-cam', 'click', () => {
-        cameraFocusState.lookAtPos.set(0, 1.0, -0.5);
-        cameraFocusState.targetPos.set(0, 18, 22.5);
+        cameraFocusState.lookAtPos.set(0, 1.0, -0.6);
+        cameraFocusState.targetPos.set(0, 19.0, 23.5);
         cameraFocusState.active = true;
       });
 
