@@ -473,8 +473,8 @@ class AgentOperations:
                     "sku": sku,
                     "product_name": p.get("product_name"),
                     "status_str": stt_txt,
-                    "url": match_h["url"],
-                    "haravan_id": match_h["id"]
+                    "url": match_item.get("url", match_url),
+                    "haravan_id": match_item.get("id")
                 })
             else:
                 if p.get("status") == STATUS_REJECTED and "Haravan" in p.get("notes", ""):

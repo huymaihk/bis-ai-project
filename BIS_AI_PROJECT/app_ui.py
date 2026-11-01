@@ -2037,6 +2037,25 @@ with tab_tech:
         st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
 
         # ── 2. BỘ LỌC TÁCH RIÊNG TRONG Ô CHỌN SKU DUYỆT ────────────────────────────
+        c_sync_head1, c_sync_head2 = st.columns([7.5, 4.5])
+        with c_sync_head1:
+            st.markdown(f"**⚡ Đối soát an toàn Haravan:** `🛡️ {len(dups_products)} SP đã có trên sàn (Đã khóa) &bull; ✅ {len(valid_products)} SP mới sẵn sàng xuất bản`")
+        with c_sync_head2:
+            if st.button("🔄 CẬP NHẬT ĐỐI SOÁT LIVE HARAVAN NGAY", key="btn_sync_haravan_tab3", type="primary", use_container_width=True, help="Bấm vào đây ngay khi bạn vừa cập nhật/đăng sản phẩm trên Haravan để hệ thống kéo dữ liệu mới nhất về đối soát lại!"):
+                if operations_agent:
+                    with st.spinner("Đang kết nối Haravan API & bistextile.com để kéo danh mục mới nhất..."):
+                        h_res = operations_agent.scan_live_haravan_and_web(products)
+                        clean_list = h_res.get("clean_products", [])
+                        if clean_list:
+                            products = clean_list
+                            st.session_state["cached_products"] = products
+                        st.cache_data.clear()
+                        st.toast(f"🎉 Đã cập nhật đối soát Haravan! Khóa {h_res.get('matched_count', 0)} mã trùng web, {h_res.get('unmatched_count', 0)} SP mới.", icon="🔄")
+                        st.success(f"✓ Hoàn tất! Haravan hiện có {h_res.get('total_haravan', 0)} sản phẩm. Đã cập nhật bảng lọc kiểm duyệt!")
+                        import time
+                        time.sleep(0.3)
+                        st.rerun()
+
         col_fil, col_sel, col_stat = st.columns([4.8, 4.2, 3.0])
         with col_fil:
             filter_mode = st.radio(
