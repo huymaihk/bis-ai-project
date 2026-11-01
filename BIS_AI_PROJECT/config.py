@@ -3,6 +3,11 @@ BIS Textile Pipeline - Configuration
 """
 import os
 from datetime import date
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
 
 # ── API Keys & Cloud Secrets ───────────────────────────────────────────────────
 # Tự động đọc từ Streamlit Secrets hoặc Biến môi trường khi đưa lên Cloud 24/7
