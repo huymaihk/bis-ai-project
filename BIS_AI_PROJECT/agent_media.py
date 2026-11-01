@@ -142,24 +142,41 @@ class AgentMedia:
     def extract_image_from_pdf(self, sku: str, pdf_path: str | Path, page_num: int, product_name: str = "", scan_all: bool = False) -> Optional[Path]:
         """
         Bóc ảnh thiết bị từ Catalogue PDF:
-        - BƯỚC 1: Quét chính xác trang `page_num` (source_page). Nếu trang có ảnh, lấy ảnh nét nhất trên ĐÚNG TRANG ĐÓ.
-        - BƯỚC 2: Chỉ khi trang đó hoàn toàn không có ảnh và scan_all=True thì mới quét các trang khác chứa đúng mã SKU.
-        - Tuyệt đối không lấy ảnh lung tung từ các trang khác khi trang hiện tại đã có ảnh.
+        - Kiểm tra nếu tên sản phẩm thuộc dạng sách/tiêu chuẩn (manual, standard, tiêu chuẩn, book, aatcc, iso):
+          Ưu tiên tìm ảnh Web (ảnh bìa sách) thay vì bóc tách ảnh thiết bị từ PDF.
+        - BƯỚC 1: Quét chính xác trang `page_num` (source_page). Nếu trang có ảnh > 5KB, lấy ảnh nét nhất trên ĐÚNG TRANG ĐÓ.
+        - BƯỚC 2: Chỉ khi trang đó không có ảnh và scan_all=True (và không phải dạng sách/tiêu chuẩn) thì mới quét các trang khác chứa đúng mã SKU.
+        - XÓA BỎ HOÀN TOÀN đoạn fallback pixmap chụp nguyên trang bìa. Nếu không có ảnh > 5KB, trả về None để kích hoạt tìm kiếm Web.
         """
         import pymupdf
         clean_sku = sku.strip().replace(" ", "_")
         target_path = self.brand_dir / f"{clean_sku}_brand_1.jpg"
 
+        # Kiểm tra xem sản phẩm có phải tài liệu/tiêu chuẩn/sổ tay không
+        name_lower = (product_name or "").lower()
+        is_book_or_standard = any(k in name_lower for k in [
+            "manual", "standard", "tiêu chuẩn", "tieu chuan", "book", "sách", "aatcc", "iso", "astm"
+        ])
+
         # 1. Thử bóc trực tiếp từ đúng trang page_num
         exact_page_imgs = self.extract_images_from_exact_page(pdf_path, page_num)
-        if exact_page_imgs:
-            best_img = exact_page_imgs[0]
+        # Chỉ nhận ảnh thực sự có dung lượng > 5KB (5000 bytes) để tránh lấy icon nhỏ hoặc viền
+        valid_page_imgs = [img for img in exact_page_imgs if img.get("size_bytes", 0) > 5000]
+
+        if valid_page_imgs:
+            best_img = valid_page_imgs[0]
             with open(target_path, "wb") as f:
                 f.write(best_img["image_bytes"])
             print(f"✓ Đã trích ảnh {clean_sku} chuẩn xác từ trang {page_num} ({best_img['width']}x{best_img['height']}, {best_img['size_bytes']:,} bytes)")
             return target_path
 
-        # 2. Nếu trang đó không có ảnh và cho phép scan_all: chỉ quét trang có chứa đúng mã SKU
+        # Nếu là sách / tiêu chuẩn mà trang PDF không có ảnh bìa > 5KB:
+        # Ngừng ngay lập tức, trả về None để hệ thống chuyển sang tìm ảnh Web (tránh bóc nhầm máy móc/tủ sấy ở trang khác)
+        if is_book_or_standard:
+            print(f"ℹ️ Sản phẩm '{sku}' là sách/tiêu chuẩn ({product_name}) - Không tìm thấy ảnh bìa > 5KB trên trang {page_num}. Chuyển sang tìm kiếm Web.")
+            return None
+
+        # 2. Với thiết bị máy móc thông thường: nếu trang không có ảnh và cho phép scan_all:
         if scan_all:
             if not os.path.exists(str(pdf_path)):
                 possible_paths = [
@@ -181,11 +198,12 @@ class AgentMedia:
                         txt = doc[p_idx].get_text().lower()
                         if sku_clean_lower in txt:
                             sku_page_imgs = self.extract_images_from_exact_page(pdf_path, p_idx + 1)
-                            if sku_page_imgs:
-                                best_img = sku_page_imgs[0]
+                            valid_sku_imgs = [img for img in sku_page_imgs if img.get("size_bytes", 0) > 5000]
+                            if valid_sku_imgs:
+                                best_img = valid_sku_imgs[0]
                                 with open(target_path, "wb") as f:
                                     f.write(best_img["image_bytes"])
-                                print(f"✓ Tìm thấy {clean_sku} tại trang {p_idx + 1} qua quét SKU text")
+                                print(f"✓ Tìm thấy {clean_sku} tại trang {p_idx + 1} qua quét SKU text ({best_img['size_bytes']:,} bytes)")
                                 doc.close()
                                 return target_path
                     doc.close()
@@ -194,7 +212,7 @@ class AgentMedia:
 
         # ❌ XÓA BỎ HOÀN TOÀN ĐOẠN CHỤP NGUYÊN TRANG BÌA (FALLBACK BITMAP) CŨ!
         # Nếu không có ảnh thiết bị hoặc sách thực tế trong PDF, trả về None để hệ thống chuyển sang tìm Web
-        print(f"⚠️ Không tìm thấy ảnh sản phẩm hợp lệ cho SKU {clean_sku} trong file PDF này.")
+        print(f"⚠️ Không tìm thấy ảnh sản phẩm hợp lệ (> 5KB) cho SKU {clean_sku} trong file PDF này.")
         return None
 
     def clean_search_query(self, query: str) -> str:
@@ -260,27 +278,44 @@ class AgentMedia:
             print(f"Lỗi tìm kiếm ảnh qua Google Custom Search API: {e}")
         return []
 
-    def search_duckduckgo_images(self, query: str, max_results: int = 8) -> list[dict]:
+    def preprocess_search_query(self, query: str) -> str:
         """
-        Tìm ảnh qua DuckDuckGo: lọc từ khóa ngắn gọn, triệt tiêu hoàn toàn meme và banner rác.
+        Rút gọn và tiền xử lý từ khóa tìm ảnh:
+        - Lọc bỏ các hư từ (of, and, the, procedures, methods, hardbound, book, standard, test, -, :).
+        - Chỉ giữ lại: [Brand] + [SKU] + [2-3 từ định danh cốt lõi].
         """
         if not query:
-            return []
-
-        # 1. Tự động rút gọn query: khử trùng lặp và chỉ giữ lại Hãng + SKU + 1-2 từ khóa cốt lõi
+            return ""
         clean_q = self.clean_search_query(query)
         words = clean_q.strip().split()
-        clean_words = [w for w in words if w.lower() not in ["of", "and", "the", "for", "procedures", "methods", "hardbound", "book", "standard", "test", "-", ":"]]
-        short_query = " ".join(clean_words[:3]) if len(clean_words) >= 3 else clean_q.strip()
+        stop_words = {"of", "and", "the", "for", "procedures", "methods", "hardbound", "book", "standard", "test", "-", ":"}
+        clean_words = [w for w in words if w.lower() not in stop_words]
 
-        results = []
-        # Danh sách từ khóa rác cần loại bỏ ngay lập tức (meme mèo, động vật, mạng xã hội, quảng cáo)
-        junk_patterns = [
+        if len(clean_words) >= 4:
+            return " ".join(clean_words[:4])
+        elif clean_words:
+            return " ".join(clean_words)
+        return clean_q.strip()
+
+    def search_web_images(self, query: str, max_results: int = 8) -> list[dict]:
+        """
+        Tìm kiếm ảnh sản phẩm qua DuckDuckGo (DDGS):
+        - Dùng DDGS().images() thay thế hoàn toàn cho Bing HTML scraping.
+        - Tiền xử lý rút gọn từ khóa: tự động lọc bỏ các hư từ, giữ lại Brand + SKU + 2-3 từ định danh cốt lõi.
+        - Bổ sung bộ lọc danh sách đen: loại bỏ ngay kết quả có domain/title chứa: meme, cat, kitty, boredpanda, bing, wallpaper, avatar, ads...
+        """
+        short_query = self.preprocess_search_query(query)
+        if not short_query:
+            return []
+
+        # Danh sách đen loại trừ: meme, mèo, mạng xã hội, quảng cáo
+        blacklist = [
             "meme", "cat", "kitty", "kitten", "dog", "puppy", "funny", "boredpanda",
-            "wallpaper", "avatar", "reddit", "facebook", "pinterest", "cashback",
-            "coupon", "discount", "gift card", "tiktok", "instagram"
+            "wallpaper", "avatar", "ads", "bing", "reddit", "facebook", "pinterest",
+            "cashback", "coupon", "discount", "gift card", "tiktok", "instagram"
         ]
 
+        results = []
         try:
             try:
                 from ddgs import DDGS
@@ -306,9 +341,10 @@ class AgentMedia:
                 for r in ddgs_gen:
                     title = (r.get("title") or "").lower()
                     img_url = (r.get("image") or "").lower()
+                    domain = (r.get("source") or "").lower()
 
-                    # Bỏ qua nếu dính các trang meme hài hước hoặc ảnh động vật
-                    if any(junk in title or junk in img_url for junk in junk_patterns):
+                    # Bỏ qua nếu dính danh sách đen
+                    if any(bad in title or bad in img_url or bad in domain for bad in blacklist):
                         continue
 
                     raw_img = r.get("image")
@@ -322,124 +358,22 @@ class AgentMedia:
                     if len(results) >= max_results:
                         break
 
-                if results:
-                    print(f"✓ Đã tìm thấy {len(results)} ảnh sạch qua DuckDuckGo cho '{short_query}'")
-                    return results
+            if results:
+                print(f"✓ Đã tìm thấy {len(results)} ảnh sạch qua DuckDuckGo cho '{short_query}'")
+                return results
         except Exception as e:
-            print(f"Lỗi tìm kiếm ảnh DDGS: {e}")
+            print(f"Lỗi tìm kiếm ảnh DDGS cho '{short_query}': {e}")
+
+        # Fallback 1: Google Custom Search API nếu có cấu hình API Key & CX
+        google_res = self.search_google_custom_search(short_query, max_results=max_results)
+        if google_res:
+            return google_res
 
         return results
 
-    def search_bing_async_images(self, query: str, max_results: int = 8) -> list[dict]:
-        """
-        Tìm kiếm qua Bing Images Async API làm giải pháp dự phòng thứ 3:
-        - Khử trùng lặp từ khóa.
-        - Lọc bỏ triệt để các thẻ ads/cashback/coupon/rewards.
-        """
-        import urllib.parse
-        import json
-        import re
-
-        clean_q = self.clean_search_query(query)
-        if not clean_q:
-            return []
-
-        use_cffi = False
-        try:
-            from curl_cffi import requests as cffi_requests
-            use_cffi = True
-        except ImportError:
-            import requests as cffi_requests
-
-        try:
-            from bs4 import BeautifulSoup
-        except ImportError:
-            BeautifulSoup = None
-
-        encoded = urllib.parse.quote_plus(clean_q)
-        url = f"https://www.bing.com/images/async?q={encoded}&first=0&count=30&mmasync=1"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            "Accept-Language": "en-US,en;q=0.9,vi;q=0.8"
-        }
-
-        bad_domains = [
-            "bing.com", "microsoft.com", "onmsft.com", "pcmag.com", "notebooks.com",
-            "coupon", "cashback", "rakuten", "slickdeals", "retailmenot"
-        ]
-        bad_keywords = [
-            "reward", "cashback", "coupon", "discount", "deal", "promo", "gift card", "voucher"
-        ]
-
-        results = []
-        try:
-            if use_cffi:
-                session = cffi_requests.Session(impersonate="chrome")
-                r = session.get(url, headers=headers, timeout=15)
-            else:
-                r = cffi_requests.get(url, headers=headers, timeout=15)
-
-            if r.status_code == 200:
-                html_text = r.text
-                if BeautifulSoup:
-                    soup = BeautifulSoup(html_text, "html.parser")
-                    for a in soup.find_all("a", class_="iusc"):
-                        m_attr = a.get("m")
-                        if not m_attr:
-                            continue
-                        try:
-                            m_data = json.loads(m_attr)
-                            murl = m_data.get("murl")
-                            turl = m_data.get("turl")
-                            desc = m_data.get("desc", "")
-                            purl = m_data.get("purl", "")
-                            if not murl:
-                                continue
-
-                            domain = re.sub(r"https?://(www\.)?", "", purl or murl).split("/")[0].lower()
-                            if any(bd in domain for bd in bad_domains):
-                                continue
-                            if any(bk in desc.lower() for bk in bad_keywords):
-                                continue
-
-                            if not any(skip in murl.lower() for skip in ["logo", "icon", "banner", "avatar", "favicon", "pixel"]):
-                                results.append({
-                                    "image_url": murl,
-                                    "thumb_url": turl or murl,
-                                    "title": desc or clean_q,
-                                    "domain": domain
-                                })
-                                if len(results) >= max_results:
-                                    break
-                        except Exception:
-                            continue
-        except Exception as e:
-            print(f"Error searching Bing async images: {e}")
-        return results
-
-    def search_web_images(self, query: str, max_results: int = 8) -> list[dict]:
-        """
-        Công cụ tìm kiếm ảnh đa tầng (Multi-tier Image Search Engine):
-        1. Ưu tiên 1 (Chính thống): Google Custom Search API (nếu được cấu hình API Key & CX).
-        2. Ưu tiên 2 (Mặc định miễn phí): DuckDuckGo Images DDGS (trả về kết quả sạch chuẩn như Google, 0% quảng cáo).
-        3. Dự phòng 3: Bing Images Async API lọc sạch Ads.
-        """
-        # 1. Thử Google Custom Search API nếu có cấu hình
-        google_results = self.search_google_custom_search(query, max_results=max_results)
-        if google_results:
-            return google_results
-
-        # 2. Thử DuckDuckGo Images (DDGS) - Sạch 100%, không dính quảng cáo Bing
-        ddg_results = self.search_duckduckgo_images(query, max_results=max_results)
-        if ddg_results:
-            return ddg_results
-
-        # 3. Dự phòng Bing Async đã lọc sạch Ads
-        bing_results = self.search_bing_async_images(query, max_results=max_results)
-        if bing_results:
-            return bing_results
-
-        return []
+    def search_duckduckgo_images(self, query: str, max_results: int = 8) -> list[dict]:
+        """Tương thích ngược: gọi trực tiếp search_web_images."""
+        return self.search_web_images(query, max_results=max_results)
 
     def download_and_save_brand_image(self, sku: str, image_url: str, index: int = 1) -> Optional[Path]:
         """Tải ảnh từ URL đã chọn và lưu vào thư mục ảnh hãng của SKU trên Google Drive."""

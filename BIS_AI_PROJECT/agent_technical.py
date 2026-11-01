@@ -279,7 +279,7 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
 
         # B6: Validate HTML generation
         html = self.build_7_block_html(record)
-        b6 = {"step": "B6 HTML 7-Block Match", "pass": "bis-product-description" in html and sku in html, "detail": "Khớp cấu trúc 7 khối chuẩn BIS."}
+        b6 = {"step": "B6 HTML 7-Block Match", "pass": ("bis-product-card" in html or "bis-product-description" in html) and sku in html, "detail": "Khớp cấu trúc 7 khối chuẩn BIS."}
 
         is_all_pass = all([b1["pass"], b2["pass"], b3["pass"], b4["pass"], b6["pass"]])
         return {
@@ -330,7 +330,7 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
         doc_title = record.get("related_doc_title") or f"Tra cứu sản phẩm mã {sku} trên cổng BIS Textile"
         doc_url = record.get("related_doc_url") or f"https://bistextile.com/search?q={sku}"
 
-        html = f"""<div class="bis-product-card" style="background-color: #ffffff !important; color: #1e293b !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; padding: 24px; border-radius: 12px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 100%; box-sizing: border-box;">
+        html = f"""<div class="bis-product-card bis-product-description" style="background-color: #ffffff !important; color: #1e293b !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; padding: 24px; border-radius: 12px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 100%; box-sizing: border-box;">
 
   <!-- KHỐI 1: Tên sản phẩm tiếng Việt Bold 20px -->
   <h1 style="font-size: 20px; font-weight: 800; color: #0f172a !important; margin: 0 0 6px 0; line-height: 1.3;">

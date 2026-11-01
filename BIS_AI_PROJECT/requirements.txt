@@ -21,3 +21,5 @@ pdf2docx>=0.5.8
 translators>=6.0.0
 ddgs>=9.16.0
 duckduckgo_search>=8.1.0
+deepeval>=4.3.0
+pytest>=8.0.0
