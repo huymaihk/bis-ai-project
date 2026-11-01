@@ -28,7 +28,8 @@ class AgentMedia:
         self.bg_dir = self.gdrive_storage / "5_Studio_Backgrounds"
         self.final_dir = self.gdrive_storage / "6_Final_Composites"
         
-        for d in [self.brand_dir, self.user_dir, self.bg_dir, self.final_dir]:
+        self.preview_dir = self.gdrive_storage / "5_Draft_Previews"
+        for d in [self.brand_dir, self.user_dir, self.bg_dir, self.preview_dir, self.final_dir]:
             d.mkdir(parents=True, exist_ok=True)
 
         self.manifest_path = self.gdrive_storage / "image_review_manifest.json"
@@ -975,6 +976,7 @@ class AgentMedia:
         """
         clean_sku = sku.strip().replace(" ", "_")
         final_path = self.final_dir / f"{clean_sku}_final.jpg"
+        preview_path = self.preview_dir / f"{clean_sku}_preview.jpg"
 
         # 1. Chuẩn bị ảnh phông nền
         if bg_path is None or not Path(bg_path).exists():
@@ -1042,7 +1044,7 @@ class AgentMedia:
         color_enhancer = ImageEnhance.Color(final_img)
         final_img = color_enhancer.enhance(1.05)
 
-        final_img.save(final_path, quality=95)
+        final_img.save(preview_path, quality=95)
 
         # Ghi nhận trạng thái PENDING_REVIEW
         self.manifest[clean_sku] = {
@@ -1054,16 +1056,17 @@ class AgentMedia:
             "depth_ratio": depth_ratio,
             "shadow_density": shadow_density,
             "sharpness_boost": sharpness_boost,
-            "final_image": str(final_path),
+            "preview_image": str(preview_path),
             "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
         }
         self._save_manifest()
-        return final_path
+        return preview_path
 
     def register_final_composite(self, sku: str, image_bytes: bytes) -> Path:
         """Lưu trực tiếp ảnh mockup thành phẩm từ Canva/Photoroom và đưa vào cổng duyệt."""
         clean_sku = sku.strip().replace(" ", "_")
         final_path = self.final_dir / f"{clean_sku}_final.jpg"
+        preview_path = self.preview_dir / f"{clean_sku}_preview.jpg"
         with open(final_path, "wb") as f:
             f.write(image_bytes)
         self.manifest[clean_sku] = {
@@ -1077,21 +1080,65 @@ class AgentMedia:
         return final_path
 
     def approve_image(self, sku: str) -> bool:
-        """Mark image as APPROVED for Haravan sync."""
+        """
+        Chinh thuc PHE DUYET anh san pham:
+        - Chi khi nguoi dung bam DUYET thi anh moi duoc luu chinh thuc vao 6_Final_Composites.
+        - Tu dong dong bo sang Google Drive may tinh.
+        - Danh dau trang thai APPROVED trong manifest cho Haravan sync.
+        """
+        import shutil
         clean_sku = sku.strip().replace(" ", "_")
+        preview_path = self.preview_dir / f"{clean_sku}_preview.jpg"
+        final_path = self.final_dir / f"{clean_sku}_final.jpg"
+
+        # Neu co anh preview thi copy sang final_path
+        if preview_path.exists():
+            shutil.copy2(preview_path, final_path)
+
+        # Dong bo truc tiep sang Google Drive may tinh
+        alt_gdrive = Path(r"g:\My Drive\BIS_AI_PROJECT\Google_Drive_Storage\6_Final_Composites")
+        if alt_gdrive.exists() and alt_gdrive.resolve() != self.final_dir.resolve() and final_path.exists():
+            try:
+                shutil.copy2(final_path, alt_gdrive / final_path.name)
+            except Exception:
+                pass
+
         if clean_sku in self.manifest:
             self.manifest[clean_sku]["status"] = "APPROVED"
+            self.manifest[clean_sku]["final_image"] = str(final_path)
             self.manifest[clean_sku]["approved_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
-            self._save_manifest()
-            return True
-        return False
+        else:
+            self.manifest[clean_sku] = {
+                "sku": clean_sku,
+                "status": "APPROVED",
+                "final_image": str(final_path),
+                "approved_at": time.strftime("%Y-%m-%d %H:%M:%S")
+            }
+        self._save_manifest()
+        return True
 
     def reject_image(self, sku: str, reason: str = "") -> bool:
-        """Reject and request re-compositing."""
+        """
+        Tu choi anh: Xoa anh khoi 6_Final_Composites de khong bao gio luu nham anh chua duyet.
+        """
         clean_sku = sku.strip().replace(" ", "_")
+        final_path = self.final_dir / f"{clean_sku}_final.jpg"
+        if final_path.exists():
+            try:
+                final_path.unlink()
+            except Exception:
+                pass
+        alt_gdrive = Path(r"g:\My Drive\BIS_AI_PROJECT\Google_Drive_Storage\6_Final_Composites") / f"{clean_sku}_final.jpg"
+        if alt_gdrive.exists():
+            try:
+                alt_gdrive.unlink()
+            except Exception:
+                pass
+
         if clean_sku in self.manifest:
             self.manifest[clean_sku]["status"] = "REJECTED"
             self.manifest[clean_sku]["reject_reason"] = reason
+            self.manifest[clean_sku]["final_image"] = None
             self._save_manifest()
             return True
         return False

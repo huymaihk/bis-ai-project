@@ -2660,14 +2660,24 @@ with tab_media:
         # ── CỘT PHẢI: LIVE PREVIEW 2K & CỔNG PHÊ DUYỆT HARAVAN ────────────────
         with col_m2:
             st.markdown("#### 3. Bản Xem Trước Render 3D Hoàn Chỉnh & Cổng Duyệt")
+            preview_img_path = media_agent.preview_dir / f"{clean_sku}_preview.jpg" if hasattr(media_agent, "preview_dir") else (media_agent.gdrive_storage / "5_Draft_Previews" / f"{clean_sku}_preview.jpg")
             final_img_path = media_agent.final_dir / f"{clean_sku}_final.jpg"
             img_manifest = media_agent.manifest.get(clean_sku, {})
             current_img_status = img_manifest.get("status", "CHƯA XỬ LÝ")
 
-            if final_img_path.exists():
+            # Chỉ hiển thị ảnh duyệt khi đã APPROVED, còn đang chỉnh sửa thì hiển thị ảnh Preview nháp
+            display_img_path = None
+            if current_img_status == "APPROVED" and final_img_path.exists():
+                display_img_path = final_img_path
+            elif preview_img_path.exists():
+                display_img_path = preview_img_path
+            elif final_img_path.exists():
+                display_img_path = final_img_path
+
+            if display_img_path and display_img_path.exists():
                 st.image(
-                    str(final_img_path), 
-                    caption=f"Ảnh render 3D Studio mã {clean_sku} (Phối cảnh Tường - Sàn thương hiệu BIS)", 
+                    str(display_img_path), 
+                    caption=f"Ảnh render 3D Studio mã {clean_sku} ({'ĐÃ DUYỆT' if current_img_status == 'APPROVED' else 'BẢN XEM TRƯỚC (CHỜ DUYỆT)'})", 
                     use_container_width=True
                 )
                 
@@ -2680,7 +2690,7 @@ with tab_media:
                       <strong>Trạng thái:</strong> <span style='color: {"#10b981" if current_img_status == "APPROVED" else "#f59e0b"}; font-weight: 700;'>{current_img_status}</span>
                       <span style='color: #64748b; font-size: 11px; margin-left: 10px;'>Chế độ: <code>{render_mode_used}</code></span>
                     </div>
-                    <div style='font-size: 11px; color: #94a3b8;'>Dung lượng: {final_img_path.stat().st_size // 1024} KB</div>
+                    <div style='font-size: 11px; color: #94a3b8;'>Dung lượng: {display_img_path.stat().st_size // 1024} KB</div>
                   </div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -2694,11 +2704,11 @@ with tab_media:
                             "type": "MEDIA",
                             "text": f"Ảnh sản phẩm {clean_sku} đã được PHÊ DUYỆT lưu vào Google_Drive_Storage/6_Final_Composites."
                         })
-                        st.success(f"✓ Đã duyệt ảnh {clean_sku}! Sẵn sàng đồng bộ lên sàn Haravan.")
+                        st.success(f"✓ Đã duyệt và lưu chính thức vào 6_Final_Composites: {clean_sku}_final.jpg")
                         st.rerun()
 
                 with col_ap2:
-                    with open(final_img_path, "rb") as f_dl:
+                    with open(display_img_path, "rb") as f_dl:
                         st.download_button(
                             label="⬇️ TẢI ẢNH HD",
                             data=f_dl.read(),
@@ -2711,7 +2721,7 @@ with tab_media:
                 with col_ap3:
                     if st.button("❌ TỪ CHỐI / LÀM LẠI", key=f"rej_img_{clean_sku}", use_container_width=True):
                         media_agent.reject_image(clean_sku, "Yêu cầu chỉnh lại góc phối cảnh/bóng")
-                        st.warning("Đã gắn cờ từ chối. Hãy điều chỉnh các thanh trượt và render lại.")
+                        st.warning("Đã từ chối ảnh và xóa khỏi 6_Final_Composites. Hãy chỉnh các thanh trượt và render lại.")
                         st.rerun()
             else:
                 st.info(f"💡 Chưa có ảnh render cho mã `{clean_sku}`.\n\nHãy kiểm tra ảnh nguồn ở cột bên trái, điều chỉnh các thanh trượt đường chân trời / độ nghiêng phối cảnh và bấm nút **'🚀 RENDER 3D STUDIO'** để xem kết quả trực quan ngay tại đây.")
