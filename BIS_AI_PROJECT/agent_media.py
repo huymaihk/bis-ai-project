@@ -885,8 +885,8 @@ class AgentMedia:
         api_key: Optional[str] = None
     ) -> Optional[Path]:
         """
-        Gọi trực tiếp Google Imagen 3 API (model: imagen-3.0-generate-002) qua Google GenAI SDK chính thức
-        để sinh ảnh Mockup 3D Studio thương mại cao cấp siêu thực.
+        Tạo ảnh Mockup 3D Studio thương mại cao cấp bằng Google Gemini / Imagen AI.
+        Hỗ trợ cả Gemini Developer API (Google AI Studio Key) và Vertex AI Enterprise mode.
         LOẠI BỎ HOÀN TOÀN việc ghép ảnh 2D chắp vá bằng OpenCV.
         """
         clean_sku = sku.strip().replace(" ", "_")
@@ -903,9 +903,7 @@ class AgentMedia:
             or getattr(config, "GEMINI_API_KEY", "")
         )
         if not active_key or len(str(active_key).strip()) < 10:
-            raise ValueError("Chưa cấu hình GEMINI_API_KEY hợp lệ cho Google Imagen 3. Vui lòng cung cấp API Key hợp lệ từ Google AI Studio (định dạng AIzaSy...).")
-
-        client = genai.Client(api_key=str(active_key).strip())
+            raise ValueError("Chưa cấu hình GEMINI_API_KEY hợp lệ. Vui lòng kiểm tra file config.py hoặc ô nhập API Key.")
 
         # 2. Xây dựng Prompt nhiếp ảnh thương mại chuẩn Studio cao cấp
         name_lower = product_name.lower()
@@ -934,43 +932,92 @@ class AgentMedia:
             f"4K resolution, hyper-realistic, commercial catalog aesthetic, no distortion, no watermarks, perfectly centered."
         )
 
-        print(f"[AgentMedia] Đang gọi Google Imagen 3 API (model: imagen-3.0-generate-002) cho SKU {clean_sku}...")
-        
-        try:
-            result = client.models.generate_images(
-                model='imagen-3.0-generate-002',
-                prompt=full_prompt,
-                config=types.GenerateImagesConfig(
-                    number_of_images=1,
-                    aspect_ratio="1:1"
-                )
-            )
+        client = genai.Client(api_key=str(active_key).strip())
+        img_bytes = None
 
-            if result and hasattr(result, "generated_images") and result.generated_images:
-                img_bytes = result.generated_images[0].image.image_bytes
+        # 3. Điều hướng gọi phương thức phù hợp theo chế độ API
+        try:
+            # Nếu chạy ở chế độ Vertex AI (Enterprise)
+            if getattr(getattr(client, "_api_client", None), "vertexai", False):
+                print(f"[AgentMedia] Đang gọi Imagen 3 qua Vertex AI cho SKU {clean_sku}...")
+                result = client.models.generate_images(
+                    model='imagen-3.0-generate-002',
+                    prompt=full_prompt,
+                    config=types.GenerateImagesConfig(
+                        number_of_images=1,
+                        aspect_ratio="1:1"
+                    )
+                )
+                if result and hasattr(result, "generated_images") and result.generated_images:
+                    img_bytes = result.generated_images[0].image.image_bytes
+            else:
+                # Chế độ Gemini Developer API (Google AI Studio Key AQ...)
+                print(f"[AgentMedia] Đang gọi Google Developer Image API cho SKU {clean_sku}...")
+                image_models_to_try = [
+                    "gemini-2.5-flash-image",
+                    "gemini-3.1-flash-image",
+                    "gemini-3-pro-image"
+                ]
+                last_err = None
+                for m_name in image_models_to_try:
+                    try:
+                        resp = client.models.generate_content(
+                            model=m_name,
+                            contents=full_prompt,
+                            config=types.GenerateContentConfig(
+                                response_modalities=["IMAGE"]
+                            )
+                        )
+                        if resp.candidates and resp.candidates[0].content and resp.candidates[0].content.parts:
+                            for part in resp.candidates[0].content.parts:
+                                if hasattr(part, "inline_data") and part.inline_data and part.inline_data.data:
+                                    raw_data = part.inline_data.data
+                                    if isinstance(raw_data, str):
+                                        import base64
+                                        img_bytes = base64.b64decode(raw_data)
+                                    else:
+                                        img_bytes = raw_data
+                                    break
+                        if img_bytes:
+                            break
+                    except Exception as ex_m:
+                        last_err = ex_m
+                        err_str = str(ex_m)
+                        if "RESOURCE_EXHAUSTED" in err_str or "limit: 0" in err_str:
+                            raise RuntimeError(
+                                "Tài khoản Google AI Studio của bạn đang ở gói Free Tier (Google quy định hạn mức tạo ảnh AI là 0 lượt/ngày trên gói miễn phí, chỉ miễn phí các model văn bản). "
+                                "Để kích hoạt tạo ảnh AI, bạn cần bật Pay-as-you-go (gắn thẻ thanh toán) tại https://aistudio.google.com/app/plan_information "
+                                "hoặc sử dụng nút 'Tùy chọn Studio Ngoài (Canva)' ngay bên dưới để tạo mockup miễn phí."
+                            )
+                        continue
+
+                if not img_bytes and last_err:
+                    raise last_err
+
+            if img_bytes and len(img_bytes) > 1000:
                 with open(preview_target, "wb") as f:
                     f.write(img_bytes)
-                
+
                 # Cập nhật manifest trạng thái PENDING_REVIEW chờ duyệt
                 self.manifest[clean_sku] = {
                     "sku": clean_sku,
                     "status": "PENDING_REVIEW",
                     "source": "GEMINI_IMAGEN3_AI",
-                    "render_mode": "Gemini Imagen 3 Studio",
+                    "render_mode": "Gemini AI Studio",
                     "preview_image": str(preview_target),
                     "prompt": full_prompt,
                     "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
                 }
                 self._save_manifest()
-                print(f"✓ Đã tạo thành công ảnh 3D Studio qua Imagen 3: {preview_target} ({len(img_bytes):,} bytes)")
+                print(f"✓ Đã tạo thành công ảnh 3D Studio qua Gemini AI: {preview_target} ({len(img_bytes):,} bytes)")
                 return preview_target
             else:
-                raise RuntimeError("Google Imagen 3 API không trả về hình ảnh nào.")
+                raise RuntimeError("Không nhận được dữ liệu hình ảnh từ Google AI Studio API.")
 
         except Exception as e:
-            print(f"❌ [AgentMedia] Lỗi gọi Google Imagen 3 API: {e}")
-            # TUYỆT ĐỐI KHÔNG FALLBACK sang OpenCV composite_product_image
+            print(f"❌ [AgentMedia] Lỗi gọi Google Image API: {e}")
             raise e
+
 
 
     def composite_product_image(

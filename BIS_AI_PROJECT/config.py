@@ -12,7 +12,7 @@ try:
 except Exception:
     _secrets = {}
 
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or _secrets.get("GEMINI_API_KEY") or "AQ.Ab8RN6IuMDc_qMv15Kx6fgW3Fc4-yXdmbV6uIN2sYC9Ve2GrMw"
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or _secrets.get("GEMINI_API_KEY") or ""
 HARAVAN_TOKEN  = os.environ.get("HARAVAN_TOKEN") or _secrets.get("HARAVAN_TOKEN") or "8651987CA6839C2F9131175200D9542DD046AF86EF211FF46AA34E54377B691D"
 HARAVAN_SHOP   = os.environ.get("HARAVAN_SHOP") or _secrets.get("HARAVAN_SHOP") or "BIS TEXTILE N8N PRODUCT SYNC"
 BIS_ACCESS_PIN = os.environ.get("BIS_ACCESS_PIN") or _secrets.get("BIS_ACCESS_PIN") or "1133"
