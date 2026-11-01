@@ -940,7 +940,7 @@ if marketing_agent is None or not hasattr(marketing_agent, "load_marketing_knowl
         pass
 knowledge_agent = getattr(leader, "knowledge_agent", None)
 media_agent = getattr(leader, "media_agent", None)
-if media_agent is None or not hasattr(media_agent, "render_3d_book_mockup"):
+if media_agent is None or not hasattr(media_agent, "generate_studio_mockup_ai"):
     try:
         import importlib
         import agent_media
@@ -2559,6 +2559,35 @@ with tab_media:
 
             # Nút Render chính
             st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+            # Nút Gemini Imagen 3 Studio
+            if st.button("✨ TẠO MOCKUP 3D STUDIO BẰNG GEMINI AI (IMAGEN 3)", type="secondary", use_container_width=True, key=f"btn_imagen3_{clean_sku}"):
+                with st.spinner("Đang kết nối Gemini Imagen 3 để dựng không gian Studio thương mại..."):
+                    import importlib, agent_media
+                    try:
+                        importlib.reload(agent_media)
+                        media_agent = agent_media.AgentMedia(PROJECT_DIR)
+                        if leader:
+                            leader.media_agent = media_agent
+                    except Exception:
+                        pass
+                    
+                    prod_title = p_media.get("title", p_media.get("name", clean_sku))
+                    prod_brand = p_media.get("brand", "AATCC")
+                    prod_cat = p_media.get("category", "Textile Standard")
+                    
+                    res_path = media_agent.generate_studio_mockup_ai(
+                        sku=clean_sku,
+                        product_name=prod_title,
+                        brand=prod_brand,
+                        category=prod_cat
+                    )
+                    if res_path and res_path.exists():
+                        st.success(f"✓ Đã tạo thành công Mockup 3D Studio: {res_path.name}")
+                        st.rerun()
+                    else:
+                        st.error("Không thể hoàn tất tạo ảnh qua Imagen 3.")
+
+            st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
             if st.button(f"🚀 RENDER 3D STUDIO CHUẨN THƯƠNG HIỆU CHO {clean_sku}", type="primary", use_container_width=True, key=f"btn_run_branded_{clean_sku}"):
                 if not chosen_source_img or not chosen_source_img.exists():
                     st.error(f"❌ Chưa có ảnh nguồn cho mã `{clean_sku}`! Vui lòng tải file vào ô trên.")

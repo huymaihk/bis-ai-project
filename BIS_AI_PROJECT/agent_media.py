@@ -583,7 +583,7 @@ class AgentMedia:
         M = cv2.getPerspectiveTransform(src_pts, dst_pts)
         warped_floor_np = cv2.warpPerspective(
             floor_np, M, (canvas_w, floor_h), 
-            borderMode=cv2.BORDER_REPLICATE
+            borderMode=cv2.BORDER_CONSTANT, borderValue=(255, 255, 255)
         )
         warped_floor = Image.fromarray(warped_floor_np)
         
@@ -809,6 +809,98 @@ class AgentMedia:
         prod = ImageEnhance.Sharpness(prod).enhance(1.2)
         bbox = prod.getbbox()
         return prod.crop(bbox) if bbox else prod
+
+    def generate_studio_mockup_ai(
+        self,
+        sku: str,
+        product_name: str,
+        brand: str = "AATCC",
+        category: str = "Manual",
+        style: str = "branded_studio"
+    ) -> Optional[Path]:
+        """
+        Gọi trực tiếp Google Imagen 3 API để sinh ảnh chụp sản phẩm Studio 3D siêu thực
+        giống như trải nghiệm trên Gemini Web. Tự động dự phòng AI Hybrid Studio bảo toàn tem nhãn.
+        """
+        clean_sku = sku.strip().replace(" ", "_")
+        target_path = self.final_dir / f"{clean_sku}_final.jpg"
+        
+        # Thử gọi trực tiếp Imagen 3 qua Google GenAI SDK
+        try:
+            from google import genai
+            from google.genai import types
+            from config import GEMINI_API_KEY
+            
+            client = genai.Client(api_key=GEMINI_API_KEY)
+            
+            # Xây dựng Prompt nhiếp ảnh thương mại cao cấp chuẩn dệt may
+            name_lower = product_name.lower()
+            if any(w in name_lower for w in ["manual", "book", "sách", "tiêu chuẩn", "standard", "guide"]):
+                prompt_subject = (
+                    f"A luxury professional 3D hardcover technical manual book '{product_name}' (Code: {sku}), "
+                    f"standing elegantly on a clean commercial studio floor. High quality book binding and gold embossed typography. "
+                )
+            else:
+                prompt_subject = (
+                    f"Commercial product photography of '{product_name}' (Model/SKU: {sku}) by '{brand}', "
+                    f"standing on a premium reflective laboratory workbench. "
+                )
+
+            full_prompt = (
+                f"{prompt_subject} "
+                "The background is an elegant, bright modern textile testing laboratory with subtle repeated 'BIS Textile' branding on the clean white back wall. "
+                "Realistic soft ambient shadows, subtle floor reflections, bright even studio lighting, 4K resolution, ultra-detailed, photorealistic, no distortion."
+            )
+
+            print(f"[AgentMedia] Đang gọi Imagen 3 API cho SKU {clean_sku}...")
+            result = client.models.generate_images(
+                model='imagen-3.0-generate-002',
+                prompt=full_prompt,
+                config=types.GenerateImagesConfig(
+                    number_of_images=1,
+                    aspect_ratio="1:1"
+                )
+            )
+
+            if result and hasattr(result, "generated_images") and result.generated_images:
+                img_bytes = result.generated_images[0].image.image_bytes
+                with open(target_path, "wb") as f:
+                    f.write(img_bytes)
+                
+                # Cập nhật manifest để xuất bản Haravan
+                self.manifest[clean_sku] = {
+                    "sku": clean_sku,
+                    "status": "APPROVED",
+                    "source": "GEMINI_IMAGEN3_AI",
+                    "final_image": str(target_path),
+                    "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
+                }
+                self._save_manifest()
+                print(f"✓ Đã tạo ảnh Studio AI thành công qua Imagen 3: {target_path}")
+                return target_path
+
+        except Exception as e:
+            print(f"⚠️ Thông báo Imagen 3 API ({e}). Kích hoạt chế độ AI Hybrid Studio để bảo toàn ảnh chụp thật đạt chuẩn...")
+
+        # Chế độ AI Hybrid Studio: Bảo toàn 100% tem nhãn/SKU thật và ghép phông nền Studio 3D chuẩn
+        try:
+            src_img = self.get_product_image_for_sku(clean_sku)
+            if src_img and src_img.exists():
+                bg_p = self.bg_dir / "BIS_BACKGROUND.png"
+                return self.composite_product_image(
+                    sku=clean_sku,
+                    product_img_path=src_img,
+                    bg_path=bg_p,
+                    render_mode="branded_3d",
+                    horizon_y=550,
+                    depth_ratio=0.20,
+                    shadow_density=0.85,
+                    enable_reflection=True
+                )
+        except Exception as err:
+            print(f"⚠️ Lỗi chế độ AI Hybrid Studio: {err}")
+            
+        return target_path if target_path.exists() else None
 
     def composite_product_image(
         self, 
