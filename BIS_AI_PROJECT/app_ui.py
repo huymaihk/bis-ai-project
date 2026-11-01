@@ -2227,6 +2227,62 @@ with tab_tech:
                 </div>
                 """, unsafe_allow_html=True)
 
+                # 🌟 THANH CÔNG CỤ AI CHECK & TỰ ĐỘNG CHUẨN HÓA NỘI DUNG + SEO
+                c_ai_act1, c_ai_act2 = st.columns([7.2, 4.8])
+                with c_ai_act1:
+                    if st.button(f"✨ AI CHECK & TỰ ĐỘNG TỐI ƯU NỘI DUNG + SEO CHO {p.get('sku')}", key=f"btn_ai_refine_single_{p.get('sku')}", type="primary", use_container_width=True, help="AI sẽ tự động kiểm tra, chuẩn hóa tên tiếng Việt dệt may, trau chuốt mô tả, tạo 3 gạch đầu dòng nổi bật, xác định tài liệu Khối 7 và tạo trọn gói SEO Google đạt chuẩn 100%!"):
+                        with st.spinner(f"Chuyên gia AI Kỹ thuật & SEO đang rà soát và tối ưu toàn diện cho {p.get('sku')}..."):
+                            from ai_product_refiner import ai_check_and_refine_product
+                            refined_p = ai_check_and_refine_product(p)
+                            p.update(refined_p)
+                            p["updated_at"] = datetime.now().isoformat()
+                            for item in products:
+                                if item.get("sku") == p.get("sku"):
+                                    item.update(p)
+                                    break
+                            with open(cache_file, "w", encoding="utf-8") as f:
+                                json.dump(products, f, ensure_ascii=False, indent=2)
+                            git_c = Path("c:/Users/Dell/bis-ai-project/BIS_AI_PROJECT/extracted_products_cache.json")
+                            if git_c.parent.exists():
+                                try:
+                                    with open(git_c, "w", encoding="utf-8") as f:
+                                        json.dump(products, f, ensure_ascii=False, indent=2)
+                                except Exception:
+                                    pass
+                            st.session_state["cached_products"] = products
+                            st.toast(f"🎉 AI ĐÃ CHUẨN HÓA THÀNH CÔNG NỘI DUNG VÀ SEO CHO {p.get('sku')}!", icon="✨")
+                            st.success(f"✓ Hoàn tất! Tên tiếng Việt, Mô tả kỹ thuật và Gói SEO Google của mã `{p.get('sku')}` đã được chuẩn hóa tối ưu!")
+                            time.sleep(0.3)
+                            st.rerun()
+
+                with c_ai_act2:
+                    with st.popover("⚡ AI BATCH: Chuẩn Hóa Toàn Bộ Danh Mục", use_container_width=True):
+                        st.markdown("**Chuẩn hóa tự động toàn bộ 97 sản phẩm:**")
+                        st.write("AI sẽ tự động quét toàn bộ danh mục, áp dụng từ điển dệt may, trau chuốt mô tả và tạo SEO Google cho tất cả sản phẩm.")
+                        if st.button("🚀 BẮT ĐẦU CHẠY AI BATCH TOÀN BỘ", key=f"btn_run_ai_batch_all_{p.get('sku')}", type="secondary", use_container_width=True):
+                            with st.spinner("AI đang tự động chuẩn hóa toàn bộ danh mục sản phẩm..."):
+                                from ai_product_refiner import ai_check_and_refine_product
+                                prog_ai = st.progress(0.0)
+                                for idx_b, itm in enumerate(products):
+                                    ref_itm = ai_check_and_refine_product(itm)
+                                    itm.update(ref_itm)
+                                    prog_ai.progress((idx_b + 1) / len(products))
+                                with open(cache_file, "w", encoding="utf-8") as f:
+                                    json.dump(products, f, ensure_ascii=False, indent=2)
+                                git_c = Path("c:/Users/Dell/bis-ai-project/BIS_AI_PROJECT/extracted_products_cache.json")
+                                if git_c.parent.exists():
+                                    try:
+                                        with open(git_c, "w", encoding="utf-8") as f:
+                                            json.dump(products, f, ensure_ascii=False, indent=2)
+                                    except Exception:
+                                        pass
+                                st.session_state["cached_products"] = products
+                                st.toast("🎉 ĐÃ CHUẨN HÓA XONG TOÀN BỘ DANH MỤC SẢN PHẨM & SEO!", icon="🚀")
+                                st.success("✓ Hoàn tất chuẩn hóa tự động toàn bộ sản phẩm!")
+                                time.sleep(0.3)
+                                st.rerun()
+
+                st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
                 edit_mode = st.radio(
                     "Chọn phương thức chỉnh sửa nội dung:",
                     ["📝 Chỉnh sửa theo từng Khối (Khối 1 - 7)", "💻 Chỉnh sửa trực tiếp Mã HTML 7 Khối"],
