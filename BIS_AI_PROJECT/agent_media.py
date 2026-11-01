@@ -219,13 +219,112 @@ class AgentMedia:
                 words.append(w)
         return " ".join(words)
 
-    def search_web_images(self, query: str, max_results: int = 8) -> list[dict]:
+    def search_google_custom_search(self, query: str, max_results: int = 8) -> list[dict]:
         """
-        Tìm kiếm ảnh sản phẩm thực tế trên Web thông qua Bing Images Async API:
-        - Mở rộng tìm kiếm trên toàn bộ internet (nhà phân phối, trang thiết bị dệt may, catalog kỹ thuật).
-        - Không bó hẹp chỉ tìm trang chính hãng.
-        - Khử trùng lặp từ khóa trong câu truy vấn.
-        - Lọc triệt để các kết quả quảng cáo / coupon / cashback / bing rewards.
+        Tìm kiếm ảnh trực tiếp qua Google Programmable Search Engine JSON API.
+        Kích hoạt nếu có cấu hình GOOGLE_SEARCH_API_KEY và GOOGLE_SEARCH_CX.
+        """
+        import os
+        import requests
+        api_key = os.environ.get("GOOGLE_SEARCH_API_KEY")
+        cx = os.environ.get("GOOGLE_SEARCH_CX")
+
+        if not (api_key and cx):
+            try:
+                import streamlit as st
+                api_key = api_key or st.secrets.get("GOOGLE_SEARCH_API_KEY")
+                cx = cx or st.secrets.get("GOOGLE_SEARCH_CX")
+            except Exception:
+                pass
+
+        if not (api_key and cx):
+            return []
+
+        try:
+            clean_q = self.clean_search_query(query)
+            url = "https://www.googleapis.com/customsearch/v1"
+            params = {
+                "q": clean_q,
+                "cx": cx,
+                "key": api_key,
+                "searchType": "image",
+                "num": min(max_results, 10)
+            }
+            res = requests.get(url, params=params, timeout=12)
+            if res.status_code == 200:
+                data = res.json()
+                results = []
+                for item in data.get("items", []):
+                    img_info = item.get("image", {})
+                    results.append({
+                        "image_url": item.get("link"),
+                        "thumb_url": img_info.get("thumbnailLink") or item.get("link"),
+                        "title": item.get("title", clean_q),
+                        "domain": item.get("displayLink", "Google")
+                    })
+                if results:
+                    print(f"✓ Đã lấy {len(results)} ảnh sạch từ Google Custom Search JSON API")
+                    return results
+        except Exception as e:
+            print(f"Lỗi tìm kiếm ảnh qua Google Custom Search API: {e}")
+        return []
+
+    def search_duckduckgo_images(self, query: str, max_results: int = 8) -> list[dict]:
+        """
+        Tìm kiếm ảnh sản phẩm chất lượng cao, chuẩn như Google qua DuckDuckGo (ddgs).
+        Hoàn toàn miễn phí, không dính banner quảng cáo Bing Cashback/Rewards.
+        """
+        clean_q = self.clean_search_query(query)
+        if not clean_q:
+            return []
+
+        try:
+            try:
+                from ddgs import DDGS
+            except ImportError:
+                from duckduckgo_search import DDGS
+
+            with DDGS() as ddgs:
+                try:
+                    ddgs_gen = ddgs.images(
+                        query=clean_q,
+                        region="wt-wt",
+                        safesearch="off",
+                        max_results=max_results
+                    )
+                except TypeError:
+                    ddgs_gen = ddgs.images(
+                        keywords=clean_q,
+                        region="wt-wt",
+                        safesearch="off",
+                        max_results=max_results
+                    )
+
+                results = []
+                for r in ddgs_gen:
+                    img_url = r.get("image")
+                    if img_url:
+                        results.append({
+                            "image_url": img_url,
+                            "thumb_url": r.get("thumbnail") or img_url,
+                            "title": r.get("title", clean_q),
+                            "domain": r.get("source") or "DuckDuckGo"
+                        })
+                    if len(results) >= max_results:
+                        break
+
+                if results:
+                    print(f"✓ Đã tìm thấy {len(results)} ảnh sạch qua DuckDuckGo cho '{clean_q}'")
+                    return results
+        except Exception as e:
+            print(f"Lỗi tìm kiếm ảnh qua DDGS: {e}")
+        return []
+
+    def search_bing_async_images(self, query: str, max_results: int = 8) -> list[dict]:
+        """
+        Tìm kiếm qua Bing Images Async API làm giải pháp dự phòng thứ 3:
+        - Khử trùng lặp từ khóa.
+        - Lọc bỏ triệt để các thẻ ads/cashback/coupon/rewards.
         """
         import urllib.parse
         import json
@@ -284,22 +383,15 @@ class AgentMedia:
                             turl = m_data.get("turl")
                             desc = m_data.get("desc", "")
                             purl = m_data.get("purl", "")
-
                             if not murl:
                                 continue
 
                             domain = re.sub(r"https?://(www\.)?", "", purl or murl).split("/")[0].lower()
-
-                            # Lọc domain quảng cáo / rác
                             if any(bd in domain for bd in bad_domains):
                                 continue
-
-                            # Lọc nội dung rác
-                            desc_lower = desc.lower()
-                            if any(bk in desc_lower for bk in bad_keywords):
+                            if any(bk in desc.lower() for bk in bad_keywords):
                                 continue
 
-                            # Kiểm tra định dạng ảnh hợp lệ
                             if not any(skip in murl.lower() for skip in ["logo", "icon", "banner", "avatar", "favicon", "pixel"]):
                                 results.append({
                                     "image_url": murl,
@@ -311,62 +403,33 @@ class AgentMedia:
                                     break
                         except Exception:
                             continue
-                else:
-                    pattern = r'"murl"\s*:\s*"(https?://[^"]+?\.(?:jpg|jpeg|png|webp))"'
-                    for match in re.finditer(pattern, html_text, re.IGNORECASE):
-                        murl = match.group(1)
-                        domain = re.sub(r"https?://(www\.)?", "", murl).split("/")[0].lower()
-                        if any(bd in domain for bd in bad_domains):
-                            continue
-                        if not any(skip in murl.lower() for skip in ["logo", "icon", "banner", "avatar", "favicon", "pixel"]):
-                            results.append({
-                                "image_url": murl,
-                                "thumb_url": murl,
-                                "title": clean_q,
-                                "domain": domain
-                            })
-                            if len(results) >= max_results:
-                                break
         except Exception as e:
-            print(f"Error searching web images for '{query}': {e}")
-
-        # Fallback: nếu async chưa đủ ảnh, thử thêm query ngắn gọn
-        if len(results) < 2 and len(clean_q.split()) > 3:
-            try:
-                short_q = " ".join(clean_q.split()[:4])
-                enc_short = urllib.parse.quote_plus(short_q)
-                url_short = f"https://www.bing.com/images/async?q={enc_short}&first=0&count=20&mmasync=1"
-                r_short = session.get(url_short, headers=headers, timeout=10) if use_cffi else cffi_requests.get(url_short, headers=headers, timeout=10)
-                if r_short.status_code == 200 and BeautifulSoup:
-                    soup_s = BeautifulSoup(r_short.text, "html.parser")
-                    for a in soup_s.find_all("a", class_="iusc"):
-                        m_attr = a.get("m")
-                        if not m_attr:
-                            continue
-                        try:
-                            m_data = json.loads(m_attr)
-                            murl = m_data.get("murl")
-                            turl = m_data.get("turl")
-                            desc = m_data.get("desc", "")
-                            purl = m_data.get("purl", "")
-                            domain = re.sub(r"https?://(www\.)?", "", purl or murl).split("/")[0].lower()
-                            if any(bd in domain for bd in bad_domains) or any(bk in desc.lower() for bk in bad_keywords):
-                                continue
-                            if murl and not any(r["image_url"] == murl for r in results):
-                                results.append({
-                                    "image_url": murl,
-                                    "thumb_url": turl or murl,
-                                    "title": desc or short_q,
-                                    "domain": domain
-                                })
-                                if len(results) >= max_results:
-                                    break
-                        except Exception:
-                            continue
-            except Exception:
-                pass
-
+            print(f"Error searching Bing async images: {e}")
         return results
+
+    def search_web_images(self, query: str, max_results: int = 8) -> list[dict]:
+        """
+        Công cụ tìm kiếm ảnh đa tầng (Multi-tier Image Search Engine):
+        1. Ưu tiên 1 (Chính thống): Google Custom Search API (nếu được cấu hình API Key & CX).
+        2. Ưu tiên 2 (Mặc định miễn phí): DuckDuckGo Images DDGS (trả về kết quả sạch chuẩn như Google, 0% quảng cáo).
+        3. Dự phòng 3: Bing Images Async API lọc sạch Ads.
+        """
+        # 1. Thử Google Custom Search API nếu có cấu hình
+        google_results = self.search_google_custom_search(query, max_results=max_results)
+        if google_results:
+            return google_results
+
+        # 2. Thử DuckDuckGo Images (DDGS) - Sạch 100%, không dính quảng cáo Bing
+        ddg_results = self.search_duckduckgo_images(query, max_results=max_results)
+        if ddg_results:
+            return ddg_results
+
+        # 3. Dự phòng Bing Async đã lọc sạch Ads
+        bing_results = self.search_bing_async_images(query, max_results=max_results)
+        if bing_results:
+            return bing_results
+
+        return []
 
     def download_and_save_brand_image(self, sku: str, image_url: str, index: int = 1) -> Optional[Path]:
         """Tải ảnh từ URL đã chọn và lưu vào thư mục ảnh hãng của SKU trên Google Drive."""
