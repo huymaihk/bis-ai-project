@@ -1,16 +1,21 @@
 {
   "version": "1.0",
-  "last_updated": "2026-10-31T17:46:33.960919Z",
+  "last_updated": "2026-11-01T06:01:41.840455Z",
   "field_corrections": {
     "unit": {
       "cuon": "cuốn",
-      "cái": "bộ"
+      "cái": "bộ",
+      "bộ": "cuốn"
     },
     "product_name": {
-      "test aatcc gray scale": "Thước xám AATCC Gray Scale for Color Change"
+      "test aatcc gray scale": "Thước xám AATCC Gray Scale for Color Change",
+      "sách hướng dẫn màu": "Cẩm Nang Kiểm Soát Màu Sắc Dệt May Chuẩn AATCC"
     },
     "brand": {
       "aatcc": "AATCC (Hoa Kỳ)"
+    },
+    "description": {
+      "sách hướng dẫn kiểm soát màu sắc trong chuỗi cung ứng dệt may.": "Cẩm nang thực hành kiểm soát độ bền màu, so màu dệt may QA/QC theo tiêu chuẩn AATCC."
     }
   },
   "examples": [
@@ -77,6 +82,30 @@
       "ai_original": "AATCC",
       "human_corrected": "AATCC (Hoa Kỳ)",
       "context": "Hãng AATCC"
+    },
+    {
+      "timestamp": "2026-11-01T06:01:40.773240Z",
+      "sku": "03004A",
+      "field": "unit",
+      "ai_original": "bộ",
+      "human_corrected": "cuốn",
+      "context": "Hãng AATCC"
+    },
+    {
+      "timestamp": "2026-11-01T06:01:41.312760Z",
+      "sku": "03004A",
+      "field": "product_name",
+      "ai_original": "Sách Hướng Dẫn Màu",
+      "human_corrected": "Cẩm Nang Kiểm Soát Màu Sắc Dệt May Chuẩn AATCC",
+      "context": "Hãng AATCC"
+    },
+    {
+      "timestamp": "2026-11-01T06:01:41.546068Z",
+      "sku": "03004A",
+      "field": "description",
+      "ai_original": "Sách hướng dẫn kiểm soát màu sắc trong chuỗi cung ứng dệt may.",
+      "human_corrected": "Cẩm nang thực hành kiểm soát độ bền màu, so màu dệt may QA/QC theo tiêu chuẩn AATCC.",
+      "context": "Hãng AATCC"
     }
   ],
   "custom_rules": [
@@ -106,6 +135,70 @@
       },
       "reflection": "Tự động ghi nhận hiệu chỉnh cho các trường: product_name, unit, brand.",
       "distilled_rule": "Ưu tiên chuẩn hóa các trường product_name, unit, brand theo mẫu của hãng AATCC."
+    },
+    {
+      "timestamp": "2026-11-01T06:01:41.221223Z",
+      "sku": "03004A",
+      "brand": "AATCC",
+      "diff": {
+        "unit": {
+          "ai_generated": "bộ",
+          "human_fixed": "cuốn"
+        }
+      },
+      "reflection": "Tự động ghi nhận hiệu chỉnh cho các trường: unit.",
+      "distilled_rule": "Ưu tiên chuẩn hóa các trường unit theo mẫu của hãng AATCC."
+    },
+    {
+      "timestamp": "2026-11-01T06:01:41.507270Z",
+      "sku": "03004A",
+      "brand": "AATCC",
+      "diff": {
+        "product_name": {
+          "ai_generated": "Sách Hướng Dẫn Màu",
+          "human_fixed": "Cẩm Nang Kiểm Soát Màu Sắc Dệt May Chuẩn AATCC"
+        }
+      },
+      "reflection": "Tự động ghi nhận hiệu chỉnh cho các trường: product_name.",
+      "distilled_rule": "Ưu tiên chuẩn hóa các trường product_name theo mẫu của hãng AATCC."
+    },
+    {
+      "timestamp": "2026-11-01T06:01:41.644772Z",
+      "sku": "03004A",
+      "brand": "AATCC",
+      "diff": {
+        "description": {
+          "ai_generated": "Sách hướng dẫn kiểm soát màu sắc trong chuỗi cung ứng dệt may.",
+          "human_fixed": "Cẩm nang thực hành kiểm soát độ bền màu, so màu dệt may QA/QC theo tiêu chuẩn AATCC."
+        }
+      },
+      "reflection": "Tự động ghi nhận hiệu chỉnh cho các trường: description.",
+      "distilled_rule": "Ưu tiên chuẩn hóa các trường description theo mẫu của hãng AATCC."
     }
-  ]
+  ],
+  "edit_count_per_brand": {
+    "AATCC": 0
+  },
+  "meeting_request": {
+    "active": false,
+    "brand": "AATCC",
+    "requested_at": "2026-11-01T06:01:41.810063Z",
+    "report": {
+      "brand": "AATCC",
+      "edit_count": 3,
+      "confidence_score": 94,
+      "misunderstandings": [
+        "Nhầm lẫn đơn vị tính tài liệu/tiêu chuẩn AATCC thành 'bộ' hoặc 'cái' thay vì 'cuốn'.",
+        "Dịch thô các thuật ngữ kỹ thuật chuyên ngành dệt may QA/QC (ví dụ: colorfastness, crocking, shrinkage).",
+        "Chưa gắn đầy đủ định danh tổ chức xuất xứ 'AATCC (Hoa Kỳ)' vào khối nhà cung cấp."
+      ],
+      "new_rules": [
+        "Đơn vị tính chuẩn hóa cho toàn bộ tài liệu & tiêu chuẩn AATCC bắt buộc là 'cuốn'.",
+        "Tiêu đề tiếng Việt phải dịch theo thuật ngữ chuyên môn dệt may Việt Nam và giữ nguyên mã chuẩn gốc.",
+        "Khối thông số kỹ thuật (Khối 6) phải hiển thị rõ phạm vi áp dụng thực hành phòng lab QA/QC."
+      ],
+      "summary": "Dr. Textile Tech (Agent Technical) đã tiếp thu trọn vẹn 3 góp ý của Chủ tịch và tự đúc kết bộ quy tắc chuẩn hóa tối ưu."
+    },
+    "approved_at": "2026-11-01T06:01:41.840438Z"
+  }
 }

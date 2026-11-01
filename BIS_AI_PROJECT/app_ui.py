@@ -1307,9 +1307,113 @@ def render_bis_3d_office(
     components.html(html_content, height=height, scrolling=False)
 
 
+
+# ── MODAL BÁO CÁO TIẾN TRÌNH TỰ HỌC CỦA AGENT TECHNICAL ─────────────────────
+def _render_meeting_content(report_data):
+    brand = report_data.get("brand", "AATCC")
+    conf = report_data.get("confidence_score", 93)
+    edit_cnt = report_data.get("edit_count", 3)
+    
+    st.markdown(f"""
+    <div style='background: linear-gradient(135deg, #091326 0%, #0f2744 100%); border: 1.5px solid #38bdf8; border-radius: 10px; padding: 16px; margin-bottom: 16px;'>
+      <div style='display: flex; align-items: center; gap: 14px;'>
+        <div style='font-size: 34px;'>🔬</div>
+        <div>
+          <div style='font-size: 16px; font-weight: 800; color: #38bdf8;'>
+            Dr. Textile Tech (Agent Technical) xin phép báo cáo Chủ tịch Mai Đức Huy
+          </div>
+          <div style='font-size: 12.5px; color: #cbd5e1; margin-top: 4px; line-height: 1.5;'>
+            Kính thưa Chủ tịch, sau <strong>{edit_cnt} lần hiệu chỉnh trực tiếp trên Live Preview</strong> của Chủ tịch đối với tài liệu hãng <strong>{brand}</strong>, tôi đã hoàn thành chu trình suy ngẫm (Reflexion Loop) và đúc kết được các quy tắc chuẩn hóa mới.
+          </div>
+        </div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown(f"**Độ tự tin học tập của AI (Confidence Score):** `{conf}%`")
+    st.progress(conf / 100.0)
+    
+    c_m1, c_m2 = st.columns(2)
+    with c_m1:
+        st.markdown("""
+        <div style='background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 12px; height: 100%;'>
+          <div style='font-weight: 700; color: #f87171; font-size: 13px; margin-bottom: 8px;'>❌ Trước Đào Tạo (Điểm AI từng hiểu sai):</div>
+        """, unsafe_allow_html=True)
+        for m in report_data.get("misunderstandings", []):
+            st.markdown(f"<div style='font-size: 12.5px; color: #fca5a5; margin-bottom: 6px;'>• {m}</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+    with c_m2:
+        st.markdown("""
+        <div style='background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 12px; height: 100%;'>
+          <div style='font-weight: 700; color: #34d399; font-size: 13px; margin-bottom: 8px;'>✨ Sau Đào Tạo (Quy tắc cốt lõi AI tự đúc kết):</div>
+        """, unsafe_allow_html=True)
+        for r in report_data.get("new_rules", []):
+            st.markdown(f"<div style='font-size: 12.5px; color: #a7f3d0; margin-bottom: 6px; font-weight: 600;'>✓ {r}</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+    st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+    col_dlg1, col_dlg2 = st.columns([6, 6])
+    with col_dlg1:
+        if st.button("✅ PHÊ DUYỆT QUY TẮC NÀY", type="primary", use_container_width=True, key=f"btn_appr_dialog_{brand}"):
+            learning_engine.approve_consolidated_rules(brand, report_data.get("new_rules", []))
+            st.session_state["show_meeting_modal"] = False
+            st.session_state.pop("active_meeting_report", None)
+            st.toast(f"🎉 Chủ tịch Mai Đức Huy đã phê duyệt bộ quy tắc mới cho hãng {brand}!", icon="✅")
+            st.rerun()
+            
+    with col_dlg2:
+        with st.popover("🔄 TIẾP TỤC HUẤN LUYỆN / DẶN DÒ", use_container_width=True):
+            user_instruction = st.text_area(
+                "Chủ tịch nhập chỉ thị dặn dò thêm cho Dr. Textile Tech:",
+                placeholder="Ví dụ: Lưu ý mã SKU tiêu hao, cần phân biệt phụ kiện đi kèm...",
+                key=f"inp_instruction_{brand}"
+            )
+            if st.button("GỬI CHỈ THỊ CHO AGENT", type="secondary", use_container_width=True, key=f"btn_send_inst_{brand}"):
+                learning_engine.continue_training(brand, user_instruction)
+                st.session_state["show_meeting_modal"] = False
+                st.session_state.pop("active_meeting_report", None)
+                st.toast("✓ Đã gửi chỉ thị huấn luyện của Chủ tịch tới Agent!", icon="📝")
+                st.rerun()
+
+if hasattr(st, "dialog"):
+    @st.dialog("👔 Báo Cáo Tiến Trình Tự Học — Trưởng Phòng Kỹ Thuật AI", width="large")
+    def show_meeting_dialog(report_data):
+        _render_meeting_content(report_data)
+else:
+    def show_meeting_dialog(report_data):
+        with st.expander("👔 Báo Cáo Tiến Trình Tự Học — Trưởng Phòng Kỹ Thuật AI", expanded=True):
+            _render_meeting_content(report_data)
+
+
 # ── TAB 1: VĂN PHÒNG 3D LEGO AI TEAM & ĐIỀU HÀNH 15 NHÂN SỰ AI ──────────────
 with tab_lego:
     st.markdown("### 🏢 Trung Tâm Điều Hành Multi-Agent 3D & 15 Nhân Sự AI Độc Lập — BIS Textile")
+    
+    # Kiểm tra yêu cầu xin gặp báo cáo của Agent
+    active_meeting_tab1 = learning_engine.get_active_meeting_request() if learning_engine and hasattr(learning_engine, "get_active_meeting_request") else None
+    if active_meeting_tab1:
+        rep_t1 = active_meeting_tab1.get("report", {})
+        st.markdown(f"""
+        <div style='background: linear-gradient(90deg, #1e1b4b 0%, #0f172a 100%); border: 2px solid #818cf8; padding: 12px 18px; border-radius: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;'>
+          <div style='display: flex; align-items: center; gap: 12px;'>
+            <span style='font-size: 26px;'>👔</span>
+            <div>
+              <div style='font-size: 13.5px; font-weight: 800; color: #a5b4fc;'>Dr. Textile Tech (Agent Technical) đang xin gặp báo cáo Chủ tịch Mai Đức Huy</div>
+              <div style='font-size: 12px; color: #cbd5e1;'>Đã ghi nhận đủ {rep_t1.get('edit_count', 3)} lần sửa đổi cho hãng <strong>{rep_t1.get('brand', 'AATCC')}</strong>. Tự tin đạt <strong>{rep_t1.get('confidence_score', 93)}%</strong>.</div>
+            </div>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("🎙️ BẤM VÀO ĐÂY ĐỂ NGHE BÁO CÁO CỦA TRƯỞNG PHÒNG KỸ THUẬT AI", key="btn_trigger_meeting_tab1", type="primary", use_container_width=True):
+            st.session_state["show_meeting_modal"] = True
+            st.session_state["active_meeting_report"] = rep_t1
+            st.rerun()
+
+    if st.session_state.get("show_meeting_modal"):
+        rep_modal_data = st.session_state.get("active_meeting_report") or (active_meeting_tab1.get("report") if active_meeting_tab1 else {})
+        if rep_modal_data:
+            show_meeting_dialog(rep_modal_data)
 
     orch = st.session_state.get("orchestrator", None)
     if not orch and BISEmployeeOrchestrator:
@@ -2060,6 +2164,30 @@ with tab_tech:
             default_doc_title = p.get("related_doc_title") or f"Tra cứu sản phẩm mã {p.get('sku')} trên cổng BIS Textile"
 
             with tab_unified:
+                active_meeting_tab2 = learning_engine.get_active_meeting_request() if learning_engine and hasattr(learning_engine, "get_active_meeting_request") else None
+                if active_meeting_tab2:
+                    rep_t2 = active_meeting_tab2.get("report", {})
+                    st.markdown(f"""
+                    <div style='background: linear-gradient(90deg, #1e1b4b 0%, #0f172a 100%); border: 2px solid #818cf8; padding: 12px 18px; border-radius: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;'>
+                      <div style='display: flex; align-items: center; gap: 12px;'>
+                        <span style='font-size: 26px;'>👔</span>
+                        <div>
+                          <div style='font-size: 13.5px; font-weight: 800; color: #a5b4fc;'>Dr. Textile Tech (Agent Technical) đang xin gặp báo cáo Chủ tịch Mai Đức Huy</div>
+                          <div style='font-size: 12px; color: #cbd5e1;'>Đã ghi nhận đủ {rep_t2.get('edit_count', 3)} lần sửa đổi cho hãng <strong>{rep_t2.get('brand', 'AATCC')}</strong>. AI đã hoàn thành tự học và tự tin đạt <strong>{rep_t2.get('confidence_score', 93)}%</strong>.</div>
+                        </div>
+                      </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    if st.button("🎙️ BẤM VÀO ĐÂY ĐỂ NGHE BÁO CÁO CỦA TRƯỞNG PHÒNG KỸ THUẬT AI", key="btn_trigger_meeting_tab2", type="primary", use_container_width=True):
+                        st.session_state["show_meeting_modal"] = True
+                        st.session_state["active_meeting_report"] = rep_t2
+                        st.rerun()
+
+                if st.session_state.get("show_meeting_modal"):
+                    rep_m_data = st.session_state.get("active_meeting_report") or (active_meeting_tab2.get("report") if active_meeting_tab2 else {})
+                    if rep_m_data:
+                        show_meeting_dialog(rep_m_data)
+
                 st.markdown("""
                 <div style='background: #0b1120; border: 1px solid #1e293b; border-left: 3px solid #10b981; padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #94a3b8; margin-bottom: 14px;'>
                   🧠 <strong>Cơ chế tự học tức thì:</strong> Bạn có thể sửa theo từng Khối thông tin hoặc sửa trực tiếp toàn bộ mã HTML 7 Khối ngay tại tab này. Nhấn <code>💾 LƯU THAY ĐỔI & AI TỰ HỌC</code> hoặc <code>✅ PHÊ DUYỆT</code>, hệ thống sẽ lưu tức thì, cập nhật ngay bản xem trước bên dưới và ghi nhớ vĩnh viễn vào <code>feedback_memory.json</code>!
@@ -2143,8 +2271,13 @@ with tab_tech:
                                     brand=edit_vendor or p.get("brand") or "General",
                                     evidence_quote=orig_snapshot.get("evidence_quote", "")
                                 )
-                                if ref_res.get("status") == "SUCCESS" and ref_res.get("rule"):
-                                    st.toast(f"💡 [Reflexion] Đã tự học quy tắc mới: {ref_res['rule']}", icon="🧠")
+                                if ref_res.get("status") == "SUCCESS":
+                                    if ref_res.get("meeting_requested"):
+                                        st.session_state["show_meeting_modal"] = True
+                                        st.session_state["active_meeting_report"] = ref_res.get("meeting_report")
+                                        st.toast("👔 Dr. Textile Tech xin phép báo cáo Chủ tịch về tiến trình tự học!", icon="👔")
+                                    elif ref_res.get("rule"):
+                                        st.toast(f"💡 [Reflexion] Đã tự học quy tắc mới: {ref_res['rule']}", icon="🧠")
                             except Exception as _e_ref:
                                 pass
                         if edit_name_vi != p.get("product_name"):
@@ -2249,6 +2382,17 @@ with tab_tech:
                 with c_prev_h2:
                     st.markdown("<div style='text-align:right; font-family:\"JetBrains Mono\",monospace; font-size:11px; color:#10b981; padding-top:4px;'>HARAVAN CONTAINER ACTIVE ✓</div>", unsafe_allow_html=True)
                 live_preview_code = p.get("custom_html") or technical_agent.build_7_block_html(p)
+                
+                # Bật thuộc tính contenteditable="true" cho các khối 1, 4, 5, 6 để người dùng gõ sửa trực tiếp
+                editable_preview_code = live_preview_code
+                if "contenteditable" not in editable_preview_code:
+                    import re as _re_w
+                    editable_preview_code = _re_w.sub(r"<h1\b([^>]*)>", r'<h1 contenteditable="true" id="wysiwyg_k1" title="✍️ Nhấp chuột vào đây để sửa tiêu đề tiếng Việt"\1>', editable_preview_code, count=1)
+                    editable_preview_code = _re_w.sub(r"<h2\b([^>]*)>", r'<h2 contenteditable="true" id="wysiwyg_k2" title="✍️ Nhấp chuột vào đây để sửa tiêu đề tiếng Anh"\1>', editable_preview_code, count=1)
+                    editable_preview_code = _re_w.sub(r"(<!-- KHỐI 4:.*?-->\s*<div[^>]*>\s*<p)\b([^>]*)>", r'\1 contenteditable="true" id="wysiwyg_k4" title="✍️ Nhấp chuột vào đây để sửa giới thiệu sản phẩm"\2>', editable_preview_code, count=1, flags=_re_w.DOTALL)
+                    editable_preview_code = _re_w.sub(r"(<!-- KHỐI 5:.*?-->.*?<ul)\b([^>]*)>", r'\1 contenteditable="true" id="wysiwyg_k5" title="✍️ Nhấp chuột vào đây để sửa đặc điểm nổi bật"\2>', editable_preview_code, count=1, flags=_re_w.DOTALL)
+                    editable_preview_code = _re_w.sub(r"(<!-- KHỐI 6:.*?-->.*?<table)\b([^>]*)>", r'\1 contenteditable="true" id="wysiwyg_k6" title="✍️ Nhấp chuột vào đây để sửa bảng thông số"\2>', editable_preview_code, count=1, flags=_re_w.DOTALL)
+
                 import hashlib
                 preview_hash = hashlib.md5((str(live_preview_code) + str(p.get("status")) + str(p.get("updated_at", ""))).encode("utf-8")).hexdigest()[:8]
                 full_preview_html = f"""<!DOCTYPE html>
@@ -2264,15 +2408,49 @@ with tab_tech:
       padding: 16px;
       font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     }}
+    /* Hiệu ứng WYSIWYG trực quan khi di chuột và nhấp sửa chữ */
+    [contenteditable="true"] {{
+      transition: all 0.18s ease;
+      border-radius: 4px;
+      padding: 2px 4px;
+    }}
+    [contenteditable="true"]:hover {{
+      outline: 2px dashed #0284c7 !important;
+      background-color: #f0f9ff !important;
+      cursor: text;
+    }}
+    [contenteditable="true"]:focus {{
+      outline: 2px solid #0284c7 !important;
+      background-color: #ffffff !important;
+      box-shadow: 0 0 10px rgba(2, 132, 199, 0.25);
+    }}
   </style>
 </head>
 <body style="background-color: #ffffff !important; color: #1e293b !important;">
-  <div id="render_container_{preview_hash}">
-    {live_preview_code}
+  <div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; color:#f8fafc; padding:8px 14px; border-radius:8px; margin-bottom:12px; font-size:12px; border:1px solid #334155;">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="font-size:15px;">✍️</span>
+      <span><strong>CHẾ ĐỘ SỬA TRỰC TIẾP (WYSIWYG ACTIVE):</strong> Bạn có thể nhấp chuột gõ sửa trực tiếp vào Tiêu đề (Khối 1), Mô tả (Khối 4), Đặc điểm nổi bật (Khối 5), hoặc Bảng thông số (Khối 6) ngay bên dưới.</span>
+    </div>
+    <span id="wysiwyg_badge" style="font-size:11px; background:#0284c7; color:#fff; padding:3px 8px; border-radius:4px; font-weight:700;">LIVE EDITABLE</span>
   </div>
+  <div id="render_container_{preview_hash}">
+    {editable_preview_code}
+  </div>
+  <script>
+    document.querySelectorAll('[contenteditable="true"]').forEach(el => {{
+      el.addEventListener('input', function() {{
+        const badge = document.getElementById('wysiwyg_badge');
+        if (badge) {{
+          badge.textContent = 'Đã nhận thay đổi • Sẵn sàng lưu ⚡';
+          badge.style.background = '#10b981';
+        }}
+      }});
+    }});
+  </script>
 </body>
 </html>"""
-                components.html(full_preview_html, height=580, scrolling=True)
+                components.html(full_preview_html, height=620, scrolling=True)
                 st.markdown("</div>", unsafe_allow_html=True)
 
             with tab_memory_quick:

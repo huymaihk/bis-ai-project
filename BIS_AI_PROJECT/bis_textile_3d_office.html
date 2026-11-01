@@ -1751,17 +1751,31 @@
 
       // Tìm theo emp_id trực tiếp (1 trong 16 nhân vật) hoặc theo nhóm phòng ban
       let targetIds = [];
+      const lowRaw = raw.toLowerCase();
       if (entities[raw]) {
         targetIds = [raw];
+      } else if (lowRaw.includes('tech') || lowRaw.includes('rd_lead') || lowRaw.includes('engineer')) {
+        targetIds = ['rd_lead'];
       } else {
-        targetIds = CHARACTERS_16.filter(c => c.legacyGroup === raw.toLowerCase()).map(c => c.id);
+        targetIds = CHARACTERS_16.filter(c => c.legacyGroup === lowRaw).map(c => c.id);
       }
       if (targetIds.length === 0) targetIds = ['rd_lead'];
 
       targetIds.forEach(cid => {
         const ent = entities[cid];
         const msg = message || ent.cfg.defaultTask;
-        if (normState.includes('MEET')) {
+        if (normState.includes('REPORT') || normState.includes('WAITING') || normState.includes('TRAIN')) {
+          // Trưởng phòng Kỹ thuật (Agent_Technical) di chuyển lại gần bàn trung tâm / bàn Chủ tịch để xin gặp báo cáo
+          const centerTable = new THREE.Vector3(0, 0, 1.4);
+          const ceo = entities.ceo_huy_mai;
+          const reportSpot = ceo ? new THREE.Vector3(ceo.frontDeskPos.x, 0, ceo.frontDeskPos.z) : centerTable;
+          const lookAtTarget = ceo ? ceo.homePos : new THREE.Vector3(0, 0, -2);
+          const reportMsg = message || '[Đang chờ báo cáo Chủ tịch 💬]';
+          moveCharacterTo(cid, 'REPORTING', reportSpot, 0, reportMsg, {
+            lookAtVec: lookAtTarget
+          });
+          setScenarioStatus('Trạng thái: Dr. Textile Tech (Agent Technical) đang chờ báo cáo Chủ tịch Mai Đức Huy 💬');
+        } else if (normState.includes('MEET')) {
           moveCharacterTo(cid, 'MEETING', new THREE.Vector3(ent.cfg.meetingSpot.x, 0, ent.cfg.meetingSpot.z), ent.cfg.meetingSpot.rotY, msg, {
             lookAtVec: new THREE.Vector3(0, 0, 0.4)
           });
