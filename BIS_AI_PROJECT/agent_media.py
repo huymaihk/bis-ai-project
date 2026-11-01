@@ -437,6 +437,40 @@ class AgentMedia:
 
         return None
 
+    def get_product_image_for_sku(self, sku: str) -> Optional[Path]:
+        """
+        Tìm kiếm ảnh sản phẩm do người dùng đặt vào Google Drive khớp với mã SKU:
+        Tìm trong thư mục Google_Drive_Storage/4_Product_Images/ với các mẫu:
+        - {sku}.jpg, {sku}.png, {sku}.jpeg, {sku}.webp
+        - {sku}_brand_1.jpg, {sku}_user_1.jpg, {sku}_1.jpg, {sku}_*.*
+        - Không phân biệt hoa thường và tự động chuẩn hóa dấu cách thành gạch dưới.
+        """
+        clean_sku = sku.strip().replace(" ", "_")
+        clean_sku_lower = clean_sku.lower()
+        search_dirs = [self.user_dir, self.brand_dir]
+
+        # 1. Khớp chính xác {sku}.ext
+        for d in search_dirs:
+            if not d.exists():
+                continue
+            for ext in [".jpg", ".png", ".jpeg", ".webp"]:
+                p = d / f"{clean_sku}{ext}"
+                if p.exists():
+                    return p
+            for f in d.iterdir():
+                if f.is_file() and f.stem.lower() == clean_sku_lower and f.suffix.lower() in [".jpg", ".png", ".jpeg", ".webp"]:
+                    return f
+
+        # 2. Khớp các tiền tố {sku}_* (ví dụ 03026A_brand_1.jpg, 03026A_user_1.jpg)
+        for d in search_dirs:
+            if not d.exists():
+                continue
+            for f in sorted(d.iterdir()):
+                if f.is_file() and f.stem.lower().startswith(f"{clean_sku_lower}_") and f.suffix.lower() in [".jpg", ".png", ".jpeg", ".webp"]:
+                    return f
+
+        return None
+
     def register_user_image(self, sku: str, image_bytes: bytes, filename: str) -> Path:
         """Save user supplied product photo with strict SKU naming format."""
         clean_sku = sku.strip().replace(" ", "_")
@@ -631,45 +665,26 @@ class AgentMedia:
         bg_path: Optional[Path] = None
     ) -> Dict[str, Any]:
         """
-        Kiến trúc kết hợp thông minh 3 bước cho AI Agent Media Studio:
-        1. Ưu tiên 1 (Nội tại): Dùng PyMuPDF quét trang PDF chứa sản phẩm lấy ảnh gốc độ nét cao nhất.
-        2. Dự phòng (Fallback): Nếu không tìm thấy hoặc ảnh dưới 250px -> Tự động tìm bổ sung ảnh Web (Bing/DuckDuckGo) theo Brand + SKU + Tên SP.
-        3. Hậu xử lý (Composite): Ghép ảnh sản phẩm vào bối cảnh Mockup Studio/Lab dệt may chân thực.
+        Quy trình xử lý ảnh Media Studio thuần Google Drive:
+        1. Tìm kiếm ảnh do người dùng đặt vào Google_Drive_Storage/4_Product_Images/ trùng với mã SKU.
+        2. Ghép vào Mockup nền Studio/Lab chân thực với bóng đổ và cân chỉnh ánh sáng 2K.
         """
         clean_sku = sku.strip().replace(" ", "_")
-        target_brand_img = self.brand_dir / f"{clean_sku}_brand_1.jpg"
-        source_type = "NONE"
+        source_img = self.get_product_image_for_sku(clean_sku)
 
-        # Bước 1: Ưu tiên bóc tách từ PDF
-        if pdf_path and Path(pdf_path).exists():
-            extracted = self.extract_image_from_pdf(clean_sku, pdf_path, page_num, product_name)
-            if extracted and extracted.exists() and extracted.stat().st_size > 8000:
-                source_type = "PDF_EMBEDDED"
-
-        # Bước 2: Fallback tìm ảnh Web nếu chưa có ảnh
-        if not target_brand_img.exists() or source_type == "NONE":
-            query = f"{brand} {clean_sku} {product_name}".strip()
-            web_results = self.search_web_images(query, max_results=5)
-            if web_results:
-                top_img = web_results[0]
-                dl_path = self.download_and_save_brand_image(clean_sku, top_img["image_url"], index=1)
-                if dl_path and dl_path.exists():
-                    source_type = f"WEB_SEARCH ({top_img.get('domain', 'Web')})"
-
-        # Bước 3: Ghép vào mockup nền Studio/Lab
         composite_res = None
-        if target_brand_img.exists():
+        if source_img and source_img.exists():
             if bg_path is None or not Path(bg_path).exists():
                 bg_list = self.get_backgrounds()
                 bg_path = bg_list[0] if bg_list else (self.bg_dir / "modern_textile_lab.jpg")
 
-            final_path = self.composite_product_image(clean_sku, target_brand_img, Path(bg_path))
+            final_path = self.composite_product_image(clean_sku, source_img, Path(bg_path))
             composite_res = str(final_path)
 
         return {
             "sku": clean_sku,
-            "source_type": source_type,
-            "raw_brand_image": str(target_brand_img) if target_brand_img.exists() else None,
+            "source_type": f"GOOGLE_DRIVE ({source_img.name})" if source_img else "NONE",
+            "raw_brand_image": str(source_img) if source_img else None,
             "composite_image": composite_res,
             "status": "READY_FOR_APPROVAL" if composite_res else "NEEDS_IMAGE"
         }
