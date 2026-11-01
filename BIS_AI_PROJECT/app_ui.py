@@ -992,9 +992,9 @@ if not st.session_state.authenticated:
                 time.sleep(0.4)
                 st.rerun()
             elif not is_valid_user:
-                st.error("❌ Tên đăng nhập không đúng (Tên đăng nhập chuẩn: adminhuy)!")
+                st.error("❌ Tên đăng nhập hoặc mật mã không chính xác. Vui lòng kiểm tra lại!")
             else:
-                st.error("❌ Mật mã bảo mật không đúng (Mật khẩu chuẩn: 1133)!")
+                st.error("❌ Mật mã bảo mật không chính xác. Vui lòng thử lại!")
 
     st.markdown("""
       <div style='margin-top: 20px; font-size: 11px; color: #64748b; text-align: center; font-family: "JetBrains Mono", monospace;'>
