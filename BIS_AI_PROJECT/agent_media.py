@@ -68,17 +68,14 @@ class AgentMedia:
             draw.line([(0, 750), (1000, 750)], fill="#e2e8f0", width=1)
             img.save(studio_bg, quality=95)
 
-    def extract_image_from_pdf(self, sku: str, pdf_path: str | Path, page_num: int, product_name: str = "", scan_all: bool = False) -> Optional[Path]:
+    def extract_images_from_exact_page(self, pdf_path: str | Path, page_num: int, min_width: int = 60, min_height: int = 60) -> list[dict]:
         """
-        Extract highest-res equipment photo from PDF catalogue.
-        - Nếu scan_all=True hoặc page_num không trả kết quả: quét toàn bộ PDF, tìm trang chứa tên/mã SKU rồi bóc ảnh lớn nhất.
-        - Trả về ảnh có dung lượng lớn nhất (nét nhất) tìm được.
+        Bóc tách toàn bộ hình ảnh nằm chính xác trên trang page_num của Catalogue PDF.
+        Không nhảy sang trang khác để tránh trích nhầm sản phẩm.
+        Trả về danh sách dict: xref, width, height, size_bytes, ext, image_bytes, page_num.
         """
         import pymupdf
-        clean_sku = sku.strip().replace(" ", "_")
-        target_path = self.brand_dir / f"{clean_sku}_brand_1.jpg"
         if not os.path.exists(str(pdf_path)):
-            # Thử tìm file catalogue trong các thư mục mặc định
             possible_paths = [
                 self.workspace_dir / "catalogue_sample.pdf",
                 self.gdrive_storage / "1_Catalogues" / "catalogue_sample.pdf",
@@ -89,175 +86,292 @@ class AgentMedia:
                     pdf_path = p
                     break
             else:
-                return None
+                return []
 
+        results = []
         try:
             doc = pymupdf.open(str(pdf_path))
             total_pages = len(doc)
-
-            # Xây dựng danh sách trang cần quét theo thứ tự ưu tiên
-            pages_to_scan = []
-
-            if not scan_all and 1 <= page_num <= total_pages:
-                # Ưu tiên trang ghi nhận source_page trước
-                pages_to_scan.append(page_num - 1)
-
-            if scan_all or not pages_to_scan:
-                # Quét toàn bộ: tìm trang chứa SKU hoặc tên sản phẩm
-                sku_lower = sku.strip().lower()
-                name_words = [w.lower() for w in (product_name or "").split() if len(w) > 3]
-
-                matched_pages = []
-                other_pages = []
-                for i in range(total_pages):
-                    if i in [p for p in pages_to_scan]:
-                        continue
-                    page = doc[i]
-                    page_text = page.get_text().lower()
-                    # Kiểm tra SKU hoặc tên sản phẩm có trong nội dung trang
-                    if sku_lower in page_text:
-                        matched_pages.insert(0, i)  # SKU match = ưu tiên cao nhất
-                    elif name_words and sum(1 for w in name_words if w in page_text) >= max(1, len(name_words) // 2):
-                        matched_pages.append(i)
-                    else:
-                        other_pages.append(i)
-
-                pages_to_scan.extend(matched_pages)
-                # Nếu scan_all mà không match tên/SKU nào, quét luôn các trang còn lại
-                if scan_all and not matched_pages:
-                    pages_to_scan.extend(other_pages)
-
-            # Bóc ảnh lớn nhất từ danh sách trang đã sắp xếp
-            best_img = None  # (size, bytes)
-            best_page = -1
-            for page_idx in pages_to_scan:
-                if page_idx < 0 or page_idx >= total_pages:
-                    continue
-                page = doc[page_idx]
-                img_list = page.get_images(full=True)
-
-                for img_info in img_list:
-                    xref = img_info[0]
-                    try:
-                        base_img = doc.extract_image(xref)
-                        img_bytes = base_img["image"]
-                        w, h = base_img["width"], base_img["height"]
-                        # Chỉ lấy ảnh có kích thước hợp lý (loại bỏ icon nhỏ < 60px)
-                        if len(img_bytes) >= 3000 and w >= 80 and h >= 80:
-                            if best_img is None or len(img_bytes) > best_img[0]:
-                                best_img = (len(img_bytes), img_bytes)
-                                best_page = page_idx + 1
-                    except Exception:
-                        continue
-
-                # Nếu đã tìm thấy ảnh tốt trên trang ưu tiên (match SKU/tên) → dừng ngay
-                if best_img and page_idx in pages_to_scan[:len(pages_to_scan) // 2 + 1]:
-                    # Chỉ dừng sớm nếu ảnh đủ lớn (> 10 KB)
-                    if best_img[0] > 10000:
-                        break
-
-            if best_img:
-                with open(target_path, "wb") as f:
-                    f.write(best_img[1])
-                print(f"✓ Trích xuất ảnh {clean_sku} từ trang {best_page}/{total_pages} ({best_img[0]:,} bytes)")
+            if not (1 <= page_num <= total_pages):
                 doc.close()
-                return target_path
+                return []
 
-            # Fallback cuối: chụp nguyên trang PDF thành ảnh bitmap
-            fallback_page = page_num - 1 if 1 <= page_num <= total_pages else 0
-            pix = doc[fallback_page].get_pixmap(matrix=pymupdf.Matrix(1.8, 1.8))
-            pix.save(str(target_path))
-            print(f"⚠️ Fallback: Chụp nguyên trang {fallback_page + 1} làm ảnh cho {clean_sku}")
+            page = doc[page_num - 1]
+            img_list = page.get_images(full=True)
+            seen_xrefs = set()
+
+            for img_info in img_list:
+                xref = img_info[0]
+                if xref in seen_xrefs:
+                    continue
+                seen_xrefs.add(xref)
+                try:
+                    base_img = doc.extract_image(xref)
+                    img_bytes = base_img["image"]
+                    w, h = base_img["width"], base_img["height"]
+                    ext = base_img["ext"]
+                    if w >= min_width and h >= min_height and len(img_bytes) >= 1500:
+                        results.append({
+                            "xref": xref,
+                            "width": w,
+                            "height": h,
+                            "size_bytes": len(img_bytes),
+                            "ext": ext,
+                            "image_bytes": img_bytes,
+                            "page_num": page_num
+                        })
+                except Exception:
+                    continue
+
             doc.close()
+            # Sắp xếp ảnh có kích thước byte lớn nhất lên đầu
+            results.sort(key=lambda x: x["size_bytes"], reverse=True)
+        except Exception as e:
+            print(f"Error extracting images from exact page {page_num}: {e}")
+        return results
+
+    def save_image_bytes_as_brand(self, sku: str, image_bytes: bytes, index: int = 1) -> Path:
+        """Lưu trực tiếp mảng bytes ảnh vào thư mục ảnh chính hãng trên Google Drive."""
+        clean_sku = sku.strip().replace(" ", "_")
+        target_path = self.brand_dir / f"{clean_sku}_brand_{index}.jpg"
+        with open(target_path, "wb") as f:
+            f.write(image_bytes)
+        print(f"✓ Đã lưu ảnh {clean_sku}_brand_{index}.jpg ({len(image_bytes):,} bytes)")
+        return target_path
+
+    def extract_image_from_pdf(self, sku: str, pdf_path: str | Path, page_num: int, product_name: str = "", scan_all: bool = False) -> Optional[Path]:
+        """
+        Bóc ảnh thiết bị từ Catalogue PDF:
+        - BƯỚC 1: Quét chính xác trang `page_num` (source_page). Nếu trang có ảnh, lấy ảnh nét nhất trên ĐÚNG TRANG ĐÓ.
+        - BƯỚC 2: Chỉ khi trang đó hoàn toàn không có ảnh và scan_all=True thì mới quét các trang khác chứa đúng mã SKU.
+        - Tuyệt đối không lấy ảnh lung tung từ các trang khác khi trang hiện tại đã có ảnh.
+        """
+        import pymupdf
+        clean_sku = sku.strip().replace(" ", "_")
+        target_path = self.brand_dir / f"{clean_sku}_brand_1.jpg"
+
+        # 1. Thử bóc trực tiếp từ đúng trang page_num
+        exact_page_imgs = self.extract_images_from_exact_page(pdf_path, page_num)
+        if exact_page_imgs:
+            best_img = exact_page_imgs[0]
+            with open(target_path, "wb") as f:
+                f.write(best_img["image_bytes"])
+            print(f"✓ Đã trích ảnh {clean_sku} chuẩn xác từ trang {page_num} ({best_img['width']}x{best_img['height']}, {best_img['size_bytes']:,} bytes)")
             return target_path
 
-        except Exception as e:
-            print(f"Error extracting image from PDF: {e}")
+        # 2. Nếu trang đó không có ảnh và cho phép scan_all: chỉ quét trang có chứa đúng mã SKU
+        if scan_all:
+            if not os.path.exists(str(pdf_path)):
+                possible_paths = [
+                    self.workspace_dir / "catalogue_sample.pdf",
+                    self.gdrive_storage / "1_Catalogues" / "catalogue_sample.pdf",
+                    self.workspace_dir.parent / "catalogue_sample.pdf",
+                ]
+                for p in possible_paths:
+                    if p.exists():
+                        pdf_path = p
+                        break
+            if os.path.exists(str(pdf_path)):
+                try:
+                    doc = pymupdf.open(str(pdf_path))
+                    sku_clean_lower = sku.strip().lower()
+                    for p_idx in range(len(doc)):
+                        if p_idx == page_num - 1:
+                            continue
+                        txt = doc[p_idx].get_text().lower()
+                        if sku_clean_lower in txt:
+                            sku_page_imgs = self.extract_images_from_exact_page(pdf_path, p_idx + 1)
+                            if sku_page_imgs:
+                                best_img = sku_page_imgs[0]
+                                with open(target_path, "wb") as f:
+                                    f.write(best_img["image_bytes"])
+                                print(f"✓ Tìm thấy {clean_sku} tại trang {p_idx + 1} qua quét SKU text")
+                                doc.close()
+                                return target_path
+                    doc.close()
+                except Exception as e:
+                    print(f"Error scanning PDF: {e}")
+
+        # 3. Fallback chụp bitmap trang nếu vẫn không có ảnh
+        try:
+            doc = pymupdf.open(str(pdf_path))
+            fallback_p = page_num - 1 if 1 <= page_num <= len(doc) else 0
+            pix = doc[fallback_p].get_pixmap(matrix=pymupdf.Matrix(1.8, 1.8))
+            pix.save(str(target_path))
+            print(f"⚠️ Fallback: Chụp nguyên trang {fallback_p + 1} làm ảnh cho {clean_sku}")
+            doc.close()
+            return target_path
+        except Exception:
+            pass
+
         return None
 
+    def clean_search_query(self, query: str) -> str:
+        """Lọc bỏ các từ khóa bị lặp lại, giữ nguyên thứ tự các từ có nghĩa."""
+        if not query:
+            return ""
+        words = []
+        seen = set()
+        for w in query.split():
+            lw = w.lower()
+            if lw not in seen:
+                seen.add(lw)
+                words.append(w)
+        return " ".join(words)
+
     def search_web_images(self, query: str, max_results: int = 8) -> list[dict]:
-        """Tìm kiếm ảnh sản phẩm chất lượng cao trên web thông qua Bing Image Engine."""
+        """
+        Tìm kiếm ảnh sản phẩm thực tế trên Web thông qua Bing Images Async API:
+        - Mở rộng tìm kiếm trên toàn bộ internet (nhà phân phối, trang thiết bị dệt may, catalog kỹ thuật).
+        - Không bó hẹp chỉ tìm trang chính hãng.
+        - Khử trùng lặp từ khóa trong câu truy vấn.
+        - Lọc triệt để các kết quả quảng cáo / coupon / cashback / bing rewards.
+        """
         import urllib.parse
         import json
         import re
 
-        # Import thư viện HTTP linh hoạt (ưu tiên curl_cffi, fallback requests)
+        clean_q = self.clean_search_query(query)
+        if not clean_q:
+            return []
+
+        use_cffi = False
         try:
-            from curl_cffi import requests as http_client
+            from curl_cffi import requests as cffi_requests
             use_cffi = True
         except ImportError:
-            import requests as http_client
-            use_cffi = False
+            import requests as cffi_requests
 
         try:
             from bs4 import BeautifulSoup
         except ImportError:
-            print("⚠️ beautifulsoup4 chưa cài. Đang dùng regex fallback.")
             BeautifulSoup = None
 
-        clean_q = query.strip()
         encoded = urllib.parse.quote_plus(clean_q)
-        url = f"https://www.bing.com/images/search?q={encoded}&form=HDRSC2&first=1"
+        url = f"https://www.bing.com/images/async?q={encoded}&first=0&count=30&mmasync=1"
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
             "Accept-Language": "en-US,en;q=0.9,vi;q=0.8"
         }
+
+        bad_domains = [
+            "bing.com", "microsoft.com", "onmsft.com", "pcmag.com", "notebooks.com",
+            "coupon", "cashback", "rakuten", "slickdeals", "retailmenot"
+        ]
+        bad_keywords = [
+            "reward", "cashback", "coupon", "discount", "deal", "promo", "gift card", "voucher"
+        ]
+
         results = []
         try:
             if use_cffi:
-                r = http_client.get(url, headers=headers, impersonate="chrome", timeout=15)
+                session = cffi_requests.Session(impersonate="chrome")
+                r = session.get(url, headers=headers, timeout=15)
             else:
-                r = http_client.get(url, headers=headers, timeout=15)
+                r = cffi_requests.get(url, headers=headers, timeout=15)
 
             if r.status_code == 200:
                 html_text = r.text
-
                 if BeautifulSoup:
                     soup = BeautifulSoup(html_text, "html.parser")
                     for a in soup.find_all("a", class_="iusc"):
                         m_attr = a.get("m")
-                        if m_attr:
-                            try:
-                                m_data = json.loads(m_attr)
-                                murl = m_data.get("murl")
-                                turl = m_data.get("turl")
-                                desc = m_data.get("desc", "")
-                                purl = m_data.get("purl", "")
-                                if murl and any(ext in murl.lower() for ext in [".jpg", ".jpeg", ".png", ".webp"]):
-                                    if not any(skip in murl.lower() for skip in ["logo", "icon", "banner", "avatar", "favicon", "pixel"]):
-                                        domain = re.sub(r"https?://(www\.)?", "", purl or murl).split("/")[0]
-                                        results.append({
-                                            "image_url": murl,
-                                            "thumb_url": turl or murl,
-                                            "title": desc or clean_q,
-                                            "domain": domain
-                                        })
-                                        if len(results) >= max_results:
-                                            break
-                            except Exception:
+                        if not m_attr:
+                            continue
+                        try:
+                            m_data = json.loads(m_attr)
+                            murl = m_data.get("murl")
+                            turl = m_data.get("turl")
+                            desc = m_data.get("desc", "")
+                            purl = m_data.get("purl", "")
+
+                            if not murl:
                                 continue
+
+                            domain = re.sub(r"https?://(www\.)?", "", purl or murl).split("/")[0].lower()
+
+                            # Lọc domain quảng cáo / rác
+                            if any(bd in domain for bd in bad_domains):
+                                continue
+
+                            # Lọc nội dung rác
+                            desc_lower = desc.lower()
+                            if any(bk in desc_lower for bk in bad_keywords):
+                                continue
+
+                            # Kiểm tra định dạng ảnh hợp lệ
+                            if not any(skip in murl.lower() for skip in ["logo", "icon", "banner", "avatar", "favicon", "pixel"]):
+                                results.append({
+                                    "image_url": murl,
+                                    "thumb_url": turl or murl,
+                                    "title": desc or clean_q,
+                                    "domain": domain
+                                })
+                                if len(results) >= max_results:
+                                    break
+                        except Exception:
+                            continue
                 else:
-                    # Regex fallback khi không có bs4
                     pattern = r'"murl"\s*:\s*"(https?://[^"]+?\.(?:jpg|jpeg|png|webp))"'
                     for match in re.finditer(pattern, html_text, re.IGNORECASE):
                         murl = match.group(1)
+                        domain = re.sub(r"https?://(www\.)?", "", murl).split("/")[0].lower()
+                        if any(bd in domain for bd in bad_domains):
+                            continue
                         if not any(skip in murl.lower() for skip in ["logo", "icon", "banner", "avatar", "favicon", "pixel"]):
                             results.append({
                                 "image_url": murl,
                                 "thumb_url": murl,
                                 "title": clean_q,
-                                "domain": re.sub(r"https?://(www\.)?", "", murl).split("/")[0]
+                                "domain": domain
                             })
                             if len(results) >= max_results:
                                 break
         except Exception as e:
             print(f"Error searching web images for '{query}': {e}")
+
+        # Fallback: nếu async chưa đủ ảnh, thử thêm query ngắn gọn
+        if len(results) < 2 and len(clean_q.split()) > 3:
+            try:
+                short_q = " ".join(clean_q.split()[:4])
+                enc_short = urllib.parse.quote_plus(short_q)
+                url_short = f"https://www.bing.com/images/async?q={enc_short}&first=0&count=20&mmasync=1"
+                r_short = session.get(url_short, headers=headers, timeout=10) if use_cffi else cffi_requests.get(url_short, headers=headers, timeout=10)
+                if r_short.status_code == 200 and BeautifulSoup:
+                    soup_s = BeautifulSoup(r_short.text, "html.parser")
+                    for a in soup_s.find_all("a", class_="iusc"):
+                        m_attr = a.get("m")
+                        if not m_attr:
+                            continue
+                        try:
+                            m_data = json.loads(m_attr)
+                            murl = m_data.get("murl")
+                            turl = m_data.get("turl")
+                            desc = m_data.get("desc", "")
+                            purl = m_data.get("purl", "")
+                            domain = re.sub(r"https?://(www\.)?", "", purl or murl).split("/")[0].lower()
+                            if any(bd in domain for bd in bad_domains) or any(bk in desc.lower() for bk in bad_keywords):
+                                continue
+                            if murl and not any(r["image_url"] == murl for r in results):
+                                results.append({
+                                    "image_url": murl,
+                                    "thumb_url": turl or murl,
+                                    "title": desc or short_q,
+                                    "domain": domain
+                                })
+                                if len(results) >= max_results:
+                                    break
+                        except Exception:
+                            continue
+            except Exception:
+                pass
+
         return results
 
-    def download_and_save_brand_image(self, sku: str, image_url: str) -> Optional[Path]:
+    def download_and_save_brand_image(self, sku: str, image_url: str, index: int = 1) -> Optional[Path]:
         """Tải ảnh từ URL đã chọn và lưu vào thư mục ảnh hãng của SKU trên Google Drive."""
         clean_sku = sku.strip().replace(" ", "_")
-        target_path = self.brand_dir / f"{clean_sku}_brand_1.jpg"
+        target_path = self.brand_dir / f"{clean_sku}_brand_{index}.jpg"
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
         }
@@ -268,7 +382,7 @@ class AgentMedia:
             except ImportError:
                 import requests as http_client
                 r = http_client.get(image_url, headers=headers, timeout=20)
-            if r.status_code == 200 and len(r.content) > 5000:
+            if r.status_code == 200 and len(r.content) > 1500:
                 with open(target_path, "wb") as f:
                     f.write(r.content)
                 print(f"✓ Đã lưu ảnh sản phẩm {clean_sku} ({len(r.content):,} bytes) từ {image_url}")
