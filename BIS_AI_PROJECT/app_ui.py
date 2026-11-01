@@ -940,7 +940,7 @@ if marketing_agent is None or not hasattr(marketing_agent, "load_marketing_knowl
         pass
 knowledge_agent = getattr(leader, "knowledge_agent", None)
 media_agent = getattr(leader, "media_agent", None)
-if media_agent is None or not hasattr(media_agent, "get_product_image_for_sku"):
+if media_agent is None or not hasattr(media_agent, "render_3d_book_mockup"):
     try:
         import importlib
         import agent_media
@@ -2524,12 +2524,33 @@ with tab_media:
                         st.error(f"❌ Chưa có ảnh nguồn cho mã `{clean_sku}`! Vui lòng tải file vào ô trên.")
                     else:
                         with st.spinner("AI đang dựng hình phối cảnh 3D, tạo gáy sách, đổ bóng tiếp xúc 3 tầng và hòa nhập ánh sáng Studio..."):
-                            final_path = media_agent.composite_product_image(
-                                clean_sku, 
-                                chosen_source_img, 
-                                selected_bg_path, 
-                                render_mode=chosen_mode
-                            )
+                            import inspect
+                            try:
+                                sig = inspect.signature(media_agent.composite_product_image)
+                                if "render_mode" not in sig.parameters:
+                                    import importlib, agent_media
+                                    importlib.reload(agent_media)
+                                    media_agent = agent_media.AgentMedia(PROJECT_DIR)
+                                    if leader:
+                                        leader.media_agent = media_agent
+                                final_path = media_agent.composite_product_image(
+                                    clean_sku, 
+                                    chosen_source_img, 
+                                    selected_bg_path, 
+                                    render_mode=chosen_mode
+                                )
+                            except Exception:
+                                import importlib, agent_media
+                                importlib.reload(agent_media)
+                                media_agent = agent_media.AgentMedia(PROJECT_DIR)
+                                if leader:
+                                    leader.media_agent = media_agent
+                                final_path = media_agent.composite_product_image(
+                                    clean_sku, 
+                                    chosen_source_img, 
+                                    selected_bg_path, 
+                                    render_mode=chosen_mode
+                                )
                             st.success(f"✓ Đã dựng thành phẩm 3D: {final_path.name}")
                             st.rerun()
 
