@@ -763,12 +763,14 @@ class AgentMedia:
         """
         Tiền xử lý sản phẩm thông minh:
         - Tự động cắt bỏ viền đen (Black border padding) xung quanh ảnh scan bìa sách.
-        - Tự động cắt bỏ viền trắng/xám đơn sắc và làm trong suốt kênh Alpha (Smooth feather).
+        - Dùng FloodFill từ các góc biên để loại bỏ nền trắng/xám bên ngoài mà KHÔNG làm thủng nền ruột bìa sách.
         - Giữ nguyên độ phân giải gốc của vật thể.
         """
+        import cv2
         import numpy as np
         im = prod_img.convert("RGBA")
         arr = np.array(im)
+        h, w = arr.shape[:2]
         
         # 1. Cắt bỏ viền đen nếu ảnh scan/ảnh web bị bọc khung đen
         if arr[:5, :, :3].mean() < 30 or arr[:, :5, :3].mean() < 30:
@@ -778,13 +780,24 @@ class AgentMedia:
             if len(rows) and len(cols):
                 im = im.crop((cols[0], rows[0], cols[-1] + 1, rows[-1] + 1))
                 arr = np.array(im)
+                h, w = arr.shape[:2]
                 
-        # 2. Xử lý nền trắng nếu ảnh chưa có kênh alpha thực sự
+        # 2. Xử lý nền trắng bên ngoài biên bằng FloodFill có chọn lọc
         if (arr[:, :, 3] < 250).sum() < 100:
-            if arr[:5, :, :3].mean() > 230 or arr[:, :5, :3].mean() > 230:
-                r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
-                mask_white = (r > 232) & (g > 232) & (b > 232)
-                arr[:, :, 3][mask_white] = 0
+            corners = [arr[0, 0, :3], arr[0, w-1, :3], arr[h-1, 0, :3], arr[h-1, w-1, :3]]
+            if any(c.mean() > 225 for c in corners):
+                bgr = cv2.cvtColor(arr[:, :, :3], cv2.COLOR_RGB2BGR)
+                flood_mask = np.zeros((h + 2, w + 2), np.uint8)
+                seeds = [(0, 0), (w-1, 0), (0, h-1), (w-1, h-1), (0, h//2), (w-1, h//2), (w//2, 0), (w//2, h-1)]
+                for sx, sy in seeds:
+                    if bgr[sy, sx].mean() > 220:
+                        cv2.floodFill(
+                            bgr.copy(), flood_mask, (sx, sy), 
+                            (0, 0, 0), (18, 18, 18), (18, 18, 18), 
+                            flags=4 | cv2.FLOODFILL_MASK_ONLY | (255 << 8)
+                        )
+                ext_bg_mask = (flood_mask[1:h+1, 1:w+1] == 255)
+                arr[:, :, 3][ext_bg_mask] = 0
                 im = Image.fromarray(arr, mode="RGBA")
                 bbox = im.getbbox()
                 if bbox:
@@ -916,15 +929,16 @@ class AgentMedia:
 
             if result and hasattr(result, "generated_images") and result.generated_images:
                 img_bytes = result.generated_images[0].image.image_bytes
-                with open(target_path, "wb") as f:
+                preview_target = self.preview_dir / f"{clean_sku}_preview.jpg"
+                with open(preview_target, "wb") as f:
                     f.write(img_bytes)
                 
-                # Cập nhật manifest để xuất bản Haravan
+                # Cập nhật manifest trạng thái PENDING_REVIEW chờ duyệt
                 self.manifest[clean_sku] = {
                     "sku": clean_sku,
-                    "status": "APPROVED",
+                    "status": "PENDING_REVIEW",
                     "source": "GEMINI_IMAGEN3_AI",
-                    "final_image": str(target_path),
+                    "preview_image": str(preview_target),
                     "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
                 }
                 self._save_manifest()
@@ -1079,7 +1093,7 @@ class AgentMedia:
         self._save_manifest()
         return final_path
 
-    def approve_image(self, sku: str) -> bool:
+    def approve_image(self, sku: str, source_override: Optional[Path] = None) -> bool:
         """
         Chinh thuc PHE DUYET anh san pham:
         - Chi khi nguoi dung bam DUYET thi anh moi duoc luu chinh thuc vao 6_Final_Composites.
@@ -1091,9 +1105,14 @@ class AgentMedia:
         preview_path = self.preview_dir / f"{clean_sku}_preview.jpg"
         final_path = self.final_dir / f"{clean_sku}_final.jpg"
 
-        # Neu co anh preview thi copy sang final_path
-        if preview_path.exists():
-            shutil.copy2(preview_path, final_path)
+        src_to_save = None
+        if source_override and Path(source_override).exists():
+            src_to_save = Path(source_override)
+        elif preview_path.exists():
+            src_to_save = preview_path
+
+        if src_to_save and src_to_save.exists():
+            shutil.copy2(src_to_save, final_path)
 
         # Dong bo truc tiep sang Google Drive may tinh
         alt_gdrive = Path(r"g:\My Drive\BIS_AI_PROJECT\Google_Drive_Storage\6_Final_Composites")

@@ -2643,7 +2643,7 @@ with tab_media:
                     if st.session_state.get(sig_key_up) != f_sig:
                         st.session_state[sig_key_up] = f_sig
                         saved_path = media_agent.register_user_image(clean_sku, f_bytes, uploaded_user_img.name)
-                        st.toast(f"✓ Đã lưu ảnh `{saved_path.name}` vào Drive!", icon="📁")
+                        st.toast(f"📥 Đã nạp ảnh nguồn cho {clean_sku}! Bấm 'RENDER 3D STUDIO' để phối cảnh.", icon="📸")
                         st.rerun()
 
             with c_src_thumb:
@@ -2843,19 +2843,39 @@ with tab_media:
             img_manifest = media_agent.manifest.get(clean_sku, {})
             current_img_status = img_manifest.get("status", "CHƯA XỬ LÝ")
 
-            # Chỉ hiển thị ảnh duyệt khi đã APPROVED, còn đang chỉnh sửa thì hiển thị ảnh Preview nháp
+            # Quyết định ảnh hiển thị:
+            # - Nếu đang có bản nháp preview vừa render: hiển thị preview_img_path để duyệt
+            # - Nếu đã duyệt (APPROVED) và có final_img_path: hiển thị final_img_path
+            # - Fallback: preview_img_path hoặc final_img_path
             display_img_path = None
-            if current_img_status == "APPROVED" and final_img_path.exists():
+            if preview_img_path.exists() and current_img_status != "APPROVED":
+                display_img_path = preview_img_path
+            elif current_img_status == "APPROVED" and final_img_path.exists():
                 display_img_path = final_img_path
             elif preview_img_path.exists():
                 display_img_path = preview_img_path
             elif final_img_path.exists():
                 display_img_path = final_img_path
 
+            # Khối thông báo xác nhận lưu Google Drive khi người dùng bấm Duyệt
+            if current_img_status == "APPROVED" and final_img_path.exists():
+                st.markdown(f"""
+                <div style='background: linear-gradient(135deg, #064e3b 0%, #022c22 100%); border: 1.5px solid #10b981; border-radius: 10px; padding: 14px; margin-bottom: 14px;'>
+                  <div style='color: #6ee7b7; font-weight: 800; font-size: 14px; display: flex; align-items: center; gap: 8px;'>
+                    <span>✅</span> <span>ĐÃ LƯU CHÍNH THỨC VÀO GOOGLE DRIVE THÀNH CÔNG!</span>
+                  </div>
+                  <div style='color: #e2e8f0; font-size: 12px; margin-top: 6px; line-height: 1.6;'>
+                    📁 <b>Vị trí file:</b> <code>Google_Drive_Storage/6_Final_Composites/{clean_sku}_final.jpg</code><br>
+                    🛡️ <b>Trạng thái:</b> Đã duyệt &bull; Sẵn sàng đồng bộ Haravan.<br>
+                    ⏱️ <b>Thời gian duyệt:</b> <code>{img_manifest.get('approved_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))}</code>
+                  </div>
+                </div>
+                """, unsafe_allow_html=True)
+
             if display_img_path and display_img_path.exists():
                 st.image(
                     str(display_img_path), 
-                    caption=f"Ảnh render 3D Studio mã {clean_sku} ({'ĐÃ DUYỆT' if current_img_status == 'APPROVED' else 'BẢN XEM TRƯỚC (CHỜ DUYỆT)'})", 
+                    caption=f"Ảnh render 3D Studio mã {clean_sku} ({'ĐÃ DUYỆT - SẴN SÀNG XUẤT BẢN' if current_img_status == 'APPROVED' else 'BẢN XEM TRƯỚC (CHỜ BẠN DUYỆT)'})", 
                     use_container_width=True
                 )
                 
@@ -2876,13 +2896,13 @@ with tab_media:
                 col_ap1, col_ap2, col_ap3 = st.columns([4, 4, 4])
                 with col_ap1:
                     if st.button("✅ DUYỆT & LƯU VÀO DRIVE", key=f"appr_img_{clean_sku}", type="primary", use_container_width=True):
-                        media_agent.approve_image(clean_sku)
+                        media_agent.approve_image(clean_sku, source_override=display_img_path)
                         st.session_state.audit_logs.append({
                             "time": datetime.now().strftime("%H:%M:%S"),
                             "type": "MEDIA",
                             "text": f"Ảnh sản phẩm {clean_sku} đã được PHÊ DUYỆT lưu vào Google_Drive_Storage/6_Final_Composites."
                         })
-                        st.success(f"✓ Đã duyệt và lưu chính thức vào 6_Final_Composites: {clean_sku}_final.jpg")
+                        st.toast(f"✅ ĐÃ LƯU {clean_sku}_final.jpg VÀO DRIVE!", icon="💾")
                         st.rerun()
 
                 with col_ap2:
@@ -2901,6 +2921,21 @@ with tab_media:
                         media_agent.reject_image(clean_sku, "Yêu cầu chỉnh lại góc phối cảnh/bóng")
                         st.warning("Đã từ chối ảnh và xóa khỏi 6_Final_Composites. Hãy chỉnh các thanh trượt và render lại.")
                         st.rerun()
+
+                # Nút mở thư mục trực tiếp trong Windows Explorer
+                st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
+                col_exp1, col_exp2 = st.columns([6, 6])
+                with col_exp1:
+                    if st.button("📂 MỞ THƯ MỤC ẢNH TRÊN MÁY TÍNH", key=f"btn_open_exp_{clean_sku}", use_container_width=True):
+                        import subprocess
+                        target_f = final_img_path if final_img_path.exists() else display_img_path
+                        try:
+                            subprocess.Popen(f'explorer.exe /select,"{target_f}"')
+                            st.toast("Đang mở Windows File Explorer...", icon="📂")
+                        except Exception as ex:
+                            st.error(f"Không thể mở thư mục: {ex}")
+                with col_exp2:
+                    st.caption("🔒 **Nguyên tắc an toàn:** Chỉ ảnh bạn nhấn **DUYỆT** mới được lưu vào `6_Final_Composites`.")
             else:
                 st.info(f"💡 Chưa có ảnh render cho mã `{clean_sku}`.\n\nHãy kiểm tra ảnh nguồn ở cột bên trái, điều chỉnh các thanh trượt đường chân trời / độ nghiêng phối cảnh và bấm nút **'🚀 RENDER 3D STUDIO'** để xem kết quả trực quan ngay tại đây.")
 
