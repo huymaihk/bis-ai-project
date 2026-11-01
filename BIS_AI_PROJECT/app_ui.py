@@ -2750,6 +2750,70 @@ with tab_media:
 
             # Nút Render chính
             st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+
+            # 🌟 NÚT 1: TẠO ẢNH 2D CHUẨN BIS TEXTILE (THEO ĐÚNG ẢNH MẪU - LƯU VÀO GOOGLE DRIVE)
+            if st.button(f"📸 TẠO ẢNH 2D CHUẨN BIS TEXTILE CHO {clean_sku} (LƯU GOOGLE DRIVE)", type="primary", use_container_width=True, key=f"btn_flow_2d_{clean_sku}"):
+                with st.spinner(f"Đang tự động tách nền, căn chỉnh 2D và lưu vào Google Drive cho {clean_sku}..."):
+                    import flow_2d_studio
+                    try:
+                        src_to_use = chosen_source_img
+                        if not src_to_use or not src_to_use.exists():
+                            src_to_use = flow_2d_studio.find_source_image_for_sku(clean_sku)
+                        
+                        if not src_to_use or not src_to_use.exists():
+                            page_num = p_media.get("source_page", 1)
+                            pdf_p = PROJECT_DIR / "Google_Drive_Storage" / "1_Catalogues" / "catalogue_sample.pdf"
+                            if not pdf_p.exists():
+                                pdf_p = PROJECT_DIR / "catalogue_sample.pdf"
+                            if pdf_p.exists():
+                                import pymupdf
+                                doc = pymupdf.open(str(pdf_p))
+                                if 1 <= page_num <= len(doc):
+                                    imgs = doc[page_num - 1].get_images()
+                                    if imgs:
+                                        bimg = doc.extract_image(imgs[0][0])
+                                        dest = PROJECT_DIR / "Google_Drive_Storage" / "4_Product_Images" / f"{clean_sku}.jpg"
+                                        dest.write_bytes(bimg["image"])
+                                        src_to_use = dest
+                                doc.close()
+
+                        if not src_to_use or not src_to_use.exists():
+                            st.error(f"❌ Chưa có ảnh nguồn cho mã `{clean_sku}`! Hãy tải ảnh sản phẩm vào ô trên trước.")
+                        else:
+                            out_final = flow_2d_studio.generate_2d_studio_product(
+                                sku=clean_sku,
+                                source_img_path=src_to_use,
+                                target_ground_y=800,
+                                target_height=580,
+                                auto_approve=True
+                            )
+                            if media_agent:
+                                media_agent.manifest = media_agent._load_manifest()
+                            st.toast(f"🎉 ĐÃ LƯU ẢNH 2D CHUẨN BIS TEXTILE CHO {clean_sku} VÀO GOOGLE DRIVE!", icon="📸")
+                            st.success(f"✓ Hoàn tất! Ảnh thành phẩm đã lưu tại: `{out_final.name}`")
+                            st.rerun()
+                    except Exception as ex_2d:
+                        st.error(f"❌ Lỗi tạo ảnh 2D: {ex_2d}")
+
+            st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
+            # 🌟 NÚT 2: BATCH FLOW TỰ ĐỘNG CHẠY HÀNG LOẠT TOÀN BỘ SẢN PHẨM
+            with st.expander("⚡ Batch Flow: Tự động tạo ảnh 2D hàng loạt cho toàn bộ danh mục"):
+                st.write("Hệ thống sẽ tự động quét toàn bộ danh mục sản phẩm trong Google Drive, tách nền sản phẩm và ghép vào phông BIS_BACKGROUND.png đạt chuẩn 100%.")
+                skip_done = st.checkbox("Bỏ qua các sản phẩm đã có ảnh thành phẩm", value=True, key=f"chk_skip_{clean_sku}")
+                if st.button("🚀 BẮT ĐẦU CHẠY BATCH 2D FLOW HÀNG LOẠT", type="secondary", use_container_width=True, key=f"btn_run_batch_2d_{clean_sku}"):
+                    import flow_2d_studio
+                    prog_bar = st.progress(0.0)
+                    status_text = st.empty()
+                    status_text.info("Đang khởi động Batch Flow 2D...")
+                    batch_res = flow_2d_studio.run_batch_flow(skip_existing=skip_done)
+                    prog_bar.progress(1.0)
+                    if media_agent:
+                        media_agent.manifest = media_agent._load_manifest()
+                    st.toast(f"🎉 Đã hoàn tất Batch Flow cho danh mục sản phẩm!", icon="🚀")
+                    st.success(f"✓ Batch Flow hoàn tất! Xem thư mục `Google_Drive_Storage/6_Final_Composites` trên máy tính.")
+                    st.rerun()
+
+            st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
             # Nút Cloud AI Serverless (Miễn phí 100% - Chạy ngay trên Intel Iris Xe không cần GPU / Key)
             if st.button("⚡ TẠO MOCKUP 3D CLOUD AI (MIỄN PHÍ - KHÔNG CẦN KEY / GPU)", type="secondary", use_container_width=True, key=f"btn_cloud_free_{clean_sku}"):
                 with st.spinner("Đang kết nối Cloud AI Serverless để dựng Mockup 3D Studio siêu thực trong 5-10 giây..."):
