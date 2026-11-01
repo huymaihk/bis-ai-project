@@ -2307,7 +2307,7 @@ with tab_tech:
                         p["highlights"] = hl_list
                         p["application_scope"] = edit_scope.strip()
                         p["related_doc_title"] = edit_doc_title.strip()
-            p["related_doc_url"] = default_doc_url
+                        p["related_doc_url"] = default_doc_url
                         p["source_page"] = edit_page_str.strip()
 
                         if approve_btn:
