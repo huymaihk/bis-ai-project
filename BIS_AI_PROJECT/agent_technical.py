@@ -106,52 +106,95 @@ class PageExtractionResult(BaseModel):
     products: List[ExtractedProductFact] = Field(default_factory=list)
 
 
+def is_self_referencing_or_generic_doc(candidate_title: str, record: dict) -> bool:
+    """
+    Kiểm tra xem tên tài liệu liên quan có bị trùng lặp hoặc tự tham chiếu đến chính sản phẩm đang đăng hay không:
+    - Trùng với mã SKU
+    - Trùng hoặc tương đồng cao với tên sản phẩm tiếng Việt hoặc tiếng Anh
+    - Chứa cụm từ tra cứu chung chung hoặc generic fallback
+    """
+    if not candidate_title or not str(candidate_title).strip():
+        return True
+
+    t_low = str(candidate_title).strip().lower()
+    sku = str(record.get("sku", "")).strip().lower()
+    vi = str(record.get("product_name", "")).strip().lower()
+    en = str(record.get("product_name_en", "")).strip().lower()
+
+    # 1. Generic fallbacks không mang giá trị chuyên môn cụ thể
+    if "quy trình và tiêu chuẩn kiểm nghiệm dệt may quốc tế" in t_low:
+        return True
+    if "sổ tay phương pháp thử nghiệm và tiêu chuẩn dệt may" in t_low:
+        return True
+    if "astm compass" in t_low and ("compass" in vi or "compass" in en):
+        return True
+    if sku and sku in t_low:
+        return True
+    if "tra cứu sản phẩm mã" in t_low:
+        return True
+
+    # 2. Trùng với tên sản phẩm hiện tại
+    if t_low == vi or t_low == en:
+        return True
+
+    # 3. So khớp mức độ trùng lặp từ khóa (> 50%)
+    stop_words = {"và", "các", "tiêu", "chuẩn", "phương", "pháp", "thử", "nghiệm", "dệt", "may", "quốc", "tế", "hệ", "thống", "cơ", "sở", "dữ", "liệu", "trực", "tuyến", "qua"}
+    words_t = set(re.findall(r'\w+', t_low)) - stop_words
+    words_vi = set(re.findall(r'\w+', vi)) - stop_words
+    words_en = set(re.findall(r'\w+', en)) - stop_words
+
+    if words_t and words_vi and len(words_t & words_vi) / len(words_t) >= 0.5:
+        return True
+    if words_t and words_en and len(words_t & words_en) / len(words_t) >= 0.5:
+        return True
+
+    return False
+
+
 def resolve_related_standard_doc(record: dict) -> tuple[str, str]:
     """
     Tự động suy luận Tiêu chuẩn & Tài liệu kỹ thuật liên quan thực tế (Khối 7):
-    - Tuyệt đối KHÔNG lưu trùng lặp với mã SKU (như 'Tra cứu sản phẩm mã 03017C...').
-    - Ưu tiên bóc tách mã tiêu chuẩn (AATCC TM, ISO 105, ASTM D...) từ mô tả hoặc tên sản phẩm.
-    - Với sách, manual, subscription: gán đúng tên tiêu chuẩn/sổ tay/cơ sở dữ liệu tương ứng.
+    - Tuyệt đối KHÔNG trùng lặp với tên sản phẩm đang chuẩn bị đăng hoặc mã SKU.
+    - Chỉ gán khi tìm thấy mã phương pháp thử nghiệm/tiêu chuẩn chuyên ngành cụ thể (AATCC TM, ISO 105, ASTM D...).
+    - Nếu không có tiêu chuẩn liên quan thực sự khác biệt, BỎ TRỐNG (trả về "", "").
     """
-    sku = str(record.get("sku", "")).strip()
     custom_title = record.get("related_doc_title")
-    if custom_title and not str(custom_title).strip().startswith("Tra cứu sản phẩm mã"):
-        return custom_title, record.get("related_doc_url") or f"https://bistextile.com/search?q={urllib.parse.quote(str(custom_title))}"
+    if custom_title and not is_self_referencing_or_generic_doc(custom_title, record):
+        return str(custom_title).strip(), record.get("related_doc_url") or f"https://bistextile.com/search?q={urllib.parse.quote(str(custom_title).strip())}"
 
-    text = f"{record.get('product_name', '')} {record.get('product_name_en', '')} {record.get('description', '')} {record.get('notes', '')}"
-    vendor = record.get("brand") or record.get("vendor") or "AATCC"
-    
-    # 1. Tìm kiếm các mã tiêu chuẩn cụ thể trong văn bản
+    desc = str(record.get("description", ""))
+    notes = str(record.get("notes", ""))
+    text = f"{desc} {notes}"
+    name_vi = str(record.get("product_name", "")).lower()
+
+    # 1. Quét tìm mã tiêu chuẩn cụ thể trong mô tả / ghi chú kỹ thuật
     matches_tm = re.findall(r'\b(AATCC\s+(?:TM|LP|EP|M|Monograph)\s*\d+[\.\d]*)\b', text, re.I)
     matches_iso = re.findall(r'\b(ISO\s+105(?:-[A-Z0-9]+)?)\b', text, re.I)
     matches_astm = re.findall(r'\b(ASTM\s+[D|E|F]\s*\d+)\b', text, re.I)
-    
+
+    candidate = ""
     if matches_tm:
         code = matches_tm[0].upper().strip()
-        return f"Tiêu chuẩn phương pháp thử {code}", f"https://bistextile.com/search?q={urllib.parse.quote(code)}"
-    if matches_iso:
+        candidate = f"Tiêu chuẩn phương pháp thử {code}"
+    elif matches_iso:
         code = matches_iso[0].upper().strip()
-        return f"Tiêu chuẩn quốc tế {code}", f"https://bistextile.com/search?q={urllib.parse.quote(code)}"
-    if matches_astm:
+        candidate = f"Tiêu chuẩn quốc tế {code}"
+    elif matches_astm:
         code = matches_astm[0].upper().strip()
-        return f"Tiêu chuẩn kỹ thuật {code}", f"https://bistextile.com/search?q={urllib.parse.quote(code)}"
-        
-    if "compass" in text.lower():
-        return "Hệ thống cơ sở dữ liệu tiêu chuẩn trực tuyến ASTM Compass®", "https://bistextile.com/search?q=ASTM+Compass"
-        
-    if any(k in text.lower() for k in ["crock", "ma sát", "rubbing"]):
-        return "Tiêu chuẩn phương pháp kiểm tra độ bền màu ma sát AATCC TM8", "https://bistextile.com/search?q=AATCC+TM8"
+        candidate = f"Tiêu chuẩn kỹ thuật {code}"
+    elif any(k in text.lower() for k in ["crock", "ma sát", "rubbing"]) and "crock" not in name_vi:
+        candidate = "Tiêu chuẩn phương pháp kiểm tra độ bền màu ma sát AATCC TM8"
+    elif any(k in text.lower() for k in ["giặt", "washing", "launder"]) and "giặt" not in name_vi and "launder" not in name_vi:
+        candidate = "Tiêu chuẩn phương pháp thử nghiệm độ bền màu giặt AATCC TM61"
+    elif any(k in text.lower() for k in ["len xanh", "blue wool"]) and "len xanh" not in name_vi:
+        candidate = "Tiêu chuẩn độ bền màu với ánh sáng AATCC TM16.3"
 
-    if any(k in text.lower() for k in ["giặt", "washing", "launder"]):
-        return "Tiêu chuẩn phương pháp thử nghiệm độ bền màu giặt AATCC TM61", "https://bistextile.com/search?q=AATCC+TM61"
+    # Kiểm tra tính tự tham chiếu / trùng lặp
+    if candidate and not is_self_referencing_or_generic_doc(candidate, record):
+        return candidate, f"https://bistextile.com/search?q={urllib.parse.quote(candidate)}"
 
-    if any(k in text.lower() for k in ["len xanh", "blue wool", "ánh sáng", "lightfastness"]):
-        return "Tiêu chuẩn độ bền màu với ánh sáng AATCC TM16.3", "https://bistextile.com/search?q=AATCC+TM16"
-
-    if any(k in text.lower() for k in ["sách", "sổ tay", "manual", "quốc tế", "quy trình"]):
-        return f"Sổ tay phương pháp thử nghiệm và Tiêu chuẩn dệt may {vendor}", f"https://bistextile.com/search?q={urllib.parse.quote(vendor)}+Manual"
-        
-    return f"Quy trình và Tiêu chuẩn kiểm nghiệm dệt may quốc tế {vendor}", f"https://bistextile.com/search?q={urllib.parse.quote(vendor)}"
+    # Nếu không có tài liệu liên quan khác biệt: BỎ TRỐNG hoàn toàn
+    return "", ""
 
 
 class AgentTechnical:
@@ -376,6 +419,20 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
         # KHỐI 6 & 7: Phạm vi áp dụng & Tài liệu liên quan tùy biến
         app_scope = record.get("application_scope") or "Phương pháp kiểm nghiệm dệt may quốc tế"
         doc_title, doc_url = resolve_related_standard_doc(record)
+        block_7_html = ""
+        if doc_title and doc_title.strip():
+            block_7_html = f"""  <!-- KHỐI 7: Tài liệu & Tiêu chuẩn liên quan -->
+  <div style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed #cbd5e1;">
+    <div style="font-weight: 800; font-size: 13px; color: #0f172a !important; margin-bottom: 8px;">
+      🔗 Tài liệu & Tiêu chuẩn liên quan:
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <a href="{doc_url}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: space-between; padding: 9px 14px; background: #f8fafc !important; color: #0369a1 !important; border: 1px solid #cbd5e1; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">
+        <span>📄 {doc_title}</span>
+        <span style="font-size: 11px; color: #0284c7; background: #fff; padding: 2px 8px; border-radius: 4px; border: 1px solid #bae6fd;">Mở trang ↗</span>
+      </a>
+    </div>
+  </div>\n"""
 
         html = f"""<div class="bis-product-card bis-product-description" style="background-color: #ffffff !important; color: #1e293b !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; padding: 24px; border-radius: 12px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 100%; box-sizing: border-box;">
 
@@ -428,18 +485,6 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
     </table>
   </div>
 
-  <!-- KHỐI 7: Tài liệu & Tiêu chuẩn liên quan -->
-  <div style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed #cbd5e1;">
-    <div style="font-weight: 800; font-size: 13px; color: #0f172a !important; margin-bottom: 8px;">
-      🔗 Tài liệu & Tiêu chuẩn liên quan:
-    </div>
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-      <a href="{doc_url}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: space-between; padding: 9px 14px; background: #f8fafc !important; color: #0369a1 !important; border: 1px solid #cbd5e1; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">
-        <span>📄 {doc_title}</span>
-        <span style="font-size: 11px; color: #0284c7; background: #fff; padding: 2px 8px; border-radius: 4px; border: 1px solid #bae6fd;">Mở trang ↗</span>
-      </a>
-    </div>
-  </div>
-</div>"""
+{block_7_html}</div>"""
         return html
 

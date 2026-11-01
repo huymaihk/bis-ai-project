@@ -36,6 +36,22 @@ def build_7_block_html(product: dict) -> str:
     origin   = product.get("brand_origin") or "Hoa Kỳ (USA)"
     role     = product.get("publisher_role") or "Nhà xuất bản tiêu chuẩn quốc tế"
 
+    doc_title = product.get("related_doc_title") or ""
+    doc_url   = product.get("related_doc_url") or ""
+    block_7_html = ""
+    if doc_title and doc_title.strip():
+        block_7_html = f"""
+  <!-- KHỐI 7: Tài liệu & Tiêu chuẩn liên quan -->
+  <div style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed #cbd5e1;">
+    <div style="font-weight: bold; font-size: 13px; color: #0f172a; margin-bottom: 8px;">Tài liệu & Tiêu chuẩn liên quan:</div>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <a href="{doc_url}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 500;">
+        <span>📄 {doc_title}</span>
+        <span style="font-size: 11px; color: #0284c7; background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #e0f2fe;">Mở trang ↗</span>
+      </a>
+    </div>
+  </div>"""
+
     # Block 1 & 2: Titles
     html = f"""<div class="bis-product-description" style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #1e293b;">
   <h1 style="font-size: 18px; font-weight: bold; color: #1e293b; margin-bottom: 4px;">{title_vi}</h1>
@@ -69,20 +85,7 @@ def build_7_block_html(product: dict) -> str:
     </table>
   </div>
 
-  <!-- KHỐI 7: Tài liệu & Sản phẩm liên quan (Hiển thị tên đầy đủ, nhấp mở trang thật) -->
-  <div style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed #cbd5e1;">
-    <div style="font-weight: bold; font-size: 13px; color: #0f172a; margin-bottom: 8px;">Tài liệu & Tiêu chuẩn liên quan:</div>
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-      <a href="https://bistextile.com/products/sach-textile-coloration-for-the-retail-supply-chain-09616a" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 500;">
-        <span>📄 Sách nhuộm màu hàng dệt may cho chuỗi cung ứng bán lẻ AATCC 09616A</span>
-        <span style="font-size: 11px; color: #0284c7; background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #e0f2fe;">Mở trang ↗</span>
-      </a>
-      <a href="https://bistextile.com/search?q=AATCC" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 500;">
-        <span>📄 Danh mục đầy đủ tài liệu & vật tư kiểm nghiệm tiêu chuẩn AATCC tại BIS Textile</span>
-        <span style="font-size: 11px; color: #0284c7; background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #e0f2fe;">Mở trang ↗</span>
-      </a>
-    </div>
-  </div>
+{block_7_html}
 </div>"""
     return html
 
