@@ -612,7 +612,8 @@ class AgentMedia:
         pos_x: int,
         pos_y: int,
         shadow_density: float = 0.80,
-        enable_reflection: bool = True
+        enable_reflection: bool = True,
+        sharpness_boost: float = 1.8
     ) -> Image.Image:
         """
         Hệ thống đổ bóng vật lý đa tầng và phản xạ mờ mặt sàn (Physics-based Contact Shadow):
@@ -790,6 +791,56 @@ class AgentMedia:
                     
         return im
 
+    def enhance_sharpness_and_clarity(self, prod_rgba: Image.Image, sharpness_boost: float = 1.8) -> Image.Image:
+        """
+        Bộ lọc AI Super-Resolution & Edge Contrast Unsharp Masking chuyên dụng cho ảnh sản phẩm / sách scan:
+        - Tự động khử nhiễu vi hạt bằng cv2.bilateralFilter giữ nguyên sắc cạnh viền.
+        - Khôi phục độ sắc nét và tương phản cục bộ của chữ (Typography clarity) bằng Unsharp Masking & cv2.detailEnhance.
+        - Giúp văn bản, hoa văn, logo và bìa sách đạt độ nét căng bóng thương mại ngay cả khi nguồn vào là thumbnail độ phân giải thấp (250px).
+        """
+        import cv2
+        import numpy as np
+
+        if sharpness_boost <= 1.0:
+            return ImageEnhance.Sharpness(prod_rgba).enhance(sharpness_boost)
+
+        # Tách kênh màu RGB và Alpha
+        rgba = prod_rgba.convert("RGBA")
+        r, g, b, a = rgba.split()
+        rgb_img = Image.merge("RGB", (r, g, b))
+        
+        # Chuyển đổi sang BGR cho OpenCV
+        bgr = cv2.cvtColor(np.array(rgb_img), cv2.COLOR_RGB2BGR)
+
+        # 1. Khử nhiễu hạt nền nhưng bảo toàn triệt để cạnh sắc
+        denoised = cv2.bilateralFilter(bgr, d=5, sigmaColor=35, sigmaSpace=35)
+
+        # 2. Unsharp Masking tăng cường tần số cao (High-pass boost cho chữ và chi tiết)
+        # Hệ số weight tăng dần theo sharpness_boost (ví dụ boost=1.8 -> weight=2.2)
+        weight = float(np.clip(1.0 + (sharpness_boost - 1.0) * 1.5, 1.2, 2.8))
+        neg_weight = -(weight - 1.0)
+        gaussian = cv2.GaussianBlur(denoised, (0, 0), sigmaX=2.5)
+        unsharp = cv2.addWeighted(denoised, weight, gaussian, neg_weight, 0)
+
+        # 3. Tăng cường chi tiết vi cấu trúc chữ bằng cv2.detailEnhance
+        try:
+            enhanced_cv = cv2.detailEnhance(unsharp, sigma_s=8, sigma_r=0.18)
+        except Exception:
+            enhanced_cv = unsharp
+
+        # Chuyển lại về Pillow RGB
+        rgb_enhanced = cv2.cvtColor(enhanced_cv, cv2.COLOR_BGR2RGB)
+        pil_enhanced = Image.fromarray(rgb_enhanced)
+
+        # 4. Tinh chỉnh nhẹ độ tương phản và độ nét Pillow
+        pil_enhanced = ImageEnhance.Contrast(pil_enhanced).enhance(1.08)
+        pil_enhanced = ImageEnhance.Sharpness(pil_enhanced).enhance(min(2.0, 1.0 + (sharpness_boost - 1.0) * 0.4))
+
+        # Ghép lại với kênh Alpha gốc
+        enhanced_rgba = pil_enhanced.convert("RGBA")
+        enhanced_rgba.putalpha(a)
+        return enhanced_rgba
+
     def render_3d_product_mockup(self, prod_img: Image.Image, target_height: int = 540) -> Image.Image:
         """Tách nền thông minh và tăng cường khối 2.5D cho máy móc thiết bị."""
         prod = prod_img.convert("RGBA")
@@ -895,7 +946,8 @@ class AgentMedia:
                     horizon_y=550,
                     depth_ratio=0.20,
                     shadow_density=0.85,
-                    enable_reflection=True
+                    enable_reflection=True,
+                    sharpness_boost=1.8
                 )
         except Exception as err:
             print(f"⚠️ Lỗi chế độ AI Hybrid Studio: {err}")
@@ -911,7 +963,8 @@ class AgentMedia:
         horizon_y: int = 550,
         depth_ratio: float = 0.20,
         shadow_density: float = 0.80,
-        enable_reflection: bool = True
+        enable_reflection: bool = True,
+        sharpness_boost: float = 1.8
     ) -> Path:
         """
         AI Ghép nền Studio chuẩn thương mại điện tử (chuẩn như catalogue quốc tế):
@@ -965,6 +1018,10 @@ class AgentMedia:
                 target_h = int(prod_rgba.size[1] * (target_w / prod_rgba.size[0]))
             rendered_obj = prod_rgba.resize((target_w, target_h), Image.Resampling.LANCZOS)
 
+        # Tăng cường độ nét AI Super-Resolution & tương phản viền chữ
+        if sharpness_boost > 1.0:
+            rendered_obj = self.enhance_sharpness_and_clarity(rendered_obj, sharpness_boost=sharpness_boost)
+
         obj_w, obj_h = rendered_obj.size
         pos_x = (1024 - obj_w) // 2
         pos_y = ground_baseline - obj_h
@@ -996,6 +1053,7 @@ class AgentMedia:
             "horizon_y": horizon_y,
             "depth_ratio": depth_ratio,
             "shadow_density": shadow_density,
+            "sharpness_boost": sharpness_boost,
             "final_image": str(final_path),
             "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
         }

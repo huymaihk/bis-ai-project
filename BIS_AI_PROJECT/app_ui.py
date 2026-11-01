@@ -2560,6 +2560,7 @@ with tab_media:
                     key=f"depth_{clean_sku}",
                     help="Độ mở góc của mặt sàn trải dài về phía người nhìn (Mặc định: 20%)"
                 )
+                sharpness_boost = st.slider("Độ nét & Làm rõ chữ AI (Sharpness & Text Clarity)", min_value=1.0, max_value=3.0, value=1.8, step=0.1, key=f"sharp_{clean_sku}", help="Khử mờ, tăng độ sắc nét chữ cho ảnh scan bìa sách / ảnh độ phân giải thấp (250px)")
                 enable_refl = st.checkbox(
                     "Hiệu ứng phản xạ mờ mặt sàn (Subtle Floor Reflection)", 
                     value=True,
@@ -2620,7 +2621,8 @@ with tab_media:
                             horizon_y=horizon_y,
                             depth_ratio=depth_ratio_pct / 100.0,
                             shadow_density=shadow_density_pct / 100.0,
-                            enable_reflection=enable_refl
+                            enable_reflection=enable_refl,
+                            sharpness_boost=sharpness_boost
                         )
                         st.success(f"✓ Đã render hoàn tất: {final_path.name}")
                         st.rerun()
