@@ -47,26 +47,55 @@ class AgentMedia:
             json.dump(self.manifest, f, ensure_ascii=False, indent=2)
 
     def _ensure_sample_backgrounds(self):
-        """Create sample studio & lab background mockups if empty."""
-        lab_bg = self.bg_dir / "modern_textile_lab.jpg"
-        studio_bg = self.bg_dir / "clean_studio_gradient.jpg"
-        
-        if not lab_bg.exists():
-            # Tạo nền gradient phòng lab tối giản
-            img = Image.new("RGB", (1000, 1000), "#f1f5f9")
-            draw = ImageDraw.Draw(img)
-            # Tạo hiệu ứng mặt bàn thí nghiệm phẳng
-            draw.rectangle([0, 700, 1000, 1000], fill="#e2e8f0")
-            draw.line([(0, 700), (1000, 700)], fill="#cbd5e1", width=2)
-            img.save(lab_bg, quality=95)
+        """Khởi tạo bộ thư viện 3 phông nền Studio 3D chân thực cao cấp nếu chưa có."""
+        p_podium = self.bg_dir / "luxury_marble_podium.jpg"
+        p_lab = self.bg_dir / "modern_textile_lab.jpg"
+        p_studio = self.bg_dir / "clean_studio_gradient.jpg"
 
-        if not studio_bg.exists():
-            # Tạo nền studio xám nhạt cao cấp
-            img = Image.new("RGB", (1000, 1000), "#ffffff")
-            draw = ImageDraw.Draw(img)
-            draw.rectangle([0, 750, 1000, 1000], fill="#f8fafc")
-            draw.line([(0, 750), (1000, 750)], fill="#e2e8f0", width=1)
-            img.save(studio_bg, quality=95)
+        # 1. Bục đá Marble & Đèn Sân Khấu (luxury_marble_podium.jpg)
+        if not p_podium.exists():
+            img1 = Image.new("RGB", (1000, 1000), "#0b1120")
+            d1 = ImageDraw.Draw(img1)
+            for r in range(500, 0, -15):
+                alpha = int(100 * (1 - r / 500))
+                d1.ellipse([500 - r, 320 - int(r*0.6), 500 + r, 320 + int(r*0.6)], fill=(20 + alpha//2, 30 + alpha//2, 45 + alpha))
+            for y in range(650, 1000):
+                ratio = (y - 650) / 350
+                color = (int(15 + 20 * ratio), int(23 + 25 * ratio), int(42 + 30 * ratio))
+                d1.line([(0, y), (1000, y)], fill=color)
+            d1.rectangle([500 - 320, 720, 500 + 320, 720 + 45], fill=(203, 213, 225))
+            d1.ellipse([500 - 320, 720 - 55, 500 + 320, 720 + 55], fill=(241, 245, 249))
+            d1.ellipse([500 - 315, 720 - 52, 500 + 315, 720 + 52], outline=(255, 255, 255), width=2)
+            d1.ellipse([500 - 320, 720 + 45 - 55, 500 + 320, 720 + 45 + 55], fill=(148, 163, 184))
+            img1 = img1.filter(ImageFilter.GaussianBlur(1))
+            img1.save(p_podium, quality=95)
+
+        # 2. Bàn thí nghiệm Dệt may Công nghệ cao (modern_textile_lab.jpg)
+        if not p_lab.exists() or p_lab.stat().st_size < 19000:
+            img2 = Image.new("RGB", (1000, 1000), "#f8fafc")
+            d2 = ImageDraw.Draw(img2)
+            for y in range(0, 680):
+                val = int(240 - 20 * (y / 680))
+                d2.line([(0, y), (1000, y)], fill=(val - 10, val - 5, val))
+            d2.line([(0, 680), (1000, 680)], fill="#94a3b8", width=2)
+            for y in range(680, 1000):
+                ratio = (y - 680) / 320
+                c_val = int(220 + 25 * ratio)
+                d2.line([(0, y), (1000, y)], fill=(c_val - 5, c_val, c_val + 5))
+            d2.ellipse([150, 685, 850, 720], fill=(255, 255, 255, 120))
+            img2 = img2.filter(ImageFilter.GaussianBlur(1))
+            img2.save(p_lab, quality=95)
+
+        # 3. Studio xám khói tối giản (clean_studio_gradient.jpg)
+        if not p_studio.exists() or p_studio.stat().st_size < 19000:
+            img3 = Image.new("RGB", (1000, 1000), "#ffffff")
+            d3 = ImageDraw.Draw(img3)
+            for y in range(0, 1000):
+                val = int(255 - 45 * (y / 1000))
+                d3.line([(0, y), (1000, y)], fill=(val, val, val + 2))
+            d3.ellipse([150, 700, 850, 780], fill="#f1f5f9", outline="#e2e8f0", width=1)
+            img3 = img3.filter(ImageFilter.GaussianBlur(1))
+            img3.save(p_studio, quality=95)
 
     def extract_images_from_exact_page(self, pdf_path: str | Path, page_num: int, min_width: int = 60, min_height: int = 60) -> list[dict]:
         """
@@ -493,49 +522,162 @@ class AgentMedia:
         """Return list of available background templates."""
         return list(self.bg_dir.glob("*.jpg")) + list(self.bg_dir.glob("*.png"))
 
-    def composite_product_image(self, sku: str, product_img_path: Path, bg_path: Path) -> Path:
+    def _find_perspective_coeffs(self, dst_pts, src_pts):
+        """Tính toán ma trận hệ số biến đổi phối cảnh 3D (Pillow Perspective Transform)."""
+        import numpy as np
+        matrix = []
+        for p1, p2 in zip(dst_pts, src_pts):
+            matrix.append([p1[0], p1[1], 1, 0, 0, 0, -p2[0]*p1[0], -p2[0]*p1[1]])
+            matrix.append([0, 0, 0, p1[0], p1[1], 1, -p2[1]*p1[0], -p2[1]*p1[1]])
+        A = np.matrix(matrix, dtype=float)
+        B = np.array(src_pts).reshape(8)
+        res = np.dot(np.linalg.inv(A.T * A) * A.T, B)
+        return np.array(res).reshape(8)
+
+    def render_3d_book_mockup(self, cover_img: Image.Image, target_height: int = 540) -> Image.Image:
         """
-        Merge product cutout onto chosen background mockup with realistic drop shadow.
-        Output: {sku}_final.jpg
+        Dựng hình Sách & Tài liệu 3D siêu thực:
+        1. Uốn nghiêng bìa trước theo góc phối cảnh 3D (~12 độ)
+        2. Sinh gáy sách cong (3D Curved Spine) với màu đồng bộ và dải sáng Highlight
+        3. Sinh khối trang giấy (Page block edges) bên phải và đáy
+        """
+        import numpy as np
+        orig_w, orig_h = cover_img.size
+        aspect = orig_w / orig_h
+        h = target_height
+        w = max(int(h * aspect), 180)
+        
+        cover = cover_img.convert("RGBA").resize((w, h), Image.Resampling.LANCZOS)
+        cover = ImageEnhance.Sharpness(cover).enhance(1.3)
+
+        spine_w = max(int(w * 0.12), 22)
+        canvas_w = w + spine_w + 60
+        canvas_h = h + 80
+
+        # Tọa độ 4 góc của bìa trước nghiêng 3D
+        p_tl = (spine_w, int(h * 0.05))
+        p_tr = (w + spine_w - 15, int(h * 0.02))
+        p_br = (w + spine_w - 15, int(h * 0.94))
+        p_bl = (spine_w, h)
+
+        coeffs = self._find_perspective_coeffs([p_tl, p_tr, p_br, p_bl], [(0,0), (w,0), (w,h), (0,h)])
+        warped_front = cover.transform((canvas_w, canvas_h), Image.Transform.PERSPECTIVE, coeffs, Image.Resampling.BICUBIC)
+
+        # 2. Tạo gáy sách 3D cong (Spine)
+        spine_img = Image.new("RGBA", (canvas_w, canvas_h), (0,0,0,0))
+        s_draw = ImageDraw.Draw(spine_img)
+        left_sample = cover.crop((0, 0, max(5, int(w*0.08)), h))
+        stat = np.array(left_sample)
+        avg_color = tuple(int(c * 0.75) for c in stat[:, :, :3].mean(axis=(0, 1)))
+
+        p_s_tl = (12, int(h * 0.09))
+        p_s_tr = p_tl
+        p_s_br = p_bl
+        p_s_bl = (12, int(h * 1.04))
+        s_draw.polygon([p_s_tl, p_s_tr, p_s_br, p_s_bl], fill=(*avg_color, 255))
+
+        # Dải sáng Highlight cong dọc gáy sách
+        hl_color = tuple(min(255, int(c * 1.35)) for c in avg_color)
+        s_draw.line([(p_s_tl[0] + 5, p_s_tl[1] + 2), (p_s_bl[0] + 5, p_s_bl[1] - 2)], fill=(*hl_color, 160), width=3)
+
+        # 3. Tạo mép trang giấy (Page block) bên phải
+        page_img = Image.new("RGBA", (canvas_w, canvas_h), (0,0,0,0))
+        pg_draw = ImageDraw.Draw(page_img)
+        p_pg_tr = (p_tr[0] + 16, p_tr[1] + 8)
+        p_pg_br = (p_br[0] + 16, p_br[1] + 6)
+        pg_draw.polygon([p_tr, p_pg_tr, p_pg_br, p_br], fill=(235, 230, 220, 255))
+        for yy in range(p_tr[1] + 10, p_br[1], 4):
+            pg_draw.line([(p_tr[0] + 2, yy), (p_pg_tr[0] - 2, yy + 2)], fill=(180, 175, 165, 180), width=1)
+
+        # Ghép: Trang giấy -> Gáy sách -> Bìa trước
+        book_composed = Image.alpha_composite(page_img, spine_img)
+        book_composed = Image.alpha_composite(book_composed, warped_front)
+
+        bbox = book_composed.getbbox()
+        return book_composed.crop(bbox) if bbox else book_composed
+
+    def render_3d_product_mockup(self, prod_img: Image.Image, target_height: int = 540) -> Image.Image:
+        """Tách nền thông minh và tăng cường khối 2.5D cho máy móc thiết bị."""
+        prod = prod_img.convert("RGBA")
+        datas = prod.getdata()
+        new_data = []
+        for item in datas:
+            if item[0] > 240 and item[1] > 240 and item[2] > 240:
+                new_data.append((255, 255, 255, 0))
+            else:
+                new_data.append(item)
+        prod.putdata(new_data)
+        
+        orig_w, orig_h = prod.size
+        aspect = orig_w / orig_h
+        target_w = int(target_height * aspect)
+        prod = prod.resize((target_w, target_height), Image.Resampling.LANCZOS)
+        prod = ImageEnhance.Sharpness(prod).enhance(1.2)
+        bbox = prod.getbbox()
+        return prod.crop(bbox) if bbox else prod
+
+    def composite_product_image(
+        self, 
+        sku: str, 
+        product_img_path: Path, 
+        bg_path: Path, 
+        render_mode: str = "book_3d"
+    ) -> Path:
+        """
+        AI Ghép nền Studio với hệ thống bóng đổ 3 tầng (Contact Shadow, Cast Shadow, Ambient Shadow):
+        - render_mode == 'book_3d': Dựng sách 3D có gáy sách, độ dày trang và góc nghiêng 3D.
+        - render_mode == 'product_25d': Tách nền và đổ bóng tiếp xúc cho máy móc/thiết bị.
+        - render_mode == 'flat_2d': Giữ nguyên ảnh phẳng 2D.
         """
         clean_sku = sku.strip().replace(" ", "_")
         final_path = self.final_dir / f"{clean_sku}_final.jpg"
 
         bg_img = Image.open(bg_path).convert("RGBA").resize((1000, 1000), Image.Resampling.LANCZOS)
-        prod_img = Image.open(product_img_path).convert("RGBA")
+        raw_prod = Image.open(product_img_path)
 
-        # Tự động loại bỏ nền trắng đơn sắc nếu ảnh chưa có alpha kênh trong suốt
-        datas = prod_img.getdata()
-        new_data = []
-        for item in datas:
-            # Ngưỡng màu trắng gần tuyệt đối (RGB > 240)
-            if item[0] > 240 and item[1] > 240 and item[2] > 240:
-                new_data.append((255, 255, 255, 0))
-            else:
-                new_data.append(item)
-        prod_img.putdata(new_data)
+        # 1. Dựng vật thể theo chế độ đã chọn
+        if render_mode == "book_3d":
+            rendered_obj = self.render_3d_book_mockup(raw_prod, target_height=490)
+        elif render_mode == "product_25d":
+            rendered_obj = self.render_3d_product_mockup(raw_prod, target_height=520)
+        else:
+            rendered_obj = raw_prod.convert("RGBA")
+            rendered_obj.thumbnail((650, 650), Image.Resampling.LANCZOS)
 
-        # Scale sản phẩm vừa vặn 65% khung hình
-        max_size = 650
-        prod_img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
+        obj_w, obj_h = rendered_obj.size
+        # Đặt vật thể đứng trên mặt bàn / bục podium (chân chạm tại y = 690)
+        pos_x = (1000 - obj_w) // 2
+        pos_y = 690 - obj_h
 
-        # Tạo bóng đổ chân thực (Drop shadow) dưới chân sản phẩm
-        shadow = Image.new("RGBA", (1000, 1000), (0, 0, 0, 0))
-        prod_w, prod_h = prod_img.size
-        pos_x = (1000 - prod_w) // 2
-        pos_y = 680 - prod_h  # Đặt sản phẩm đứng trên mặt bàn
+        # 2. Tạo hệ thống bóng đổ 3 tầng siêu thực (3-Tier Photorealistic Shadow)
+        # Tầng 1: Contact Shadow (Bóng tiếp xúc tối sát đáy, dẹp sát chân vật thể)
+        contact_shadow = Image.new("RGBA", (1000, 1000), (0, 0, 0, 0))
+        cs_draw = ImageDraw.Draw(contact_shadow)
+        cs_box = [pos_x + 10, 685, pos_x + obj_w - 10, 702]
+        cs_draw.ellipse(cs_box, fill=(10, 15, 25, 240))
+        contact_shadow = contact_shadow.filter(ImageFilter.GaussianBlur(3))
 
-        # Vẽ bóng elip mềm
-        shadow_draw = ImageDraw.Draw(shadow)
-        shadow_box = [pos_x + 20, 675, pos_x + prod_w - 20, 715]
-        shadow_draw.ellipse(shadow_box, fill=(30, 41, 59, 130))
-        shadow = shadow.filter(ImageFilter.GaussianBlur(14))
+        # Tầng 2: Cast Shadow (Bóng đổ lan tỏa theo hướng ánh sáng)
+        cast_shadow = Image.new("RGBA", (1000, 1000), (0, 0, 0, 0))
+        cast_draw = ImageDraw.Draw(cast_shadow)
+        cast_box = [pos_x - 10, 678, pos_x + obj_w + 50, 725]
+        cast_draw.ellipse(cast_box, fill=(20, 30, 45, 140))
+        cast_shadow = cast_shadow.filter(ImageFilter.GaussianBlur(14))
 
-        # Ghép: Nền -> Bóng đổ -> Sản phẩm
-        composed = Image.alpha_composite(bg_img, shadow)
-        composed.paste(prod_img, (pos_x, pos_y), prod_img)
+        # Tầng 3: Ambient Shadow (Bóng mờ khuếch tán diện rộng)
+        amb_shadow = Image.new("RGBA", (1000, 1000), (0, 0, 0, 0))
+        amb_draw = ImageDraw.Draw(amb_shadow)
+        amb_box = [pos_x - 40, 670, pos_x + obj_w + 80, 745]
+        amb_draw.ellipse(amb_box, fill=(30, 45, 65, 80))
+        amb_shadow = amb_shadow.filter(ImageFilter.GaussianBlur(25))
 
-        # Tinh chỉnh màu sắc & độ sắc nét (Photorealistic enhance)
+        # 3. Ghép các tầng: Nền -> Ambient -> Cast -> Contact -> Sản phẩm
+        composed = Image.alpha_composite(bg_img, amb_shadow)
+        composed = Image.alpha_composite(composed, cast_shadow)
+        composed = Image.alpha_composite(composed, contact_shadow)
+        composed.paste(rendered_obj, (pos_x, pos_y), rendered_obj)
+
+        # 4. Tinh chỉnh màu sắc và độ sắc nét hoàn thiện
         enhancer = ImageEnhance.Sharpness(composed.convert("RGB"))
         final_img = enhancer.enhance(1.15)
         color_enhancer = ImageEnhance.Color(final_img)
@@ -547,6 +689,24 @@ class AgentMedia:
         self.manifest[clean_sku] = {
             "sku": clean_sku,
             "status": "PENDING_REVIEW",
+            "render_mode": render_mode,
+            "background": bg_path.name,
+            "final_image": str(final_path),
+            "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
+        }
+        self._save_manifest()
+        return final_path
+
+    def register_final_composite(self, sku: str, image_bytes: bytes) -> Path:
+        """Lưu trực tiếp ảnh mockup thành phẩm từ Canva/Photoroom và đưa vào cổng duyệt."""
+        clean_sku = sku.strip().replace(" ", "_")
+        final_path = self.final_dir / f"{clean_sku}_final.jpg"
+        with open(final_path, "wb") as f:
+            f.write(image_bytes)
+        self.manifest[clean_sku] = {
+            "sku": clean_sku,
+            "status": "APPROVED",
+            "source": "EXTERNAL_MOCKUP (Canva/Photoroom)",
             "final_image": str(final_path),
             "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
         }
