@@ -12,6 +12,8 @@ import json
 import time
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+import cv2
+import numpy as np
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps, ImageDraw
 
 class AgentMedia:
@@ -522,6 +524,165 @@ class AgentMedia:
         """Return list of available background templates."""
         return list(self.bg_dir.glob("*.jpg")) + list(self.bg_dir.glob("*.png"))
 
+    def create_3d_branded_backdrop(
+        self, 
+        pattern_img_path: Path | str, 
+        canvas_w: int = 1000, 
+        canvas_h: int = 1000, 
+        horizon_y: int = 550, 
+        depth_ratio: float = 0.20
+    ) -> Image.Image:
+        """
+        Dựng phông nền 3D Tường - Sàn không gian thương hiệu từ phôi hoa văn lặp logo (OpenCV Perspective Warp):
+        - Phần tường đứng (y: 0 -> horizon_y): Giữ nguyên tỷ lệ 2D phẳng.
+        - Phần mặt sàn (y: horizon_y -> canvas_h): Dùng cv2.getPerspectiveTransform và cv2.warpPerspective
+          với cạnh trên thu hẹp depth_ratio (15%-35%) và cạnh đáy mở rộng 0%-100% tạo cảm giác sàn trải dài có chiều sâu.
+        - Tạo đường viền giao thoa giữa chân tường và mặt sàn với dải gradient bóng đổ mềm.
+        """
+        import cv2
+        import numpy as np
+        
+        p = Path(pattern_img_path)
+        if not p.exists():
+            for pos in [
+                self.bg_dir / "BIS_BACKGROUND.png",
+                self.user_dir / "BIS_BACKGROUND.png",
+                self.workspace_dir / "Google_Drive_Storage" / "4_Product_Images" / "BIS_BACKGROUND.png"
+            ]:
+                if pos.exists():
+                    p = pos
+                    break
+        
+        pat = Image.open(p).convert("RGB") if p.exists() else Image.new("RGB", (canvas_w, canvas_h), "#ffffff")
+        
+        wall_h = max(20, min(canvas_h - 20, horizon_y))
+        floor_h = canvas_h - wall_h
+        
+        # 1. Phần tường đứng (Wall 2D phẳng)
+        wall_img = pat.resize((canvas_w, wall_h), Image.Resampling.LANCZOS)
+        
+        # 2. Phần mặt sàn (Floor 3D Perspective Warp)
+        floor_raw = pat.resize((canvas_w, floor_h), Image.Resampling.LANCZOS)
+        floor_np = np.array(floor_raw)
+        
+        src_pts = np.float32([
+            [0, 0],
+            [canvas_w, 0],
+            [canvas_w, floor_h],
+            [0, floor_h]
+        ])
+        
+        shrink_px = int(canvas_w * float(depth_ratio))
+        dst_pts = np.float32([
+            [shrink_px, 0],
+            [canvas_w - shrink_px, 0],
+            [canvas_w, floor_h],
+            [0, floor_h]
+        ])
+        
+        M = cv2.getPerspectiveTransform(src_pts, dst_pts)
+        warped_floor_np = cv2.warpPerspective(
+            floor_np, M, (canvas_w, floor_h), 
+            borderMode=cv2.BORDER_REPLICATE
+        )
+        warped_floor = Image.fromarray(warped_floor_np)
+        
+        # 3. Ghép Tường và Sàn
+        backdrop = Image.new("RGB", (canvas_w, canvas_h))
+        backdrop.paste(wall_img, (0, 0))
+        backdrop.paste(warped_floor, (0, wall_h))
+        
+        # 4. Tạo đường viền giao thoa chân tường - mặt sàn (Crease gradient shadow)
+        crease = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+        c_draw = ImageDraw.Draw(crease)
+        for i in range(16):
+            alpha = int(90 * (1.0 - i / 16.0))
+            c_draw.line([(0, wall_h + i), (canvas_w, wall_h + i)], fill=(0, 0, 0, alpha))
+        for i in range(8):
+            alpha = int(55 * (1.0 - i / 8.0))
+            c_draw.line([(0, wall_h - i), (canvas_w, wall_h - i)], fill=(0, 0, 0, alpha))
+            
+        backdrop_rgba = backdrop.convert("RGBA")
+        return Image.alpha_composite(backdrop_rgba, crease)
+
+    def apply_realistic_contact_shadow(
+        self,
+        backdrop: Image.Image,
+        prod_rgba: Image.Image,
+        pos_x: int,
+        pos_y: int,
+        shadow_density: float = 0.80,
+        enable_reflection: bool = True
+    ) -> Image.Image:
+        """
+        Hệ thống đổ bóng vật lý đa tầng và phản xạ mờ mặt sàn (Physics-based Contact Shadow):
+        - Lớp 1 (Ambient Occlusion): Bóng tiếp xúc đáy chân đế cực đậm và dẹp (opacity ~75-80%).
+        - Lớp 2 (Soft Drop Shadow): Bóng tỏa mềm làm mờ Gaussian (radius=12-16, opacity ~35%).
+        - Phản xạ mờ (Subtle Mirror/Reflection): Lật 18-22% đáy sản phẩm với mặt nạ gradient 10-15% tạo hiệu ứng sàn mica/gạch bóng.
+        """
+        import numpy as np
+        canvas_w, canvas_h = backdrop.size
+        prod_w, prod_h = prod_rgba.size
+        ground_y = pos_y + prod_h
+        
+        comp = backdrop.copy().convert("RGBA")
+        
+        # 1. Subtle Mirror Reflection (Phản xạ mờ mặt sàn)
+        if enable_reflection:
+            refl_h = max(int(prod_h * 0.20), 10)
+            bottom_part = prod_rgba.crop((0, prod_h - refl_h, prod_w, prod_h))
+            flipped = bottom_part.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+            
+            grad_mask = Image.new("L", (prod_w, refl_h), 0)
+            g_draw = ImageDraw.Draw(grad_mask)
+            for y in range(refl_h):
+                val = int(38 * (1.0 - y / refl_h))
+                g_draw.line([(0, y), (prod_w, y)], fill=val)
+                
+            f_r, f_g, f_b, f_a = flipped.split()
+            comb_a = Image.fromarray((np.array(f_a).astype(float) * np.array(grad_mask).astype(float) / 255.0).astype(np.uint8))
+            flipped.putalpha(comb_a)
+            flipped = flipped.filter(ImageFilter.GaussianBlur(1.5))
+            
+            refl_layer = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+            refl_layer.paste(flipped, (pos_x, ground_y))
+            comp = Image.alpha_composite(comp, refl_layer)
+        
+        # 2. Lớp 2 - Soft Drop Shadow (Bóng tỏa mềm)
+        soft_shadow = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+        s_draw = ImageDraw.Draw(soft_shadow)
+        soft_opacity = int(75 * float(shadow_density))
+        soft_w_expand = int(prod_w * 0.14)
+        soft_h = max(int(prod_h * 0.08), 22)
+        soft_box = [
+            pos_x - soft_w_expand,
+            ground_y - int(soft_h * 0.25),
+            pos_x + prod_w + soft_w_expand,
+            ground_y + int(soft_h * 1.15)
+        ]
+        s_draw.ellipse(soft_box, fill=(15, 20, 30, soft_opacity))
+        soft_shadow = soft_shadow.filter(ImageFilter.GaussianBlur(14))
+        comp = Image.alpha_composite(comp, soft_shadow)
+        
+        # 3. Lớp 1 - Ambient Occlusion (Bóng tiếp xúc chân đế cực đậm và dẹp)
+        ao_shadow = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+        ao_draw = ImageDraw.Draw(ao_shadow)
+        ao_opacity = int(215 * float(shadow_density))
+        ao_h = max(int(prod_h * 0.026), 7)
+        ao_box = [
+            pos_x + int(prod_w * 0.04),
+            ground_y - int(ao_h * 0.6),
+            pos_x + prod_w - int(prod_w * 0.04),
+            ground_y + int(ao_h * 0.75)
+        ]
+        ao_draw.ellipse(ao_box, fill=(10, 15, 25, ao_opacity))
+        ao_shadow = ao_shadow.filter(ImageFilter.GaussianBlur(3))
+        comp = Image.alpha_composite(comp, ao_shadow)
+        
+        # 4. Ghép sản phẩm lên trên cùng
+        comp.paste(prod_rgba, (pos_x, pos_y), prod_rgba)
+        return comp
+
     def _find_perspective_coeffs(self, dst_pts, src_pts):
         """Tính toán ma trận hệ số biến đổi phối cảnh 3D (Pillow Perspective Transform)."""
         import numpy as np
@@ -620,64 +781,100 @@ class AgentMedia:
         self, 
         sku: str, 
         product_img_path: Path, 
-        bg_path: Path, 
-        render_mode: str = "book_3d"
+        bg_path: Optional[Path] = None, 
+        render_mode: str = "branded_3d",
+        horizon_y: int = 550,
+        depth_ratio: float = 0.20,
+        shadow_density: float = 0.80,
+        enable_reflection: bool = True
     ) -> Path:
         """
-        AI Ghép nền Studio với hệ thống bóng đổ 3 tầng (Contact Shadow, Cast Shadow, Ambient Shadow):
-        - render_mode == 'book_3d': Dựng sách 3D có gáy sách, độ dày trang và góc nghiêng 3D.
-        - render_mode == 'product_25d': Tách nền và đổ bóng tiếp xúc cho máy móc/thiết bị.
+        AI Ghép nền Studio với không gian phối cảnh 3D và bóng đổ vật lý:
+        - render_mode == 'branded_3d': Dựng phối cảnh Tường - Sàn thương hiệu từ hoa văn logo, bóng đổ tiếp xúc 2 lớp + phản xạ sàn.
+        - render_mode == 'book_3d': Dựng sách 3D có gáy sách cong, mép trang giấy và góc nghiêng 3D.
+        - render_mode == 'product_25d': Tách nền thông minh và đổ bóng tiếp xúc vật lý.
         - render_mode == 'flat_2d': Giữ nguyên ảnh phẳng 2D.
         """
         clean_sku = sku.strip().replace(" ", "_")
         final_path = self.final_dir / f"{clean_sku}_final.jpg"
 
-        bg_img = Image.open(bg_path).convert("RGBA").resize((1000, 1000), Image.Resampling.LANCZOS)
-        raw_prod = Image.open(product_img_path)
+        # 1. Chuẩn bị ảnh phông nền
+        if bg_path is None or not Path(bg_path).exists():
+            bg_list = self.get_backgrounds()
+            bg_path = bg_list[0] if bg_list else (self.bg_dir / "BIS_BACKGROUND.png")
+            
+        bg_path = Path(bg_path)
+        is_pattern_bg = "BIS_BACKGROUND" in bg_path.name or "pattern" in bg_path.name.lower() or render_mode == "branded_3d"
 
-        # 1. Dựng vật thể theo chế độ đã chọn
-        if render_mode == "book_3d":
-            rendered_obj = self.render_3d_book_mockup(raw_prod, target_height=490)
-        elif render_mode == "product_25d":
-            rendered_obj = self.render_3d_product_mockup(raw_prod, target_height=520)
+        if is_pattern_bg or render_mode == "branded_3d":
+            # Tạo phông nền 3D Tường - Sàn có phối cảnh hoa văn logo
+            bg_img = self.create_3d_branded_backdrop(
+                pattern_img_path=bg_path,
+                canvas_w=1000,
+                canvas_h=1000,
+                horizon_y=horizon_y,
+                depth_ratio=depth_ratio
+            )
         else:
-            rendered_obj = raw_prod.convert("RGBA")
-            rendered_obj.thumbnail((650, 650), Image.Resampling.LANCZOS)
+            bg_img = Image.open(bg_path).convert("RGBA").resize((1000, 1000), Image.Resampling.LANCZOS)
+
+        # 2. Xử lý ảnh sản phẩm và tách nền trắng/xám đơn sắc
+        raw_prod = Image.open(product_img_path)
+        prod_rgba = raw_prod.convert("RGBA")
+        
+        # Tự động loại bỏ nền trắng nếu ảnh chưa có kênh trong suốt
+        import numpy as np
+        arr = np.array(prod_rgba, dtype=np.uint8)
+        if (arr[:, :, 3] < 250).sum() < 100:
+            # Ảnh dạng nền trắng đục -> Tách nền thông minh
+            r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
+            mask_white = (r > 235) & (g > 235) & (b > 235)
+            arr[:, :, 3][mask_white] = 0
+            prod_rgba = Image.fromarray(arr, mode="RGBA")
+            bbox = prod_rgba.getbbox()
+            if bbox:
+                prod_rgba = prod_rgba.crop(bbox)
+
+        # 3. Dựng khối theo chế độ
+        if render_mode == "book_3d":
+            rendered_obj = self.render_3d_book_mockup(prod_rgba, target_height=490)
+        elif render_mode == "product_25d":
+            rendered_obj = self.render_3d_product_mockup(prod_rgba, target_height=520)
+        else:
+            rendered_obj = prod_rgba
+            # Co giãn vừa vặn 65-70% khung hình
+            rendered_obj.thumbnail((680, 680), Image.Resampling.LANCZOS)
 
         obj_w, obj_h = rendered_obj.size
-        # Đặt vật thể đứng trên mặt bàn / bục podium (chân chạm tại y = 690)
         pos_x = (1000 - obj_w) // 2
-        pos_y = 690 - obj_h
+        
+        # Định vị sản phẩm đứng chính xác trên mặt sàn phối cảnh
+        if is_pattern_bg or render_mode == "branded_3d":
+            ground_baseline = min(960, horizon_y + int((1000 - horizon_y) * 0.72))
+            pos_y = ground_baseline - obj_h
+            if pos_y < 80:
+                # Nếu sản phẩm quá cao, điều chỉnh tỉ lệ
+                scale = (ground_baseline - 80) / obj_h
+                new_w = max(50, int(obj_w * scale))
+                new_h = max(50, int(obj_h * scale))
+                rendered_obj = rendered_obj.resize((new_w, new_h), Image.Resampling.LANCZOS)
+                obj_w, obj_h = rendered_obj.size
+                pos_x = (1000 - obj_w) // 2
+                pos_y = ground_baseline - obj_h
+        else:
+            pos_y = 690 - obj_h
 
-        # 2. Tạo hệ thống bóng đổ 3 tầng siêu thực (3-Tier Photorealistic Shadow)
-        # Tầng 1: Contact Shadow (Bóng tiếp xúc tối sát đáy, dẹp sát chân vật thể)
-        contact_shadow = Image.new("RGBA", (1000, 1000), (0, 0, 0, 0))
-        cs_draw = ImageDraw.Draw(contact_shadow)
-        cs_box = [pos_x + 10, 685, pos_x + obj_w - 10, 702]
-        cs_draw.ellipse(cs_box, fill=(10, 15, 25, 240))
-        contact_shadow = contact_shadow.filter(ImageFilter.GaussianBlur(3))
+        # 4. Áp dụng hệ thống đổ bóng vật lý 2 lớp chân thực
+        composed = self.apply_realistic_contact_shadow(
+            backdrop=bg_img,
+            prod_rgba=rendered_obj,
+            pos_x=pos_x,
+            pos_y=pos_y,
+            shadow_density=shadow_density,
+            enable_reflection=enable_reflection
+        )
 
-        # Tầng 2: Cast Shadow (Bóng đổ lan tỏa theo hướng ánh sáng)
-        cast_shadow = Image.new("RGBA", (1000, 1000), (0, 0, 0, 0))
-        cast_draw = ImageDraw.Draw(cast_shadow)
-        cast_box = [pos_x - 10, 678, pos_x + obj_w + 50, 725]
-        cast_draw.ellipse(cast_box, fill=(20, 30, 45, 140))
-        cast_shadow = cast_shadow.filter(ImageFilter.GaussianBlur(14))
-
-        # Tầng 3: Ambient Shadow (Bóng mờ khuếch tán diện rộng)
-        amb_shadow = Image.new("RGBA", (1000, 1000), (0, 0, 0, 0))
-        amb_draw = ImageDraw.Draw(amb_shadow)
-        amb_box = [pos_x - 40, 670, pos_x + obj_w + 80, 745]
-        amb_draw.ellipse(amb_box, fill=(30, 45, 65, 80))
-        amb_shadow = amb_shadow.filter(ImageFilter.GaussianBlur(25))
-
-        # 3. Ghép các tầng: Nền -> Ambient -> Cast -> Contact -> Sản phẩm
-        composed = Image.alpha_composite(bg_img, amb_shadow)
-        composed = Image.alpha_composite(composed, cast_shadow)
-        composed = Image.alpha_composite(composed, contact_shadow)
-        composed.paste(rendered_obj, (pos_x, pos_y), rendered_obj)
-
-        # 4. Tinh chỉnh màu sắc và độ sắc nét hoàn thiện
+        # 5. Tinh chỉnh màu sắc và độ sắc nét hoàn thiện
         enhancer = ImageEnhance.Sharpness(composed.convert("RGB"))
         final_img = enhancer.enhance(1.15)
         color_enhancer = ImageEnhance.Color(final_img)
@@ -691,6 +888,9 @@ class AgentMedia:
             "status": "PENDING_REVIEW",
             "render_mode": render_mode,
             "background": bg_path.name,
+            "horizon_y": horizon_y,
+            "depth_ratio": depth_ratio,
+            "shadow_density": shadow_density,
             "final_image": str(final_path),
             "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
         }

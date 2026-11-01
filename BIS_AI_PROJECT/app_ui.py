@@ -2421,18 +2421,17 @@ with tab_media:
         p_media = next((item for item in products if item.get("sku") == sku_media), products[0])
         clean_sku = sku_media.strip().replace(" ", "_")
 
-        col_m1, col_m2 = st.columns([5, 7])
+        col_m1, col_m2 = st.columns([1, 1], gap="large")
 
+        # ── CỘT TRÁI: ẢNH NGUỒN & BẢNG ĐIỀU KHIỂN PHỐI CẢNH STUDIO 3D ──────────
         with col_m1:
-            st.markdown("#### 1. Nguồn Ảnh Sản Phẩm (Google Drive)")
-            st.info(f"📁 **Thư mục lưu ảnh trên Google Drive:** `Google_Drive_Storage/4_Product_Images/`\n\n💡 **Quy tắc đặt tên file:** Bạn chỉ cần đặt tên file ảnh trùng với mã SKU (Ví dụ: `{clean_sku}.jpg`, `{clean_sku}.png`, `{clean_sku}_brand_1.jpg` hoặc `{clean_sku}_user_1.jpg`). Hệ thống tự động quét và nhận diện ngay lập tức.")
-
+            st.markdown("#### 1. Nguồn Ảnh Sản Phẩm (Google Drive / Upload)")
+            
             # Quét tìm ảnh theo mã SKU trong Google Drive
             chosen_source_img = None
             if media_agent and hasattr(media_agent, "get_product_image_for_sku"):
                 chosen_source_img = media_agent.get_product_image_for_sku(clean_sku)
             else:
-                # Quét trực tiếp thư mục Drive nếu media_agent chưa nạp phương thức
                 clean_sku_lower = clean_sku.lower()
                 search_dir = PROJECT_DIR / "Google_Drive_Storage" / "4_Product_Images"
                 if search_dir.exists():
@@ -2447,148 +2446,159 @@ with tab_media:
                                 chosen_source_img = f
                                 break
 
-            if chosen_source_img and chosen_source_img.exists():
-                st.success(f"✅ **Đã nhận diện file ảnh trên Google Drive:** `{chosen_source_img.name}` ({chosen_source_img.stat().st_size // 1024} KB)")
-                st.image(str(chosen_source_img), width=280)
-            else:
-                st.warning(f"⚠️ **Chưa tìm thấy ảnh cho mã `{clean_sku}` trong Google Drive.**\n\nHãy thả file ảnh `{clean_sku}.jpg` (hoặc `.png`) vào thư mục `Google_Drive_Storage/4_Product_Images/`, hoặc tải trực tiếp vào ô bên dưới.")
+            c_src_info, c_src_thumb = st.columns([7, 3])
+            with c_src_info:
+                if chosen_source_img and chosen_source_img.exists():
+                    st.success(f"✅ **Đã nhận diện:** `{chosen_source_img.name}` ({chosen_source_img.stat().st_size // 1024} KB)")
+                else:
+                    st.warning(f"⚠️ Chưa có ảnh cho `{clean_sku}` trong Drive. Hãy kéo thả ảnh vào ô bên dưới.")
+                
+                uploaded_user_img = st.file_uploader(
+                    f"Tải/kéo thả ảnh cho mã {clean_sku}:", 
+                    type=["jpg", "png", "jpeg", "webp"], 
+                    key=f"up_{clean_sku}"
+                )
+                if uploaded_user_img:
+                    saved_path = media_agent.register_user_image(clean_sku, uploaded_user_img.getvalue(), uploaded_user_img.name)
+                    st.toast(f"✓ Đã lưu ảnh `{saved_path.name}` vào Drive!", icon="📁")
+                    st.rerun()
 
-            # Hỗ trợ tải file trực tiếp lưu vào Drive theo đúng mã SKU
-            st.markdown("##### 📤 Tải ảnh trực tiếp lên Google Drive:")
-            uploaded_user_img = st.file_uploader(
-                f"Kéo thả hoặc tải ảnh cho mã {clean_sku} (Tự động đổi tên và lưu vào Drive dạng {clean_sku}.jpg):", 
-                type=["jpg", "png", "jpeg", "webp"], 
-                key=f"up_{clean_sku}"
-            )
-            if uploaded_user_img:
-                saved_path = media_agent.register_user_image(clean_sku, uploaded_user_img.getvalue(), uploaded_user_img.name)
-                st.toast(f"✓ Đã lưu ảnh `{saved_path.name}` vào Google Drive!", icon="📁")
-                st.rerun()
+            with c_src_thumb:
+                if chosen_source_img and chosen_source_img.exists():
+                    st.image(str(chosen_source_img), width=130, caption="Ảnh nguồn")
 
-            # ══════════════════════════════════════════════════════════════════════
-            # TÍCH HỢP 3 HƯỚNG TẠO ẢNH CHÂN THỰC CHUYÊN NGHIỆP
-            # ══════════════════════════════════════════════════════════════════════
-            st.markdown("#### 2. Tùy Chọn 3 Giải Pháp Tạo Ảnh Chân Thực")
+            # ── BẢNG ĐIỀU KHIỂN PHỐI CẢNH STUDIO 3D (3D BRANDED BACKDROP CONTROLS) ──
+            st.markdown("---")
+            st.markdown("#### 2. Bảng Điều Khiển Phối Cảnh Studio 3D")
             
-            tab_h3, tab_h2, tab_h1 = st.tabs([
-                "🚀 Hướng 3: AI Dựng Khối 3D Tự Động",
-                "🏛️ Hướng 2: Bối Cảnh Studio 3D",
-                "🎨 Hướng 1: Canva & Photoroom Pro"
-            ])
-
-            # Lấy danh sách ảnh nền có sẵn
+            # 1. Chọn phôi hoa văn thương hiệu
             available_bgs = media_agent.get_backgrounds() if hasattr(media_agent, "get_backgrounds") else []
             bg_names = [bg.name for bg in available_bgs]
             default_bg_idx = 0
             for idx, bname in enumerate(bg_names):
-                if "luxury_marble_podium" in bname:
+                if "BIS_BACKGROUND" in bname:
                     default_bg_idx = idx
                     break
 
-            with tab_h3:
-                st.markdown("""
-                <div style='background: #0f172a; border-left: 3px solid #38bdf8; padding: 10px 14px; border-radius: 4px; margin-bottom: 12px; font-size: 12px;'>
-                  <strong>Thuật toán phối cảnh 3D tích hợp nội bộ:</strong> Tự động uốn nghiêng góc nhìn tự nhiên, sinh gáy sách 3D cong, tạo mép trang giấy và hệ thống bóng đổ 3 tầng (Contact Shadow, Cast Shadow, Ambient Shadow) dính chặt mặt bàn.
-                </div>
-                """, unsafe_allow_html=True)
-
-                render_style = st.radio(
-                    "Chọn kiểu dựng khối cho sản phẩm:",
-                    [
-                        "📘 Sách / Tài liệu tiêu chuẩn 3D (Tạo gáy cong, độ dày & nghiêng 3D)",
-                        "🔬 Máy móc / Thiết bị đo 3D (Tách nền thông minh, tăng nét & bóng tiếp xúc)",
-                        "🖼️ Giữ nguyên phẳng 2D (Nguyên bản)"
-                    ],
-                    index=0,
-                    key=f"render_style_{clean_sku}"
-                )
-                
-                selected_bg_name_h3 = st.selectbox(
-                    "Không gian nền Studio/Lab:",
+            c_bg_sel, c_bg_up = st.columns([7, 5])
+            with c_bg_sel:
+                selected_bg_name = st.selectbox(
+                    "Phôi hoa văn thương hiệu (Brand Backdrop Pattern):",
                     bg_names,
                     index=default_bg_idx if bg_names else 0,
-                    key=f"bg_select_h3_{clean_sku}"
+                    key=f"bg_select_{clean_sku}",
+                    help="Chọn phôi hoa văn logo lặp. Thuật toán sẽ tự động phân chia phần tường đứng 2D và sàn phối cảnh 3D mở rộng."
                 )
-                selected_bg_path = next((bg for bg in available_bgs if bg.name == selected_bg_name_h3), available_bgs[0] if available_bgs else None)
-
-                # Nút thực hiện dựng hình 3D
-                mode_map = {
-                    "📘 Sách / Tài liệu tiêu chuẩn 3D (Tạo gáy cong, độ dày & nghiêng 3D)": "book_3d",
-                    "🔬 Máy móc / Thiết bị đo 3D (Tách nền thông minh, tăng nét & bóng tiếp xúc)": "product_25d",
-                    "🖼️ Giữ nguyên phẳng 2D (Nguyên bản)": "flat_2d"
-                }
-                chosen_mode = mode_map.get(render_style, "book_3d")
-
-                if st.button(f"🚀 AI DỰNG HÌNH 3D & GHÉP BỐI CẢNH CHO {clean_sku}", type="primary", use_container_width=True, key=f"btn_run_3d_{clean_sku}"):
-                    if not chosen_source_img or not chosen_source_img.exists():
-                        st.error(f"❌ Chưa có ảnh nguồn cho mã `{clean_sku}`! Vui lòng tải file vào ô trên.")
-                    else:
-                        with st.spinner("AI đang dựng hình phối cảnh 3D, tạo gáy sách, đổ bóng tiếp xúc 3 tầng và hòa nhập ánh sáng Studio..."):
-                            import inspect
-                            try:
-                                sig = inspect.signature(media_agent.composite_product_image)
-                                if "render_mode" not in sig.parameters:
-                                    import importlib, agent_media
-                                    importlib.reload(agent_media)
-                                    media_agent = agent_media.AgentMedia(PROJECT_DIR)
-                                    if leader:
-                                        leader.media_agent = media_agent
-                                final_path = media_agent.composite_product_image(
-                                    clean_sku, 
-                                    chosen_source_img, 
-                                    selected_bg_path, 
-                                    render_mode=chosen_mode
-                                )
-                            except Exception:
-                                import importlib, agent_media
-                                importlib.reload(agent_media)
-                                media_agent = agent_media.AgentMedia(PROJECT_DIR)
-                                if leader:
-                                    leader.media_agent = media_agent
-                                final_path = media_agent.composite_product_image(
-                                    clean_sku, 
-                                    chosen_source_img, 
-                                    selected_bg_path, 
-                                    render_mode=chosen_mode
-                                )
-                            st.success(f"✓ Đã dựng thành phẩm 3D: {final_path.name}")
-                            st.rerun()
-
-            with tab_h2:
-                st.markdown("""
-                <div style='background: #0f172a; border-left: 3px solid #10b981; padding: 10px 14px; border-radius: 4px; margin-bottom: 12px; font-size: 12px;'>
-                  <strong>Thư viện bối cảnh Studio & Lab 3D:</strong> Sử dụng bối cảnh có chiều sâu trường ảnh thực tế (Podium đá cẩm thạch, bàn phòng thí nghiệm hiện đại có phản chiếu đèn, sân khấu tối giản).
-                </div>
-                """, unsafe_allow_html=True)
-                
-                st.info("""💡 **Gợi ý lựa chọn bối cảnh:**
-- `luxury_marble_podium.jpg`: Đẹp nhất cho Sách tiêu chuẩn, Sổ tay AATCC/ISO & Thiết bị đo cao cấp.
-- `modern_textile_lab.jpg`: Chuẩn nhất cho Tủ sấy, Máy thử độ bền, Thiết bị đo độ co dãn.
-- `clean_studio_gradient.jpg`: Phong cách chụp Catalogue thương mại quốc tế.""")
-
-                new_bg_file = st.file_uploader("Tải thêm ảnh phông nền riêng (Lưu tại 5_Studio_Backgrounds):", type=["jpg", "png"], key="new_bg_uploader")
-                if new_bg_file:
-                    media_agent.register_background(new_bg_file.name, new_bg_file.getvalue())
-                    st.success("✓ Đã lưu ảnh nền mới vào Google Drive!")
+                selected_bg_path = next((bg for bg in available_bgs if bg.name == selected_bg_name), available_bgs[0] if available_bgs else None)
+            
+            with c_bg_up:
+                new_pat_file = st.file_uploader("Nạp mẫu hoa văn mới:", type=["jpg", "png"], key=f"new_pat_{clean_sku}")
+                if new_pat_file:
+                    media_agent.register_background(new_pat_file.name, new_pat_file.getvalue())
+                    st.toast("✓ Đã lưu phôi hoa văn mới!", icon="🎨")
                     st.rerun()
 
-            with tab_h1:
+            # 2. Phong cách render
+            render_style = st.radio(
+                "Phong cách dựng phối cảnh:",
+                [
+                    "🏛️ 3D Branded Studio (Tường 2D phẳng + Sàn phối cảnh nghiêng)",
+                    "📘 3D Book & Document (Uốn cong, gáy sách & độ dày)",
+                    "🔬 3D Product & Equipment (Tách nền & bóng tiếp xúc vật lý)",
+                    "🖼️ Giữ nguyên phẳng 2D"
+                ],
+                index=0,
+                key=f"render_style_{clean_sku}"
+            )
+            mode_map = {
+                "🏛️ 3D Branded Studio (Tường 2D phẳng + Sàn phối cảnh nghiêng)": "branded_3d",
+                "📘 3D Book & Document (Uốn cong, gáy sách & độ dày)": "book_3d",
+                "🔬 3D Product & Equipment (Tách nền & bóng tiếp xúc vật lý)": "product_25d",
+                "🖼️ Giữ nguyên phẳng 2D": "flat_2d"
+            }
+            chosen_mode = mode_map.get(render_style, "branded_3d")
+
+            # 3. Các thanh trượt tinh chỉnh thông số vật lý
+            c_sl1, c_sl2 = st.columns(2)
+            with c_sl1:
+                horizon_y = st.slider(
+                    "Đường chân trời (Horizon Level)", 
+                    min_value=400, 
+                    max_value=700, 
+                    value=550, 
+                    step=10,
+                    key=f"horizon_{clean_sku}",
+                    help="Vị trí giao thoa giữa chân tường và mặt sàn (Mặc định: 550px)"
+                )
+                shadow_density_pct = st.slider(
+                    "Cường độ bóng tiếp xúc (Shadow Density)", 
+                    min_value=30, 
+                    max_value=100, 
+                    value=80, 
+                    step=5,
+                    key=f"shadow_{clean_sku}",
+                    help="Độ đậm nhạt của bóng tiếp xúc đáy chân đế và bóng tỏa mềm"
+                )
+            
+            with c_sl2:
+                depth_ratio_pct = st.slider(
+                    "Độ nghiêng phối cảnh sàn (Perspective Depth)", 
+                    min_value=5, 
+                    max_value=35, 
+                    value=20, 
+                    step=1,
+                    key=f"depth_{clean_sku}",
+                    help="Độ mở góc của mặt sàn trải dài về phía người nhìn (Mặc định: 20%)"
+                )
+                enable_refl = st.checkbox(
+                    "Hiệu ứng phản xạ mờ mặt sàn (Subtle Floor Reflection)", 
+                    value=True,
+                    key=f"refl_{clean_sku}",
+                    help="Lật ngược 20% chân sản phẩm với mặt nạ mờ tạo cảm giác sàn mica/gạch bóng"
+                )
+
+            # Nút Render chính
+            st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+            if st.button(f"🚀 RENDER 3D STUDIO CHUẨN THƯƠNG HIỆU CHO {clean_sku}", type="primary", use_container_width=True, key=f"btn_run_branded_{clean_sku}"):
+                if not chosen_source_img or not chosen_source_img.exists():
+                    st.error(f"❌ Chưa có ảnh nguồn cho mã `{clean_sku}`! Vui lòng tải file vào ô trên.")
+                else:
+                    with st.spinner("AI đang dựng phông nền 3D Tường - Sàn, tính toán ma trận phối cảnh OpenCV và đổ bóng tiếp xúc vật lý..."):
+                        import importlib, agent_media
+                        try:
+                            importlib.reload(agent_media)
+                            media_agent = agent_media.AgentMedia(PROJECT_DIR)
+                            if leader:
+                                leader.media_agent = media_agent
+                        except Exception:
+                            pass
+                        
+                        final_path = media_agent.composite_product_image(
+                            sku=clean_sku,
+                            product_img_path=chosen_source_img,
+                            bg_path=selected_bg_path,
+                            render_mode=chosen_mode,
+                            horizon_y=horizon_y,
+                            depth_ratio=depth_ratio_pct / 100.0,
+                            shadow_density=shadow_density_pct / 100.0,
+                            enable_reflection=enable_refl
+                        )
+                        st.success(f"✓ Đã render hoàn tất: {final_path.name}")
+                        st.rerun()
+
+            # Hỗ trợ kết nối Canva / Photoroom ngoài nếu muốn
+            with st.expander("🎨 Tùy chọn Studio Ngoài (Canva Smartmockups & Photoroom Pro)"):
                 st.markdown(f"""
-                <div style='background: linear-gradient(135deg, #090e1a 0%, #1e1b4b 100%); border: 1.5px solid #818cf8; border-radius: 8px; padding: 14px; margin-bottom: 12px;'>
-                  <span style='font-size: 16px;'>🎨</span> <strong style='color: #c7d2fe;'>Studio Mockup Chuyên Nghiệp (Canva & Photoroom Pro)</strong>
-                  <div style='font-size: 12px; color: #cbd5e1; margin-top: 6px; line-height: 1.5;'>
-                    Nếu bạn muốn chất lượng hình ảnh bìa sách 3D và tách nền đẳng cấp như catalogue quốc tế của AATCC hay James Heal:
-                  </div>
-                  <div style='display: flex; gap: 10px; margin-top: 10px;'>
-                    <a href='https://www.canva.com/smartmockups/books' target='_blank' style='background: #6366f1; color: white; padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 700;'>Mở Canva Smartmockups ↗</a>
-                    <a href='https://www.photoroom.com/tools/background-remover' target='_blank' style='background: #475569; color: white; padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 700;'>Mở Photoroom ↗</a>
-                  </div>
+                <div style='font-size: 12px; color: #cbd5e1; margin-bottom: 8px;'>
+                  Tạo mockup sách hoặc thiết bị 3D trên Canva/Photoroom rồi nạp thẳng vào hệ thống:
+                </div>
+                <div style='display: flex; gap: 8px; margin-bottom: 10px;'>
+                  <a href='https://www.canva.com/smartmockups/books' target='_blank' style='background: #6366f1; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: 700;'>Mở Canva Mockups ↗</a>
+                  <a href='https://www.photoroom.com/tools/background-remover' target='_blank' style='background: #475569; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: 700;'>Mở Photoroom ↗</a>
                 </div>
                 """, unsafe_allow_html=True)
-
-                st.markdown("##### 📥 Nạp ảnh thành phẩm từ Canva / Photoroom (Duyệt thẳng):")
                 up_canva = st.file_uploader(
-                    f"Kéo thả ảnh mockup hoàn thiện cho {clean_sku} tại đây (Hệ thống tự động lưu vào Final Composites và duyệt ngay):",
+                    f"Kéo thả ảnh mockup từ Canva vào đây (Lưu thẳng vào Final và Duyệt):",
                     type=["jpg", "png", "jpeg"],
                     key=f"canva_up_{clean_sku}"
                 )
@@ -2598,43 +2608,67 @@ with tab_media:
                     else:
                         out_p = media_agent.final_dir / f"{clean_sku}_final.jpg"
                         out_p.write_bytes(up_canva.getvalue())
-                    st.toast(f"✓ Đã duyệt ảnh Mockup ngoài cho mã {clean_sku}!", icon="🎉")
+                    st.toast(f"✓ Đã lưu và duyệt ảnh Mockup ngoài cho mã {clean_sku}!", icon="🎉")
                     st.rerun()
 
+        # ── CỘT PHẢI: LIVE PREVIEW 2K & CỔNG PHÊ DUYỆT HARAVAN ────────────────
         with col_m2:
-            st.markdown("#### 3. Bản Xem Trước Ảnh Thành Phẩm & Cổng Duyệt")
+            st.markdown("#### 3. Bản Xem Trước Render 3D Hoàn Chỉnh & Cổng Duyệt")
             final_img_path = media_agent.final_dir / f"{clean_sku}_final.jpg"
             img_manifest = media_agent.manifest.get(clean_sku, {})
             current_img_status = img_manifest.get("status", "CHƯA XỬ LÝ")
 
             if final_img_path.exists():
-                st.image(str(final_img_path), caption=f"Ảnh thành phẩm mã {clean_sku} ghép trên nền {selected_bg_name}", use_container_width=True)
+                st.image(
+                    str(final_img_path), 
+                    caption=f"Ảnh render 3D Studio mã {clean_sku} (Phối cảnh Tường - Sàn thương hiệu BIS)", 
+                    use_container_width=True
+                )
                 
+                # Hiển thị metadata render
+                render_mode_used = img_manifest.get("render_mode", "3D Studio")
                 st.markdown(f"""
-                <div style='background: #0d1322; border: 1px solid #1e293b; padding: 12px; border-radius: 8px; margin-bottom: 12px;'>
-                  <strong>Trạng thái duyệt ảnh:</strong> <span style='color: {"#10b981" if current_img_status == "APPROVED" else "#f59e0b"}; font-weight: 700;'>{current_img_status}</span><br>
-                  <span style='font-size: 11px; color: #94a3b8;'>Đường dẫn lưu: <code>{final_img_path}</code></span>
+                <div style='background: #0d1322; border: 1.5px solid #1e293b; padding: 12px; border-radius: 8px; margin-bottom: 12px;'>
+                  <div style='display: flex; justify-content: space-between; align-items: center;'>
+                    <div>
+                      <strong>Trạng thái:</strong> <span style='color: {"#10b981" if current_img_status == "APPROVED" else "#f59e0b"}; font-weight: 700;'>{current_img_status}</span>
+                      <span style='color: #64748b; font-size: 11px; margin-left: 10px;'>Chế độ: <code>{render_mode_used}</code></span>
+                    </div>
+                    <div style='font-size: 11px; color: #94a3b8;'>Dung lượng: {final_img_path.stat().st_size // 1024} KB</div>
+                  </div>
                 </div>
                 """, unsafe_allow_html=True)
 
-                col_ap1, col_ap2 = st.columns(2)
+                col_ap1, col_ap2, col_ap3 = st.columns([4, 4, 4])
                 with col_ap1:
-                    if st.button("✅ DUYỆT ẢNH NÀY (APPROVE IMAGE)", key=f"appr_img_{clean_sku}", use_container_width=True):
+                    if st.button("✅ DUYỆT & LƯU VÀO DRIVE", key=f"appr_img_{clean_sku}", type="primary", use_container_width=True):
                         media_agent.approve_image(clean_sku)
                         st.session_state.audit_logs.append({
                             "time": datetime.now().strftime("%H:%M:%S"),
                             "type": "MEDIA",
-                            "text": f"Ảnh sản phẩm {clean_sku} đã được PHÊ DUYỆT."
+                            "text": f"Ảnh sản phẩm {clean_sku} đã được PHÊ DUYỆT lưu vào Google_Drive_Storage/6_Final_Composites."
                         })
-                        st.success(f"✓ Đã duyệt ảnh {clean_sku}! Sẵn sàng đính kèm lên sàn Haravan.")
+                        st.success(f"✓ Đã duyệt ảnh {clean_sku}! Sẵn sàng đồng bộ lên sàn Haravan.")
                         st.rerun()
+
                 with col_ap2:
-                    if st.button("❌ TỪ CHỐI / YÊU CẦU LÀM LẠI", key=f"rej_img_{clean_sku}", use_container_width=True):
-                        media_agent.reject_image(clean_sku, "Chưa khớp nền")
-                        st.warning("Đã gắn cờ từ chối. Vui lòng chọn ảnh nền khác và chạy lại.")
+                    with open(final_img_path, "rb") as f_dl:
+                        st.download_button(
+                            label="⬇️ TẢI ẢNH HD",
+                            data=f_dl.read(),
+                            file_name=f"{clean_sku}_final.jpg",
+                            mime="image/jpeg",
+                            use_container_width=True,
+                            key=f"dl_btn_{clean_sku}"
+                        )
+
+                with col_ap3:
+                    if st.button("❌ TỪ CHỐI / LÀM LẠI", key=f"rej_img_{clean_sku}", use_container_width=True):
+                        media_agent.reject_image(clean_sku, "Yêu cầu chỉnh lại góc phối cảnh/bóng")
+                        st.warning("Đã gắn cờ từ chối. Hãy điều chỉnh các thanh trượt và render lại.")
                         st.rerun()
             else:
-                st.info(f"Chưa có ảnh ghép thành phẩm cho mã {clean_sku}. Vui lòng bấm 'AI GHÉP NỀN & TĂNG ĐỘ CHÂN THỰC' ở cột bên trái.")
+                st.info(f"💡 Chưa có ảnh render cho mã `{clean_sku}`.\n\nHãy kiểm tra ảnh nguồn ở cột bên trái, điều chỉnh các thanh trượt đường chân trời / độ nghiêng phối cảnh và bấm nút **'🚀 RENDER 3D STUDIO'** để xem kết quả trực quan ngay tại đây.")
 
 
 # ── TAB 5: PHÒNG LƯU TRỮ TRI THỨC (KNOWLEDGE VAULT) ──────────────────────────

@@ -23,3 +23,5 @@ ddgs>=9.16.0
 duckduckgo_search>=8.1.0
 deepeval>=4.3.0
 pytest>=8.0.0
+
+opencv-python-headless>=4.8.0
