@@ -2750,9 +2750,10 @@ with tab_media:
 
             # Nút Render chính
             st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
-            # Nút Gemini Imagen 3 Studio
+            # Nút Gemini Imagen 3 Studio (Loại bỏ 100% OpenCV, gọi trực tiếp Imagen 3 API)
+            custom_imagen_key = st.session_state.get("gemini_api_key_custom", "")
             if st.button("✨ TẠO MOCKUP 3D STUDIO BẰNG GEMINI AI (IMAGEN 3)", type="secondary", use_container_width=True, key=f"btn_imagen3_{clean_sku}"):
-                with st.spinner("Đang kết nối Gemini Imagen 3 để dựng không gian Studio thương mại..."):
+                with st.spinner("Đang kết nối Google Imagen 3 API (imagen-3.0-generate-002) để render ảnh Studio 3D siêu thực..."):
                     import importlib, agent_media
                     try:
                         importlib.reload(agent_media)
@@ -2766,17 +2767,30 @@ with tab_media:
                     prod_brand = p_media.get("brand", "AATCC")
                     prod_cat = p_media.get("category", "Textile Standard")
                     
-                    res_path = media_agent.generate_studio_mockup_ai(
-                        sku=clean_sku,
-                        product_name=prod_title,
-                        brand=prod_brand,
-                        category=prod_cat
-                    )
-                    if res_path and res_path.exists():
-                        st.success(f"✓ Đã tạo thành công Mockup 3D Studio: {res_path.name}")
-                        st.rerun()
-                    else:
-                        st.error("Không thể hoàn tất tạo ảnh qua Imagen 3.")
+                    try:
+                        res_path = media_agent.generate_studio_mockup_ai(
+                            sku=clean_sku,
+                            product_name=prod_title,
+                            brand=prod_brand,
+                            category=prod_cat,
+                            api_key=custom_imagen_key if custom_imagen_key else None
+                        )
+                        if res_path and res_path.exists():
+                            st.toast(f"🎉 ĐÃ TẠO ẢNH 3D STUDIO CHO {clean_sku} BẰNG IMAGEN 3!", icon="✨")
+                            st.success(f"✓ Đã tạo thành công ảnh 3D Studio bằng Google Imagen 3: {res_path.name}")
+                            st.rerun()
+                        else:
+                            st.error("Không nhận được ảnh trả về từ Imagen 3 API.")
+                    except Exception as err:
+                        st.error(f"❌ Lỗi gọi Google Imagen 3 API: {err}")
+                        st.info("💡 **Lưu ý:** Google Imagen 3 yêu cầu API Key chính thức của Google AI Studio (bắt đầu bằng `AIzaSy...`). Bạn có thể dán API Key trực tiếp vào ô cấu hình nhanh bên dưới.")
+
+            with st.expander("🔑 Cấu hình nhanh Gemini / Imagen 3 API Key (Google AI Studio)", expanded=False):
+                current_k = st.session_state.get("gemini_api_key_custom", "")
+                inp_k = st.text_input("Nhập Google AI Studio API Key (AIzaSy...):", value=current_k, type="password", key=f"inp_imagen_key_{clean_sku}", help="Lấy API Key miễn phí tại https://aistudio.google.com/app/apikey")
+                if inp_k != current_k:
+                    st.session_state["gemini_api_key_custom"] = inp_k.strip()
+                    st.toast("✓ Đã lưu API Key vào phiên làm việc!", icon="🔑")
 
             st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
             if st.button(f"🚀 RENDER 3D STUDIO CHUẨN THƯƠNG HIỆU CHO {clean_sku}", type="primary", use_container_width=True, key=f"btn_run_branded_{clean_sku}"):

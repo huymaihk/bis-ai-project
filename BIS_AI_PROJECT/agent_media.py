@@ -881,43 +881,62 @@ class AgentMedia:
         product_name: str,
         brand: str = "AATCC",
         category: str = "Manual",
-        style: str = "branded_studio"
+        style: str = "branded_studio",
+        api_key: Optional[str] = None
     ) -> Optional[Path]:
         """
-        Gọi trực tiếp Google Imagen 3 API để sinh ảnh chụp sản phẩm Studio 3D siêu thực
-        giống như trải nghiệm trên Gemini Web. Tự động dự phòng AI Hybrid Studio bảo toàn tem nhãn.
+        Gọi trực tiếp Google Imagen 3 API (model: imagen-3.0-generate-002) qua Google GenAI SDK chính thức
+        để sinh ảnh Mockup 3D Studio thương mại cao cấp siêu thực.
+        LOẠI BỎ HOÀN TOÀN việc ghép ảnh 2D chắp vá bằng OpenCV.
         """
         clean_sku = sku.strip().replace(" ", "_")
-        target_path = self.final_dir / f"{clean_sku}_final.jpg"
+        preview_target = self.preview_dir / f"{clean_sku}_preview.jpg"
         
-        # Thử gọi trực tiếp Imagen 3 qua Google GenAI SDK
-        try:
-            from google import genai
-            from google.genai import types
-            from config import GEMINI_API_KEY
-            
-            client = genai.Client(api_key=GEMINI_API_KEY)
-            
-            # Xây dựng Prompt nhiếp ảnh thương mại cao cấp chuẩn dệt may
-            name_lower = product_name.lower()
-            if any(w in name_lower for w in ["manual", "book", "sách", "tiêu chuẩn", "standard", "guide"]):
-                prompt_subject = (
-                    f"A luxury professional 3D hardcover technical manual book '{product_name}' (Code: {sku}), "
-                    f"standing elegantly on a clean commercial studio floor. High quality book binding and gold embossed typography. "
-                )
-            else:
-                prompt_subject = (
-                    f"Commercial product photography of '{product_name}' (Model/SKU: {sku}) by '{brand}', "
-                    f"standing on a premium reflective laboratory workbench. "
-                )
+        # 1. Khởi tạo Google GenAI SDK
+        from google import genai
+        from google.genai import types
+        import config
 
-            full_prompt = (
-                f"{prompt_subject} "
-                "The background is an elegant, bright modern textile testing laboratory with subtle repeated 'BIS Textile' branding on the clean white back wall. "
-                "Realistic soft ambient shadows, subtle floor reflections, bright even studio lighting, 4K resolution, ultra-detailed, photorealistic, no distortion."
+        active_key = (
+            api_key 
+            or os.environ.get("GEMINI_API_KEY") 
+            or getattr(config, "GEMINI_API_KEY", "")
+        )
+        if not active_key or len(str(active_key).strip()) < 10:
+            raise ValueError("Chưa cấu hình GEMINI_API_KEY hợp lệ cho Google Imagen 3. Vui lòng cung cấp API Key hợp lệ từ Google AI Studio (định dạng AIzaSy...).")
+
+        client = genai.Client(api_key=str(active_key).strip())
+
+        # 2. Xây dựng Prompt nhiếp ảnh thương mại chuẩn Studio cao cấp
+        name_lower = product_name.lower()
+        is_book = any(w in name_lower for w in ["manual", "book", "sách", "tiêu chuẩn", "standard", "guide", "tập san", "tài liệu"])
+        
+        if is_book:
+            prompt_subject = (
+                f"A luxury commercial 3D product mockup of the official hardcover technical book titled '{product_name}' "
+                f"(Model/SKU: {sku}) published by '{brand}'. "
+                f"The book stands upright in three-quarter perspective on a clean, luxury reflective studio tabletop. "
+                f"Ultra-detailed hardcover with crisp typography, sharp gold embossed lettering of the title, "
+                f"pristine straight book spine and realistic fine paper texture on page edges. "
+            )
+        else:
+            prompt_subject = (
+                f"Photorealistic 3D commercial studio product photography of high-precision textile testing instrument '{product_name}' "
+                f"(Model/SKU: {sku}) manufactured by '{brand}'. "
+                f"The device is placed on a pristine reflective laboratory workbench. "
+                f"Ultra-high precision industrial design, crisp metallic dials, clear digital display screen, immaculate product finish with model '{sku}' clearly marked. "
             )
 
-            print(f"[AgentMedia] Đang gọi Imagen 3 API cho SKU {clean_sku}...")
+        full_prompt = (
+            f"{prompt_subject} "
+            f"The scene is illuminated by balanced, soft studio softbox lighting. "
+            f"Natural soft contact drop shadow underneath, subtle reflection on the table surface, ultra-sharp focus on details, "
+            f"4K resolution, hyper-realistic, commercial catalog aesthetic, no distortion, no watermarks, perfectly centered."
+        )
+
+        print(f"[AgentMedia] Đang gọi Google Imagen 3 API (model: imagen-3.0-generate-002) cho SKU {clean_sku}...")
+        
+        try:
             result = client.models.generate_images(
                 model='imagen-3.0-generate-002',
                 prompt=full_prompt,
@@ -929,7 +948,6 @@ class AgentMedia:
 
             if result and hasattr(result, "generated_images") and result.generated_images:
                 img_bytes = result.generated_images[0].image.image_bytes
-                preview_target = self.preview_dir / f"{clean_sku}_preview.jpg"
                 with open(preview_target, "wb") as f:
                     f.write(img_bytes)
                 
@@ -938,36 +956,22 @@ class AgentMedia:
                     "sku": clean_sku,
                     "status": "PENDING_REVIEW",
                     "source": "GEMINI_IMAGEN3_AI",
+                    "render_mode": "Gemini Imagen 3 Studio",
                     "preview_image": str(preview_target),
+                    "prompt": full_prompt,
                     "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
                 }
                 self._save_manifest()
-                print(f"✓ Đã tạo ảnh Studio AI thành công qua Imagen 3: {target_path}")
-                return target_path
+                print(f"✓ Đã tạo thành công ảnh 3D Studio qua Imagen 3: {preview_target} ({len(img_bytes):,} bytes)")
+                return preview_target
+            else:
+                raise RuntimeError("Google Imagen 3 API không trả về hình ảnh nào.")
 
         except Exception as e:
-            print(f"⚠️ Thông báo Imagen 3 API ({e}). Kích hoạt chế độ AI Hybrid Studio để bảo toàn ảnh chụp thật đạt chuẩn...")
+            print(f"❌ [AgentMedia] Lỗi gọi Google Imagen 3 API: {e}")
+            # TUYỆT ĐỐI KHÔNG FALLBACK sang OpenCV composite_product_image
+            raise e
 
-        # Chế độ AI Hybrid Studio: Bảo toàn 100% tem nhãn/SKU thật và ghép phông nền Studio 3D chuẩn
-        try:
-            src_img = self.get_product_image_for_sku(clean_sku)
-            if src_img and src_img.exists():
-                bg_p = self.bg_dir / "BIS_BACKGROUND.png"
-                return self.composite_product_image(
-                    sku=clean_sku,
-                    product_img_path=src_img,
-                    bg_path=bg_p,
-                    render_mode="branded_3d",
-                    horizon_y=550,
-                    depth_ratio=0.20,
-                    shadow_density=0.85,
-                    enable_reflection=True,
-                    sharpness_boost=1.8
-                )
-        except Exception as err:
-            print(f"⚠️ Lỗi chế độ AI Hybrid Studio: {err}")
-            
-        return target_path if target_path.exists() else None
 
     def composite_product_image(
         self, 
