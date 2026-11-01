@@ -64,30 +64,82 @@ def clean_vietnamese_title(raw_name_vi: str, name_en: str, sku: str) -> str:
     return clean.strip()
 
 
-def generate_seo_meta(name_vi: str, name_en: str, sku: str, brand: str, desc: str) -> Tuple[str, str, str, list]:
-    """Tạo gói SEO Google hoàn chỉnh đạt chuẩn 100%."""
-    # 1. Meta Title (Dưới 60 ký tự)
-    base_title = f"{name_vi} ({sku}) | BIS Textile"
-    if len(base_title) > 60:
-        short_name = name_vi[:40].rstrip()
-        base_title = f"{short_name} ({sku}) | BIS Textile"
-    meta_title = base_title
+def generate_seo_meta(name_vi: str, name_en: str, sku: str, brand: str, desc: str = "") -> Tuple[str, str, str, list]:
+    """
+    Tạo gói SEO Google hoàn chỉnh đạt chuẩn 100%:
+    - Meta Title (< 60 ký tự, ngắt theo từ nguyên vẹn)
+    - Meta Description (140 - 160 ký tự): BẮT BUỘC có Tên tiếng Việt + Tên tiếng Anh + Mã SKU + Hãng + Chứng từ CO/CQ BIS Textile
+    - URL Slug chuẩn SEO
+    - Focus Keywords
+    """
+    clean_en = name_en.strip()
+    clean_en_cap = clean_en.title() if clean_en.isupper() else clean_en
+    clean_en_core = re.sub(r'\s*\([^)]*\)', '', clean_en_cap).strip()
+    clean_vi_core = re.sub(r'\s*\([^)]*\)', '', name_vi).strip()
+    clean_vi_core = re.sub(r'\s+(?:chuẩn thử nghiệm|thử nghiệm vết bẩn|tiêu chuẩn thử nghiệm).*$', '', clean_vi_core, flags=re.I).strip()
+    brand_short = "AATCC" if "AATCC" in brand else brand
 
-    # 2. Meta Description (145 - 160 ký tự)
-    meta_desc = f"Phân phối chính hãng {name_vi} ({sku}) do {brand} ban hành. Tiêu chuẩn kiểm nghiệm dệt may quốc tế, đầy đủ CO/CQ và hỗ trợ kỹ thuật tại BIS Textile."
-    if len(meta_desc) > 160:
-        meta_desc = meta_desc[:157] + "..."
+    # 1. Meta Title (Dưới 60 ký tự, không bao giờ cắt vụn từ)
+    title_suffix = f" ({sku}) | BIS Textile"
+    max_len_t = 60 - len(title_suffix)
+    if len(clean_vi_core) <= max_len_t:
+        meta_title = f"{clean_vi_core}{title_suffix}"
+    else:
+        words = clean_vi_core.split()
+        short_t = ""
+        for w in words:
+            if len((short_t + " " + w).strip()) <= max_len_t:
+                short_t = (short_t + " " + w).strip()
+            else:
+                break
+        meta_title = f"{short_t}{title_suffix}" if short_t else f"{clean_vi_core[:max_len_t]}{title_suffix}"
+
+    # 2. Meta Description (140 - 160 ký tự): BẮT BUỘC TÊN TIẾNG VIỆT + TÊN TIẾNG ANH + MÃ SKU + HÃNG + BIS TEXTILE
+    lead = f"{clean_vi_core} - {clean_en_core} ({sku}) chính hãng {brand_short}."
+    tail_options = [
+        " Chuẩn kiểm nghiệm dệt may quốc tế, đầy đủ CO/CQ và hỗ trợ kỹ thuật tại BIS Textile.",
+        " Chuẩn kiểm nghiệm dệt may quốc tế, đầy đủ chứng từ CO/CQ tại BIS Textile.",
+        " Tiêu chuẩn dệt may quốc tế, đầy đủ CO/CQ tại BIS Textile.",
+        " Đầy đủ chứng từ CO/CQ và hỗ trợ kỹ thuật tại BIS Textile.",
+        " Đầy đủ chứng từ CO/CQ tại BIS Textile."
+    ]
+    meta_desc = ""
+    for tail in tail_options:
+        candidate = f"{lead}{tail}"
+        if len(candidate) <= 160:
+            meta_desc = candidate
+            break
+
+    if not meta_desc or len(meta_desc) > 160:
+        tail = f" chính hãng {brand_short}, đầy đủ CO/CQ tại BIS Textile."
+        max_names_len = 160 - len(f" ({sku}){tail}")
+        half = max_names_len // 2 - 2
+        vi_words = clean_vi_core.split()
+        s_vi = ""
+        for w in vi_words:
+            if len((s_vi + " " + w).strip()) <= half:
+                s_vi = (s_vi + " " + w).strip()
+            else:
+                break
+        en_words = clean_en_core.split()
+        s_en = ""
+        avail_en = max_names_len - len(s_vi) - 3
+        for w in en_words:
+            if len((s_en + " " + w).strip()) <= avail_en:
+                s_en = (s_en + " " + w).strip()
+            else:
+                break
+        meta_desc = f"{s_vi} - {s_en} ({sku}){tail}"
 
     # 3. URL Slug không dấu
-    clean_en = name_en.lower()
-    clean_en = re.sub(r'[^a-z0-9\s-]', '', clean_en)
-    slug_body = re.sub(r'[\s-]+', '-', clean_en).strip('-')[:40]
-    if not slug_body:
-        slug_body = "sp"
-    url_slug = f"{slug_body}-{sku.lower()}"
+    clean_slug_en = re.sub(r'[^a-z0-9\s-]', '', clean_en_core.lower())
+    slug_core = re.sub(r'[\s-]+', '-', clean_slug_en).strip('-')[:40]
+    if not slug_core:
+        slug_core = "sp"
+    url_slug = f"{slug_core}-{sku.lower()}"
 
     # 4. Focus Keywords
-    keywords = [name_vi, sku, f"tiêu chuẩn {brand}", "kiểm nghiệm dệt may", "BIS Textile"]
+    keywords = [clean_vi_core, clean_en_core, sku, f"tiêu chuẩn {brand_short}", "kiểm nghiệm dệt may", "BIS Textile"]
 
     return meta_title, meta_desc, url_slug, keywords
 
