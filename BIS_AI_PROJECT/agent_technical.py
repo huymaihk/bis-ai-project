@@ -448,7 +448,7 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
   
   <!-- KHỐI 3: Hãng ban hành, vai trò, xuất xứ -->
   <div style="font-size: 13px; color: #1e293b !important; padding: 8px 14px; background: #f0f9ff !important; border-left: 4px solid #0284c7; border-radius: 6px; margin-bottom: 16px; border: 1px solid #bae6fd;">
-    <strong>Tổ chức / Hãng ban hành:</strong> <span style="color: #0369a1; font-weight: 700;">{vendor}</span>
+    <strong>Tổ chức / Hãng:</strong> <span style="color: #0369a1; font-weight: 700;">{vendor}</span>
   </div>
 
   <!-- KHỐI 4: Giới thiệu sản phẩm -->

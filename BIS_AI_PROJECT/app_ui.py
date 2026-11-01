@@ -775,6 +775,19 @@ if "cached_products" not in st.session_state or not st.session_state["cached_pro
 
 products = st.session_state["cached_products"]
 
+# Tự động rà soát & loại bỏ hoàn toàn "Đơn vị phân phối: BIS Textile Việt Nam" khỏi toàn bộ sản phẩm
+if products:
+    import re as _re_dist
+    for _p in products:
+        _ch = _p.get("custom_html", "")
+        if _ch and ("phân phối" in _ch or "BIS Textile Việt Nam" in _ch):
+            _ch = _re_dist.sub(r'\s*•?\s*<strong>Đơn vị phân phối:?</strong>\s*<span[^>]*>.*?</span>', '', _ch, flags=_re_dist.IGNORECASE)
+            _ch = _re_dist.sub(r'\s*•?\s*&bull;\s*<strong>Đơn vị phân phối:?</strong>.*?(?=</div>|&bull;)', '', _ch, flags=_re_dist.IGNORECASE)
+            _ch = _re_dist.sub(r'\s*(?:•|&bull;)?\s*Đơn vị phân phối:?\s*BIS Textile Việt Nam', '', _ch, flags=_re_dist.IGNORECASE)
+            _ch = _re_dist.sub(r'&bull;\s*</div>', '</div>', _ch)
+            _ch = _re_dist.sub(r'•\s*</div>', '</div>', _ch)
+            _p["custom_html"] = _ch
+
 if "orchestrator" not in st.session_state and BISEmployeeOrchestrator:
     st.session_state.orchestrator = BISEmployeeOrchestrator()
 if "selected_dept_id" not in st.session_state:
@@ -2234,6 +2247,11 @@ with tab_tech:
                 else:
                     st.caption("💻 Chỉnh sửa trực tiếp toàn bộ mã HTML 7 khối chuẩn Haravan (có thể chèn thêm link, bảng, style CSS):")
                     current_html_val = p.get("custom_html") or technical_agent.build_7_block_html(p)
+                    if current_html_val and ("phân phối" in current_html_val or "BIS Textile Việt Nam" in current_html_val):
+                        import re as _re_raw
+                        current_html_val = _re_raw.sub(r'\s*•?\s*<strong>Đơn vị phân phối:?</strong>\s*<span[^>]*>.*?</span>', '', current_html_val, flags=_re_raw.IGNORECASE)
+                        current_html_val = _re_raw.sub(r'\s*•?\s*&bull;\s*<strong>Đơn vị phân phối:?</strong>.*?(?=</div>|&bull;)', '', current_html_val, flags=_re_raw.IGNORECASE)
+                        current_html_val = _re_raw.sub(r'\s*(?:•|&bull;)?\s*Đơn vị phân phối:?\s*BIS Textile Việt Nam', '', current_html_val, flags=_re_raw.IGNORECASE)
                     custom_html_code = st.text_area("Mã HTML 7 Khối hoàn chỉnh:", value=current_html_val, height=300, key=f"raw_html_{p.get('sku')}")
 
                 col_btn1, col_btn2 = st.columns(2)
@@ -2384,6 +2402,13 @@ with tab_tech:
                 with c_prev_h2:
                     st.markdown("<div style='text-align:right; font-family:\"JetBrains Mono\",monospace; font-size:11px; color:#10b981; padding-top:4px;'>HARAVAN CONTAINER ACTIVE ✓</div>", unsafe_allow_html=True)
                 live_preview_code = p.get("custom_html") or technical_agent.build_7_block_html(p)
+                if live_preview_code and ("phân phối" in live_preview_code or "BIS Textile Việt Nam" in live_preview_code):
+                    import re as _re_prev
+                    live_preview_code = _re_prev.sub(r'\s*•?\s*<strong>Đơn vị phân phối:?</strong>\s*<span[^>]*>.*?</span>', '', live_preview_code, flags=_re_prev.IGNORECASE)
+                    live_preview_code = _re_prev.sub(r'\s*•?\s*&bull;\s*<strong>Đơn vị phân phối:?</strong>.*?(?=</div>|&bull;)', '', live_preview_code, flags=_re_prev.IGNORECASE)
+                    live_preview_code = _re_prev.sub(r'\s*(?:•|&bull;)?\s*Đơn vị phân phối:?\s*BIS Textile Việt Nam', '', live_preview_code, flags=_re_prev.IGNORECASE)
+                    live_preview_code = _re_prev.sub(r'&bull;\s*</div>', '</div>', live_preview_code)
+                    live_preview_code = _re_prev.sub(r'•\s*</div>', '</div>', live_preview_code)
                 
                 # Bật thuộc tính contenteditable="true" cho các khối 1, 4, 5, 6 để người dùng gõ sửa trực tiếp
                 editable_preview_code = live_preview_code
