@@ -940,7 +940,7 @@ if marketing_agent is None or not hasattr(marketing_agent, "load_marketing_knowl
         pass
 knowledge_agent = getattr(leader, "knowledge_agent", None)
 media_agent = getattr(leader, "media_agent", None)
-if media_agent is None or not hasattr(media_agent, "search_web_images"):
+if media_agent is None or not hasattr(media_agent, "get_product_image_for_sku"):
     try:
         import importlib
         import agent_media
@@ -951,7 +951,11 @@ if media_agent is None or not hasattr(media_agent, "search_web_images"):
             if hasattr(leader, "departments"):
                 leader.departments["media"] = media_agent
     except Exception:
-        pass
+        try:
+            import agent_media
+            media_agent = agent_media.AgentMedia(PROJECT_DIR)
+        except Exception:
+            pass
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -2424,7 +2428,24 @@ with tab_media:
             st.info(f"📁 **Thư mục lưu ảnh trên Google Drive:** `Google_Drive_Storage/4_Product_Images/`\n\n💡 **Quy tắc đặt tên file:** Bạn chỉ cần đặt tên file ảnh trùng với mã SKU (Ví dụ: `{clean_sku}.jpg`, `{clean_sku}.png`, `{clean_sku}_brand_1.jpg` hoặc `{clean_sku}_user_1.jpg`). Hệ thống tự động quét và nhận diện ngay lập tức.")
 
             # Quét tìm ảnh theo mã SKU trong Google Drive
-            chosen_source_img = media_agent.get_product_image_for_sku(clean_sku)
+            chosen_source_img = None
+            if media_agent and hasattr(media_agent, "get_product_image_for_sku"):
+                chosen_source_img = media_agent.get_product_image_for_sku(clean_sku)
+            else:
+                # Quét trực tiếp thư mục Drive nếu media_agent chưa nạp phương thức
+                clean_sku_lower = clean_sku.lower()
+                search_dir = PROJECT_DIR / "Google_Drive_Storage" / "4_Product_Images"
+                if search_dir.exists():
+                    for ext in [".jpg", ".png", ".jpeg", ".webp"]:
+                        p = search_dir / f"{clean_sku}{ext}"
+                        if p.exists():
+                            chosen_source_img = p
+                            break
+                    if not chosen_source_img:
+                        for f in sorted(search_dir.iterdir()):
+                            if f.is_file() and (f.stem.lower() == clean_sku_lower or f.stem.lower().startswith(f"{clean_sku_lower}_")) and f.suffix.lower() in [".jpg", ".png", ".jpeg", ".webp"]:
+                                chosen_source_img = f
+                                break
 
             if chosen_source_img and chosen_source_img.exists():
                 st.success(f"✅ **Đã nhận diện file ảnh trên Google Drive:** `{chosen_source_img.name}` ({chosen_source_img.stat().st_size // 1024} KB)")
