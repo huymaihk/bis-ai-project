@@ -40,6 +40,103 @@ HARAVAN_API_BASE = "https://apis.haravan.com/com"
 HARAVAN_SAFETY_CUTOFF_DATE = "2026-10-20"
 
 
+import unicodedata
+
+def remove_accents(input_str: str) -> str:
+    if not input_str:
+        return ""
+    nfkd_form = unicodedata.normalize('NFKD', str(input_str))
+    return "".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower()
+
+def extract_core_numbers(s: str) -> set:
+    if not s:
+        return set()
+    return set(re.findall(r'\b\d{4,6}\b', str(s)))
+
+def tokenize_technical_text(text: str) -> set:
+    if not text:
+        return set()
+    clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', str(text).lower())
+    stop_words = {'and', 'the', 'for', 'with', 'cac', 'cua', 'cho', 'sach', 'tap', 'vai', 'mau', 'san', 'pham', 'aatcc'}
+    return {w for w in clean.split() if len(w) > 2 and w not in stop_words}
+
+def is_duplicate_product(p: dict, existing_store_items: list) -> tuple[bool, str, str]:
+    """
+    Hệ thống phát hiện trùng đa tầng kết hợp đọc nội dung (Content & Semantic De-duplication):
+    - Tier 1: Trùng mã SKU chính xác hoặc Variant SKU trên sàn Haravan.
+    - Tier 2: Trùng mã số tiêu chuẩn cốt lõi (Core Number: 03026 trong 03026A/B) trên URL handle, tiêu đề, tags.
+    - Tier 3: Trùng nội dung mô tả & tiêu đề tiếng Anh (Jaccard Overlap >= 70% từ khóa chuyên môn).
+    - Tier 4: Trùng tiêu đề tiếng Việt & danh mục kỹ thuật dệt may.
+    Trả về: (is_duplicate: bool, match_url: str, reason: str)
+    """
+    if not p or not existing_store_items:
+        return False, "", ""
+
+    sku = str(p.get("sku", "")).strip()
+    sku_upper = sku.upper()
+    sku_lower = sku.lower()
+    p_core_numbers = extract_core_numbers(sku)
+
+    p_title_vi = str(p.get("product_name") or p.get("title") or "").strip()
+    p_title_en = str(p.get("product_name_en") or "").strip()
+    p_desc = str(p.get("description") or "").strip()
+
+    p_tokens_en = tokenize_technical_text(p_title_en)
+    p_tokens_vi = tokenize_technical_text(remove_accents(p_title_vi))
+
+    for item in existing_store_items:
+        it_url = item.get("url", f"/products/{item.get('handle', '')}")
+        it_title = str(item.get("title", ""))
+        it_handle = str(item.get("handle", ""))
+        it_content = str(item.get("content_text", "") or item.get("body_html", "") or "")
+        it_tags = item.get("tags", [])
+        it_tags_str = " ".join(it_tags) if isinstance(it_tags, list) else str(it_tags)
+
+        full_it_text = f"{it_title} {it_handle} {it_content} {it_tags_str}"
+        full_it_text_lower = full_it_text.lower()
+
+        # 1. Tier 1: Exact SKU match
+        variant_skus = [str(v).strip().upper() for v in item.get("variants_skus", []) if v]
+        if sku_upper and sku_upper in variant_skus:
+            return True, it_url, f"Trùng mã SKU chính xác '{sku}' với sản phẩm '{it_title}'"
+
+        if sku_lower and (f"-{sku_lower}" in it_handle.lower() or f"_{sku_lower}" in it_handle.lower() or f" {sku_lower} " in f" {full_it_text_lower} "):
+            return True, it_url, f"Mã SKU '{sku}' xuất hiện trong URL/Tiêu đề của '{it_title}'"
+
+        # 2. Tier 2: Core numeric code (e.g. 03026 from 03026A/B vs so-tay-tieu-chuan-kiem-nghiem-det-may-aatcc-03026)
+        it_numbers = extract_core_numbers(it_handle) | extract_core_numbers(it_title) | extract_core_numbers(it_tags_str)
+        common_numbers = p_core_numbers & it_numbers
+        # Loại trừ năm thông thường (2020-2030) nếu không có ngữ cảnh thương hiệu
+        significant_numbers = {n for n in common_numbers if not (2020 <= int(n) <= 2030 and len(n) == 4)}
+
+        if significant_numbers:
+            num = list(significant_numbers)[0]
+            brand_in_p = "aatcc" if "aatcc" in f"{sku_lower} {p_title_en.lower()} {p_title_vi.lower()}" else ""
+            brand_in_it = "aatcc" if "aatcc" in full_it_text_lower else ""
+            if brand_in_p and brand_in_p == brand_in_it:
+                return True, it_url, f"Trùng mã tiêu chuẩn cốt lõi '{num}' ({brand_in_p.upper()}) với sản phẩm '{it_title}'"
+            elif f"-{num}" in it_handle.lower() or it_handle.lower().endswith(num):
+                return True, it_url, f"Trùng mã số '{num}' trong URL handle '{it_handle}' của '{it_title}'"
+
+        # 3. Tier 3: English title & content semantic similarity
+        if p_tokens_en:
+            it_tokens_en = tokenize_technical_text(it_content[:800] + " " + it_title)
+            intersection = p_tokens_en & it_tokens_en
+            if len(p_tokens_en) >= 4 and len(intersection) / len(p_tokens_en) >= 0.70:
+                matched_words = ", ".join(list(intersection)[:4])
+                return True, it_url, f"Trùng nội dung & Tiêu đề tiếng Anh (Từ khóa: {matched_words}) với '{it_title}'"
+
+        # 4. Tier 4: Vietnamese title & category semantic similarity
+        if p_tokens_vi:
+            it_tokens_vi = tokenize_technical_text(remove_accents(it_title))
+            intersection_vi = p_tokens_vi & it_tokens_vi
+            if len(p_tokens_vi) >= 4 and len(intersection_vi) / len(p_tokens_vi) >= 0.70:
+                matched_words = ", ".join(list(intersection_vi)[:4])
+                return True, it_url, f"Trùng tiêu đề tiếng Việt (Từ khóa: {matched_words}) với '{it_title}'"
+
+    return False, "", ""
+
+
 class AgentOperations:
     def __init__(self, storage_dir: str | Path | None = None):
         self.storage_dir = Path(storage_dir) if storage_dir else Path(__file__).parent.resolve()
@@ -122,10 +219,17 @@ class AgentOperations:
             except Exception as e:
                 print(f"⚠️ [Agent_Operations] Không thể đọc bistextile_existing_products.json: {e}")
 
-        # Hàm kiểm tra trùng trên website bistextile.com
-        def check_web_duplicate(sku_str: str) -> tuple[bool, str]:
+        # Hàm kiểm tra trùng trên website bistextile.com dùng hàm đa tầng nội dung
+        def check_web_duplicate(sku_str: str) -> tuple[bool, str, str]:
             if not sku_str or not existing_store_items:
-                return False, ""
+                return False, "", ""
+            p_dummy = {"sku": sku_str}
+            # Tìm trong cache nếu có thông tin sản phẩm đầy đủ
+            for p_item in products:
+                if str(p_item.get("sku", "")).strip().upper() == str(sku_str).strip().upper():
+                    p_dummy = p_item
+                    break
+            return is_duplicate_product(p_dummy, existing_store_items)
             sku_clean = str(sku_str).strip().lower()
             for it in existing_store_items:
                 t = str(it.get("title", "")).lower()
@@ -153,11 +257,11 @@ class AgentOperations:
             if not sku:
                 continue
 
-            # Kiểm tra trùng website
-            is_dup, match_url = check_web_duplicate(sku)
+            # Kiểm tra trùng website thông qua đa tầng nội dung & SKU
+            is_dup, match_url, reason = is_duplicate_product(p, existing_store_items)
             if is_dup:
                 p["status"] = STATUS_REJECTED
-                p["notes"] = f"CẢNH BÁO: Đã tồn tại trên website bistextile.com ({match_url})"
+                p["notes"] = f"CẢNH BÁO: Đã tồn tại trên website bistextile.com ({match_url}) - {reason}"
                 if sku not in website_dups_locked:
                     website_dups_locked.append(sku)
 
@@ -200,13 +304,16 @@ class AgentOperations:
                         continue
 
                     # Kiểm tra trùng web cho dòng sheet
-                    is_dup, match_url = check_web_duplicate(row_sku)
+                    dup_res = check_web_duplicate(row_sku)
+                    is_dup = dup_res[0]
+                    match_url = dup_res[1]
+                    reason = dup_res[2] if len(dup_res) > 2 else "Trùng mã/nội dung trên web"
                     if is_dup and status_idx >= 0 and len(row) > status_idx:
                         row[status_idx] = STATUS_REJECTED
                         if notes_idx >= 0:
                             if len(row) <= notes_idx:
                                 row.extend([""] * (notes_idx - len(row) + 1))
-                            row[notes_idx] = f"CẢNH BÁO: Đã tồn tại trên website bistextile.com ({match_url})"
+                            row[notes_idx] = f"CẢNH BÁO: Đã tồn tại trên website bistextile.com ({match_url}) - {reason}"
 
                     if row_sku not in sheet_rows_dict:
                         sheet_rows_dict[row_sku] = row
@@ -353,23 +460,14 @@ class AgentOperations:
                 continue
             sku_low = sku.lower()
 
-            match_h = None
-            for item in unified_store:
-                v_skus_low = [s.lower() for s in item.get("variants_skus", [])]
-                if sku_low in v_skus_low:
-                    match_h = item
-                    break
-                t_low = item.get("title", "").lower()
-                h_low = item.get("handle", "").lower()
-                if re.search(r'\b' + re.escape(sku_low) + r'\b', t_low) or sku_low in h_low:
-                    match_h = item
-                    break
-
-            if match_h:
+            is_dup, match_url, reason = is_duplicate_product(p, unified_store)
+            if is_dup:
                 p["status"] = STATUS_REJECTED
-                stt_txt = match_h.get("status_str", "ĐÃ ĐĂNG")
-                p["notes"] = f"CẢNH BÁO: Đã có trên Haravan/Website ({stt_txt} - ID: {match_h['id']} - {match_h['url']})"
-                p["haravan_matched_id"] = match_h["id"]
+                # Tìm item tương ứng để lấy ID
+                match_item = next((it for it in unified_store if it.get("url") == match_url or it.get("handle") in match_url), unified_store[0] if unified_store else {})
+                stt_txt = match_item.get("status_str", "ĐÃ ĐĂNG")
+                p["notes"] = f"CẢNH BÁO: Đã có trên Haravan/Website ({stt_txt} - {match_url}) - {reason}"
+                p["haravan_matched_id"] = match_item.get("id")
                 p["haravan_matched_status"] = stt_txt
                 matched.append({
                     "sku": sku,

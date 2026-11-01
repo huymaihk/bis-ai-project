@@ -1,3 +1,4 @@
+from agent_operations import is_duplicate_product
 """
 BIS Textile AI - Agent Leader (Central Orchestrator)
 Coordinates all departments:
@@ -113,11 +114,11 @@ class AgentLeader:
                 existing_items = json.load(open(existing_store_file, encoding="utf-8"))
                 for p in all_extracted_products:
                     sku = p.get("sku")
-                    matched = [e for e in existing_items if sku in e.get("title", "") or sku in e.get("url", "")]
-                    if matched:
+                    is_dup, match_url, reason = is_duplicate_product(p, existing_items)
+                    if is_dup:
                         duplicates_count += 1
                         p["status"] = "REJECTED"
-                        p["notes"] = f"CẢNH BÁO: Đã tồn tại trên website bistextile.com ({matched[0].get('url')})"
+                        p["notes"] = f"CẢNH BÁO: Đã tồn tại trên website bistextile.com ({match_url}) - {reason}"
                         if ws:
                             self.operations_agent.update_product_status_in_sheet(sku, "REJECTED", p["notes"])
             except Exception as e:
