@@ -723,9 +723,9 @@ if "audit_logs" not in st.session_state:
 cache_file = PROJECT_DIR / "extracted_products_cache.json"
 pdf_file = PROJECT_DIR / "catalogue_sample.pdf"
 
-@st.cache_data(ttl=120, show_spinner=False)
-def load_products_from_file(file_path_str: str) -> list:
-    """Nạp file JSON từ đĩa có cache 120s trong RAM để loại bỏ độ trễ mạng Google Drive."""
+@st.cache_data(ttl=60, show_spinner=False)
+def load_products_from_file(file_path_str: str, file_mtime: float = 0.0) -> list:
+    """Nạp file JSON từ đĩa có cache trong RAM; tự động reload tức thì khi file trên đĩa thay đổi."""
     p = Path(file_path_str)
     if p.exists():
         try:
@@ -771,8 +771,10 @@ def load_cached_learning_memory(file_path_str: str) -> dict:
             return {}
     return {}
 
-if "cached_products" not in st.session_state or not st.session_state["cached_products"]:
-    st.session_state["cached_products"] = load_products_from_file(str(cache_file))
+cache_mtime = cache_file.stat().st_mtime if cache_file.exists() else 0.0
+if "cached_products" not in st.session_state or st.session_state.get("_cache_file_mtime") != cache_mtime or not st.session_state["cached_products"]:
+    st.session_state["cached_products"] = load_products_from_file(str(cache_file), cache_mtime)
+    st.session_state["_cache_file_mtime"] = cache_mtime
 
 products = st.session_state["cached_products"]
 

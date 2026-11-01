@@ -104,10 +104,32 @@ def ai_check_and_refine_product(product: Dict[str, Any]) -> Dict[str, Any]:
     """
     p = dict(product)
     sku = p.get("sku", "").strip()
-    name_vi = p.get("product_name", "").strip()
-    name_en = p.get("product_name_en", "").strip()
     brand = p.get("brand") or p.get("brand_evidence") or "AATCC (Hoa Kỳ)"
-    desc = p.get("description", "").strip()
+
+    # Tra cứu đối soát Master Catalog để triệt tiêu 100% tình trạng gộp nhầm nội dung trên cùng trang PDF
+    try:
+        from catalog_master_data import CATALOG_MASTER
+        master_info = CATALOG_MASTER.get(sku)
+    except Exception:
+        master_info = None
+
+    if master_info:
+        name_vi = master_info["vi"]
+        name_en = master_info["en"]
+        clean_desc = master_info["desc"]
+        scope = master_info["scope"]
+        p["source_page"] = master_info.get("page", p.get("source_page"))
+        p["related_doc_title"] = master_info.get("doc", "")
+    else:
+        name_vi = p.get("product_name", "").strip()
+        name_en = p.get("product_name_en", "").strip()
+        raw_desc = p.get("description", "").strip()
+        clean_desc = translate_to_vi(raw_desc)
+        clean_desc = re.sub(r'^(?:16\s+|28\s+|Item\s*#\w+\s*)+', '', clean_desc).strip()
+        clean_desc = re.sub(r'\s*Đơn vị phân phối.*$', '', clean_desc, flags=re.I).strip()
+        if not clean_desc or len(clean_desc) < 20:
+            clean_desc = f"Sản phẩm tiêu chuẩn chính hãng do {brand} ban hành, được áp dụng rộng rãi trong các phòng thí nghiệm kiểm tra chất lượng và đánh giá quy chuẩn dệt may toàn cầu."
+        scope = p.get("application_scope") or "Phương pháp kiểm nghiệm dệt may quốc tế"
 
     # 1. Chuẩn hóa Tiêu đề song ngữ
     clean_vi = clean_vietnamese_title(name_vi, name_en, sku)
@@ -115,20 +137,13 @@ def ai_check_and_refine_product(product: Dict[str, Any]) -> Dict[str, Any]:
     p["product_name"] = clean_vi
     p["product_name_en"] = clean_en
     p["brand"] = brand
-
-    # 2. Chuẩn hóa Mô tả kỹ thuật
-    clean_desc = translate_to_vi(desc)
-    clean_desc = re.sub(r'^(?:16\s+|28\s+|Item\s*#\w+\s*)+', '', clean_desc).strip()
-    clean_desc = re.sub(r'\s*Đơn vị phân phối.*$', '', clean_desc, flags=re.I).strip()
-    if not clean_desc or len(clean_desc) < 20:
-        clean_desc = f"Sản phẩm tiêu chuẩn chính hãng do {brand} ban hành, được áp dụng rộng rãi trong các phòng thí nghiệm kiểm tra chất lượng và đánh giá quy chuẩn dệt may toàn cầu."
     p["description"] = clean_desc
 
     # 3. Chuẩn hóa Đặc điểm nổi bật (Khối 5)
     default_hl = [
         f"Tiêu chuẩn thử nghiệm chính hãng do {brand} ban hành, áp dụng toàn cầu trong ngành dệt may.",
         "Độ chính xác và độ lặp lại cao, đáp ứng đầy đủ yêu cầu kiểm nghiệm phòng lab QA/QC.",
-        "Cung cấp giải pháp đánh giá tin cậy theo chuỗi cung ứng thương mại quốc tế."
+        "Chứng nhận xuất xứ và chất lượng rõ ràng, cung cấp đầy đủ chứng từ CO/CQ từ BIS Textile."
     ]
     raw_hl = p.get("highlights")
     if raw_hl and isinstance(raw_hl, list) and len(raw_hl) >= 2:
@@ -138,7 +153,6 @@ def ai_check_and_refine_product(product: Dict[str, Any]) -> Dict[str, Any]:
         p["highlights"] = default_hl
 
     # 4. Chuẩn hóa Phạm vi áp dụng (Khối 6)
-    scope = p.get("application_scope") or "Phương pháp kiểm nghiệm dệt may quốc tế"
     if "pseudoisochromatic" in f"{name_vi} {name_en}".lower():
         scope = "Kiểm tra và đánh giá thị giác màu sắc trong phòng lab"
     elif "smoothness" in f"{name_vi} {name_en}".lower():
