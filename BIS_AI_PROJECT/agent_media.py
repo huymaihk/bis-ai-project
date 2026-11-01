@@ -1020,6 +1020,64 @@ class AgentMedia:
 
 
 
+
+    def generate_studio_mockup_cloud_free(
+        self,
+        sku: str,
+        product_name: str,
+        brand: str = "AATCC"
+    ) -> Optional[Path]:
+        """
+        Tạo ảnh Mockup 3D Studio thương mại cao cấp hoàn toàn MIỄN PHÍ qua Cloud Serverless.
+        Không cần GPU rời (chạy ngay trên Intel Iris Xe), không yêu cầu API Key hay liên kết thẻ.
+        """
+        import urllib.parse
+        import requests
+        clean_sku = sku.strip().replace(" ", "_")
+        preview_target = self.preview_dir / f"{clean_sku}_preview.jpg"
+        
+        name_lower = product_name.lower()
+        is_book = any(w in name_lower for w in ["manual", "book", "sách", "tiêu chuẩn", "standard", "guide", "tập san", "tài liệu"])
+        
+        if is_book:
+            prompt = (
+                f"Commercial 3D studio product shot of the technical reference book '{product_name}' (Code: {sku}) published by '{brand}'. "
+                f"Hardcover binding, standing firmly at a natural 15-degree perspective on a clean white reflective studio floor. "
+                f"Soft contact shadows beneath the book, even studio lighting, sharp 4K catalog quality, raytraced reflection."
+            )
+        else:
+            prompt = (
+                f"Commercial 3D studio product shot of precision textile testing instrument '{product_name}' (Model: {sku}) by '{brand}'. "
+                f"Standing on a clean white reflective laboratory workbench. Soft contact drop shadow, bright studio softbox lighting, 4K UHD catalog quality."
+            )
+
+        encoded = urllib.parse.quote(prompt)
+        url = f"https://image.pollinations.ai/prompt/{encoded}?seed=42"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        }
+
+        print(f"[AgentMedia] Đang kết nối Cloud AI Serverless miễn phí cho SKU {clean_sku}...")
+        res = requests.get(url, headers=headers, timeout=60)
+        if res.status_code == 200 and len(res.content) > 5000:
+            with open(preview_target, "wb") as f:
+                f.write(res.content)
+
+            self.manifest[clean_sku] = {
+                "sku": clean_sku,
+                "status": "PENDING_REVIEW",
+                "source": "CLOUD_AI_SERVERLESS",
+                "render_mode": "Cloud AI Studio (Free)",
+                "preview_image": str(preview_target),
+                "prompt": prompt,
+                "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
+            }
+            self._save_manifest()
+            print(f"✓ Đã tạo thành công ảnh 3D Studio qua Cloud AI: {preview_target} ({len(res.content):,} bytes)")
+            return preview_target
+        else:
+            raise RuntimeError(f"Cloud AI Serverless trả về mã HTTP {res.status_code}")
+
     def composite_product_image(
         self, 
         sku: str, 

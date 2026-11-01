@@ -2750,6 +2750,37 @@ with tab_media:
 
             # Nút Render chính
             st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+            # Nút Cloud AI Serverless (Miễn phí 100% - Chạy ngay trên Intel Iris Xe không cần GPU / Key)
+            if st.button("⚡ TẠO MOCKUP 3D CLOUD AI (MIỄN PHÍ - KHÔNG CẦN KEY / GPU)", type="secondary", use_container_width=True, key=f"btn_cloud_free_{clean_sku}"):
+                with st.spinner("Đang kết nối Cloud AI Serverless để dựng Mockup 3D Studio siêu thực trong 5-10 giây..."):
+                    import importlib, agent_media
+                    try:
+                        importlib.reload(agent_media)
+                        media_agent = agent_media.AgentMedia(PROJECT_DIR)
+                        if leader:
+                            leader.media_agent = media_agent
+                    except Exception:
+                        pass
+                    
+                    prod_title = p_media.get("title", p_media.get("name", clean_sku))
+                    prod_brand = p_media.get("brand", "AATCC")
+                    
+                    try:
+                        res_p = media_agent.generate_studio_mockup_cloud_free(
+                            sku=clean_sku,
+                            product_name=prod_title,
+                            brand=prod_brand
+                        )
+                        if res_p and res_p.exists():
+                            st.toast(f"🎉 ĐÃ TẠO ẢNH 3D STUDIO CHO {clean_sku} QUA CLOUD AI!", icon="⚡")
+                            st.success(f"✓ Đã tạo thành công ảnh 3D Studio: {res_p.name}")
+                            st.rerun()
+                        else:
+                            st.error("Không nhận được dữ liệu ảnh từ Cloud Serverless.")
+                    except Exception as err:
+                        st.error(f"❌ Lỗi Cloud AI: {err}")
+
+            st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
             # Nút Gemini Imagen 3 Studio (Loại bỏ 100% OpenCV, gọi trực tiếp Imagen 3 API)
             custom_imagen_key = st.session_state.get("gemini_api_key_custom", "")
             if st.button("✨ TẠO MOCKUP 3D STUDIO BẰNG GEMINI AI (IMAGEN 3)", type="secondary", use_container_width=True, key=f"btn_imagen3_{clean_sku}"):
