@@ -2263,6 +2263,39 @@ with tab_tech:
                     with col_b7:
                         edit_doc_title = st.text_input("🔗 Tên liên kết / Tài liệu tra cứu (Khối 7):", value=default_doc_title, key=f"inp_doc_{p.get('sku')}")
 
+                    # HÀNG 4: KHỐI CẤU HÌNH SEO HARAVAN & GOOGLE CHECK
+                    st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+                    with st.expander("🌐 CẤU HÌNH SEO GOOGLE & METADATA HARAVAN (ĐỂ KIỂM TRA & TÙY CHỈNH)", expanded=True):
+                        # Lấy dữ liệu SEO mặc định nếu chưa có
+                        cached_seo = p.get("seo_package") or {}
+                        default_meta_title = p.get("meta_title") or cached_seo.get("meta_title") or f"{p.get('product_name', '')} ({p.get('sku', '')}) | BIS Textile Việt Nam"
+                        default_meta_desc = p.get("meta_description") or cached_seo.get("meta_description") or f"Phân phối chính hãng {p.get('product_name', '')} mã {p.get('sku', '')} từ {p.get('brand', 'AATCC')}. Tiêu chuẩn kiểm nghiệm dệt may quốc tế, đầy đủ chứng từ tại BIS Textile."
+                        default_slug = p.get("url_slug") or cached_seo.get("url_slug") or (p.get("sku", "").lower() + "-" + re.sub(r'[^a-zA-Z0-9]+', '-', (p.get("product_name_en") or "")).strip("-").lower()[:40])
+
+                        c_seo_in1, c_seo_in2 = st.columns(2)
+                        with c_seo_in1:
+                            edit_meta_title = st.text_input(f"Tiêu đề SEO Google (Meta Title - {len(default_meta_title)}/60 ký tự):", value=default_meta_title, key=f"inp_meta_t_{p.get('sku')}")
+                            edit_slug = st.text_input("Đường dẫn sản phẩm (URL Handle / Slug):", value=default_slug, key=f"inp_slug_{p.get('sku')}")
+                        with c_seo_in2:
+                            edit_meta_desc = st.text_area(f"Mô tả SEO Google (Meta Description - {len(default_meta_desc)}/160 ký tự):", value=default_meta_desc, height=105, key=f"inp_meta_d_{p.get('sku')}")
+
+                        # Mô phỏng kết quả tìm kiếm Google (Google SERP Snippet Preview)
+                        st.markdown("<div style='font-size: 12px; font-weight: 700; color: #94a3b8; margin-top: 6px; margin-bottom: 4px;'>🔍 Google Search Snippet Preview (Mô phỏng hiển thị trên Google):</div>", unsafe_allow_html=True)
+                        st.markdown(f"""
+                        <div style="background: #ffffff; border: 1px solid #dfe1e5; border-radius: 8px; padding: 14px 16px; margin-bottom: 8px; font-family: Arial, sans-serif;">
+                          <div style="font-size: 12px; color: #202124; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                            <span style="background: #f1f3f4; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px;">🌐</span>
+                            <span>https://bistextile.com &rsaquo; products &rsaquo; <strong style="color: #1a0dab;">{edit_slug}</strong></span>
+                          </div>
+                          <div style="font-size: 17px; color: #1a0dab; line-height: 1.3; font-weight: 400; margin-bottom: 4px;">
+                            {edit_meta_title}
+                          </div>
+                          <div style="font-size: 13px; color: #4d5156; line-height: 1.5;">
+                            {edit_meta_desc}
+                          </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
                 else:
                     st.caption("💻 Chỉnh sửa trực tiếp toàn bộ mã HTML 7 khối chuẩn Haravan (có thể chèn thêm link, bảng, style CSS):")
                     current_html_val = p.get("custom_html") or technical_agent.build_7_block_html(p)
@@ -2346,6 +2379,11 @@ with tab_tech:
                         p["related_doc_title"] = edit_doc_title.strip()
                         p["related_doc_url"] = default_doc_url
                         p["source_page"] = edit_page_str.strip()
+                        # Lưu vĩnh viễn cấu hình SEO
+                        p["meta_title"] = edit_meta_title.strip()
+                        p["meta_description"] = edit_meta_desc.strip()
+                        p["url_slug"] = edit_slug.strip()
+                        p["seo_ready"] = True
 
                         if approve_btn:
                             p["status"] = "APPROVED"
@@ -2473,12 +2511,12 @@ with tab_tech:
   </style>
 </head>
 <body style="background-color: #ffffff !important; color: #1e293b !important;">
-  <div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; color:#f8fafc; padding:8px 14px; border-radius:8px; margin-bottom:12px; font-size:12px; border:1px solid #334155;">
-    <div style="display:flex; align-items:center; gap:8px;">
-      <span style="font-size:15px;">✍️</span>
-      <span><strong>CHẾ ĐỘ SỬA TRỰC TIẾP (WYSIWYG ACTIVE):</strong> Bạn có thể nhấp chuột gõ sửa trực tiếp vào Tiêu đề (Khối 1), Mô tả (Khối 4), Đặc điểm nổi bật (Khối 5), hoặc Bảng thông số (Khối 6) ngay bên dưới.</span>
+  <div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; color:#f8fafc; padding:10px 16px; border-radius:8px; margin-bottom:12px; font-size:12.5px; border:1.5px solid #38bdf8;">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span style="font-size:18px;">👁️</span>
+      <span><strong>BẢN XEM TRƯỚC WEBSITE HARAVAN:</strong> Khi bạn thay đổi nội dung ở bảng biểu và phần SEO phía trên, bản xem trước bên dưới sẽ hiển thị chuẩn xác giao diện khách hàng nhìn thấy trên <code>bistextile.com</code>. Nhấn nút <strong>💾 LƯU THAY ĐỔI</strong> để lưu vĩnh viễn!</span>
     </div>
-    <span id="wysiwyg_badge" style="font-size:11px; background:#0284c7; color:#fff; padding:3px 8px; border-radius:4px; font-weight:700;">LIVE EDITABLE</span>
+    <span style="font-size:11px; background:#10b981; color:#fff; padding:4px 10px; border-radius:4px; font-weight:700;">PREVIEW SYNCED ✓</span>
   </div>
   <div id="render_container_{preview_hash}">
     {editable_preview_code}
@@ -2498,6 +2536,65 @@ with tab_tech:
 </html>"""
                 components.html(full_preview_html, height=620, scrolling=True)
                 st.markdown("</div>", unsafe_allow_html=True)
+
+                # NÚT BẤM LƯU TIỆN ÍCH NGAY DƯỚI BẢN XEM TRƯỚC (KHÔNG CẦN CUỘN LÊN ĐẦU TRANG)
+                c_bot_btn1, c_bot_btn2 = st.columns(2)
+                with c_bot_btn1:
+                    if st.button("💾 LƯU TẤT CẢ THAY ĐỔI & SEO (TẠI ĐÂY)", key=f"btn_save_bottom_{p.get('sku')}", type="primary", use_container_width=True):
+                        # Cập nhật và lưu
+                        if edit_mode.startswith("📝"):
+                            p["product_name"] = edit_name_vi.strip()
+                            p["product_name_en"] = edit_name_en.strip()
+                            p["unit"] = edit_unit.strip()
+                            p["brand"] = edit_vendor.strip()
+                            p["description"] = edit_desc.strip()
+                            p["highlights"] = [line.strip().lstrip("-*• ") for line in edit_highlights.split("\n") if line.strip()]
+                            p["application_scope"] = edit_scope.strip()
+                            p["related_doc_title"] = edit_doc_title.strip()
+                            p["related_doc_url"] = default_doc_url
+                            p["meta_title"] = edit_meta_title.strip()
+                            p["meta_description"] = edit_meta_desc.strip()
+                            p["url_slug"] = edit_slug.strip()
+                            p["seo_ready"] = True
+                            p.pop("custom_html", None)
+                            p["custom_html"] = technical_agent.build_7_block_html(p)
+                        else:
+                            p["custom_html"] = custom_html_code
+                        p["updated_at"] = datetime.now().isoformat()
+                        for item in products:
+                            if item.get("sku") == p.get("sku"):
+                                item.update(p)
+                                break
+                        with open(cache_file, "w", encoding="utf-8") as f:
+                            json.dump(products, f, ensure_ascii=False, indent=2)
+                        git_c = Path("c:/Users/Dell/bis-ai-project/BIS_AI_PROJECT/extracted_products_cache.json")
+                        if git_c.parent.exists():
+                            try:
+                                with open(git_c, "w", encoding="utf-8") as f:
+                                    json.dump(products, f, ensure_ascii=False, indent=2)
+                            except Exception:
+                                pass
+                        st.session_state["cached_products"] = products
+                        st.toast("🎉 ĐÃ LƯU THÀNH CÔNG NỘI DUNG VÀ CẤU HÌNH SEO!", icon="💾")
+                        st.success("✓ Đã lưu thành công cả nội dung sản phẩm và thông tin SEO vào hệ thống!")
+                        time.sleep(0.3)
+                        st.rerun()
+
+                with c_bot_btn2:
+                    if st.button("✅ PHÊ DUYỆT ĐỂ ĐĂNG WEB HARAVAN (TẠI ĐÂY)", key=f"btn_approve_bottom_{p.get('sku')}", use_container_width=True):
+                        p["status"] = "APPROVED"
+                        p["updated_at"] = datetime.now().isoformat()
+                        for item in products:
+                            if item.get("sku") == p.get("sku"):
+                                item.update(p)
+                                break
+                        with open(cache_file, "w", encoding="utf-8") as f:
+                            json.dump(products, f, ensure_ascii=False, indent=2)
+                        st.session_state["cached_products"] = products
+                        st.toast(f"🎉 ĐÃ PHÊ DUYỆT SẢN PHẨM {p.get('sku')} ĐỂ ĐĂNG WEB!", icon="✅")
+                        st.success(f"✓ Sản phẩm {p.get('sku')} đã được phê duyệt sẵn sàng xuất bản!")
+                        time.sleep(0.3)
+                        st.rerun()
 
             with tab_memory_quick:
                 st.markdown("##### 🧠 Các Quy Tắc AI Đã Tự Học Được (Learning Engine Rules):")
