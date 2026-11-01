@@ -192,18 +192,9 @@ class AgentMedia:
                 except Exception as e:
                     print(f"Error scanning PDF: {e}")
 
-        # 3. Fallback chụp bitmap trang nếu vẫn không có ảnh
-        try:
-            doc = pymupdf.open(str(pdf_path))
-            fallback_p = page_num - 1 if 1 <= page_num <= len(doc) else 0
-            pix = doc[fallback_p].get_pixmap(matrix=pymupdf.Matrix(1.8, 1.8))
-            pix.save(str(target_path))
-            print(f"⚠️ Fallback: Chụp nguyên trang {fallback_p + 1} làm ảnh cho {clean_sku}")
-            doc.close()
-            return target_path
-        except Exception:
-            pass
-
+        # ❌ XÓA BỎ HOÀN TOÀN ĐOẠN CHỤP NGUYÊN TRANG BÌA (FALLBACK BITMAP) CŨ!
+        # Nếu không có ảnh thiết bị hoặc sách thực tế trong PDF, trả về None để hệ thống chuyển sang tìm Web
+        print(f"⚠️ Không tìm thấy ảnh sản phẩm hợp lệ cho SKU {clean_sku} trong file PDF này.")
         return None
 
     def clean_search_query(self, query: str) -> str:
@@ -271,12 +262,24 @@ class AgentMedia:
 
     def search_duckduckgo_images(self, query: str, max_results: int = 8) -> list[dict]:
         """
-        Tìm kiếm ảnh sản phẩm chất lượng cao, chuẩn như Google qua DuckDuckGo (ddgs).
-        Hoàn toàn miễn phí, không dính banner quảng cáo Bing Cashback/Rewards.
+        Tìm ảnh qua DuckDuckGo: lọc từ khóa ngắn gọn, triệt tiêu hoàn toàn meme và banner rác.
         """
-        clean_q = self.clean_search_query(query)
-        if not clean_q:
+        if not query:
             return []
+
+        # 1. Tự động rút gọn query: khử trùng lặp và chỉ giữ lại Hãng + SKU + 1-2 từ khóa cốt lõi
+        clean_q = self.clean_search_query(query)
+        words = clean_q.strip().split()
+        clean_words = [w for w in words if w.lower() not in ["of", "and", "the", "for", "procedures", "methods", "hardbound", "book", "standard", "test", "-", ":"]]
+        short_query = " ".join(clean_words[:3]) if len(clean_words) >= 3 else clean_q.strip()
+
+        results = []
+        # Danh sách từ khóa rác cần loại bỏ ngay lập tức (meme mèo, động vật, mạng xã hội, quảng cáo)
+        junk_patterns = [
+            "meme", "cat", "kitty", "kitten", "dog", "puppy", "funny", "boredpanda",
+            "wallpaper", "avatar", "reddit", "facebook", "pinterest", "cashback",
+            "coupon", "discount", "gift card", "tiktok", "instagram"
+        ]
 
         try:
             try:
@@ -287,38 +290,45 @@ class AgentMedia:
             with DDGS() as ddgs:
                 try:
                     ddgs_gen = ddgs.images(
-                        query=clean_q,
+                        query=short_query,
                         region="wt-wt",
                         safesearch="off",
-                        max_results=max_results
+                        max_results=max_results * 2
                     )
                 except TypeError:
                     ddgs_gen = ddgs.images(
-                        keywords=clean_q,
+                        keywords=short_query,
                         region="wt-wt",
                         safesearch="off",
-                        max_results=max_results
+                        max_results=max_results * 2
                     )
 
-                results = []
                 for r in ddgs_gen:
-                    img_url = r.get("image")
-                    if img_url:
+                    title = (r.get("title") or "").lower()
+                    img_url = (r.get("image") or "").lower()
+
+                    # Bỏ qua nếu dính các trang meme hài hước hoặc ảnh động vật
+                    if any(junk in title or junk in img_url for junk in junk_patterns):
+                        continue
+
+                    raw_img = r.get("image")
+                    if raw_img:
                         results.append({
-                            "image_url": img_url,
-                            "thumb_url": r.get("thumbnail") or img_url,
-                            "title": r.get("title", clean_q),
+                            "image_url": raw_img,
+                            "thumb_url": r.get("thumbnail") or raw_img,
+                            "title": r.get("title", short_query),
                             "domain": r.get("source") or "DuckDuckGo"
                         })
                     if len(results) >= max_results:
                         break
 
                 if results:
-                    print(f"✓ Đã tìm thấy {len(results)} ảnh sạch qua DuckDuckGo cho '{clean_q}'")
+                    print(f"✓ Đã tìm thấy {len(results)} ảnh sạch qua DuckDuckGo cho '{short_query}'")
                     return results
         except Exception as e:
-            print(f"Lỗi tìm kiếm ảnh qua DDGS: {e}")
-        return []
+            print(f"Lỗi tìm kiếm ảnh DDGS: {e}")
+
+        return results
 
     def search_bing_async_images(self, query: str, max_results: int = 8) -> list[dict]:
         """
