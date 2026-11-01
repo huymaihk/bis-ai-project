@@ -2336,18 +2336,18 @@ with tab_tech:
                         with c_seo_in2:
                             edit_meta_desc = st.text_area(f"Mô tả SEO Google (Meta Description - {len(default_meta_desc)}/160 ký tự):", value=default_meta_desc, height=105, key=f"inp_meta_d_{p.get('sku')}")
 
-                        # Mô phỏng kết quả tìm kiếm Google (Google SERP Snippet Preview)
-                        st.markdown("<div style='font-size: 12px; font-weight: 700; color: #94a3b8; margin-top: 6px; margin-bottom: 4px;'>🔍 Google Search Snippet Preview (Mô phỏng hiển thị trên Google):</div>", unsafe_allow_html=True)
+                        # Mô phỏng kết quả tìm kiếm Google (Google SERP Snippet Preview - High Contrast Dark Mode)
+                        st.markdown("<div style='font-size: 13px; font-weight: 700; color: #38bdf8; margin-top: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;'><span>🔍</span> <span>Mô phỏng hiển thị Google Search (SERP Snippet):</span></div>", unsafe_allow_html=True)
                         st.markdown(f"""
-                        <div style="background: #ffffff; border: 1px solid #dfe1e5; border-radius: 8px; padding: 14px 16px; margin-bottom: 8px; font-family: Arial, sans-serif;">
-                          <div style="font-size: 12px; color: #202124; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-                            <span style="background: #f1f3f4; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px;">🌐</span>
-                            <span>https://bistextile.com &rsaquo; products &rsaquo; <strong style="color: #1a0dab;">{edit_slug}</strong></span>
+                        <div style="background: #1e293b !important; border: 1.5px solid #334155; border-radius: 10px; padding: 14px 18px; margin-bottom: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; box-shadow: 0 4px 14px rgba(0,0,0,0.3);">
+                          <div style="font-size: 12.5px !important; color: #94a3b8 !important; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                            <span style="background: #0f172a; border: 1px solid #334155; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px;">🌐</span>
+                            <span style="color: #94a3b8 !important;">https://bistextile.com &rsaquo; products &rsaquo; <strong style="color: #38bdf8 !important;">{edit_slug}</strong></span>
                           </div>
-                          <div style="font-size: 17px; color: #1a0dab; line-height: 1.3; font-weight: 400; margin-bottom: 4px;">
+                          <div style="font-size: 18px !important; color: #60a5fa !important; line-height: 1.35 !important; font-weight: 600 !important; margin-bottom: 6px;">
                             {edit_meta_title}
                           </div>
-                          <div style="font-size: 13px; color: #4d5156; line-height: 1.5;">
+                          <div style="font-size: 13.5px !important; color: #cbd5e1 !important; line-height: 1.6 !important;">
                             {edit_meta_desc}
                           </div>
                         </div>
@@ -2760,11 +2760,21 @@ with tab_mkt:
         col_seo1, col_seo2 = st.columns([6, 6])
         with col_seo1:
             st.markdown("#### 🌐 Google Search Snippet Preview (Mô phỏng kết quả tìm kiếm)")
+            meta_u = seo_data.get('url_slug') or ''
+            meta_t = seo_data.get('meta_title') or ''
+            meta_d = seo_data.get('meta_description') or ''
             st.markdown(f"""
-            <div class='google-preview-box'>
-              <div class='google-preview-url'>https://bistextile.com &rsaquo; products &rsaquo; {seo_data.get('url_slug')}</div>
-              <div class='google-preview-title'>{seo_data.get('meta_title')}</div>
-              <div class='google-preview-desc'>{seo_data.get('meta_description')}</div>
+            <div style="background: #1e293b !important; border: 1.5px solid #334155; border-radius: 10px; padding: 14px 18px; margin-bottom: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; box-shadow: 0 4px 14px rgba(0,0,0,0.3);">
+              <div style="font-size: 12.5px !important; color: #94a3b8 !important; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                <span style="background: #0f172a; border: 1px solid #334155; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px;">🌐</span>
+                <span style="color: #94a3b8 !important;">https://bistextile.com &rsaquo; products &rsaquo; <strong style="color: #38bdf8 !important;">{meta_u}</strong></span>
+              </div>
+              <div style="font-size: 18px !important; color: #60a5fa !important; line-height: 1.35 !important; font-weight: 600 !important; margin-bottom: 6px;">
+                {meta_t}
+              </div>
+              <div style="font-size: 13.5px !important; color: #cbd5e1 !important; line-height: 1.6 !important;">
+                {meta_d}
+              </div>
             </div>
             """, unsafe_allow_html=True)
 
