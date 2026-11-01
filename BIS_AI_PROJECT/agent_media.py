@@ -757,6 +757,39 @@ class AgentMedia:
         bbox = book_composed.getbbox()
         return book_composed.crop(bbox) if bbox else book_composed
 
+    def smart_prepare_product(self, prod_img: Image.Image) -> Image.Image:
+        """
+        Tiền xử lý sản phẩm thông minh:
+        - Tự động cắt bỏ viền đen (Black border padding) xung quanh ảnh scan bìa sách.
+        - Tự động cắt bỏ viền trắng/xám đơn sắc và làm trong suốt kênh Alpha (Smooth feather).
+        - Giữ nguyên độ phân giải gốc của vật thể.
+        """
+        import numpy as np
+        im = prod_img.convert("RGBA")
+        arr = np.array(im)
+        
+        # 1. Cắt bỏ viền đen nếu ảnh scan/ảnh web bị bọc khung đen
+        if arr[:5, :, :3].mean() < 30 or arr[:, :5, :3].mean() < 30:
+            mask = (arr[:, :, 0] > 25) | (arr[:, :, 1] > 25) | (arr[:, :, 2] > 25)
+            rows = np.where(mask.any(axis=1))[0]
+            cols = np.where(mask.any(axis=0))[0]
+            if len(rows) and len(cols):
+                im = im.crop((cols[0], rows[0], cols[-1] + 1, rows[-1] + 1))
+                arr = np.array(im)
+                
+        # 2. Xử lý nền trắng nếu ảnh chưa có kênh alpha thực sự
+        if (arr[:, :, 3] < 250).sum() < 100:
+            if arr[:5, :, :3].mean() > 230 or arr[:, :5, :3].mean() > 230:
+                r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
+                mask_white = (r > 232) & (g > 232) & (b > 232)
+                arr[:, :, 3][mask_white] = 0
+                im = Image.fromarray(arr, mode="RGBA")
+                bbox = im.getbbox()
+                if bbox:
+                    im = im.crop(bbox)
+                    
+        return im
+
     def render_3d_product_mockup(self, prod_img: Image.Image, target_height: int = 540) -> Image.Image:
         """Tách nền thông minh và tăng cường khối 2.5D cho máy móc thiết bị."""
         prod = prod_img.convert("RGBA")
@@ -789,11 +822,11 @@ class AgentMedia:
         enable_reflection: bool = True
     ) -> Path:
         """
-        AI Ghép nền Studio với không gian phối cảnh 3D và bóng đổ vật lý:
-        - render_mode == 'branded_3d': Dựng phối cảnh Tường - Sàn thương hiệu từ hoa văn logo, bóng đổ tiếp xúc 2 lớp + phản xạ sàn.
-        - render_mode == 'book_3d': Dựng sách 3D có gáy sách cong, mép trang giấy và góc nghiêng 3D.
-        - render_mode == 'product_25d': Tách nền thông minh và đổ bóng tiếp xúc vật lý.
-        - render_mode == 'flat_2d': Giữ nguyên ảnh phẳng 2D.
+        AI Ghép nền Studio chuẩn thương mại điện tử (chuẩn như catalogue quốc tế):
+        - Tự động nhận diện BIS_BACKGROUND.png là phông nền 3D studio gốc đạt chuẩn.
+        - Tự động loại bỏ viền đen/viền trắng bao quanh sản phẩm.
+        - Đặt sản phẩm lớn nổi bật (chiếm 68-72% khung hình), vững vàng trên mặt sàn.
+        - Đổ bóng vật lý 2 lớp: Bóng tiếp xúc chân đế (Ambient Occlusion) + Bóng tỏa mềm + Phản xạ mờ mặt sàn.
         """
         clean_sku = sku.strip().replace(" ", "_")
         final_path = self.final_dir / f"{clean_sku}_final.jpg"
@@ -804,65 +837,45 @@ class AgentMedia:
             bg_path = bg_list[0] if bg_list else (self.bg_dir / "BIS_BACKGROUND.png")
             
         bg_path = Path(bg_path)
-        is_pattern_bg = "BIS_BACKGROUND" in bg_path.name or "pattern" in bg_path.name.lower() or render_mode == "branded_3d"
+        is_bis_bg = "BIS_BACKGROUND" in bg_path.name
+        is_prerendered_bg = is_bis_bg or "modern_textile_lab" in bg_path.name or "luxury_marble_podium" in bg_path.name or "clean_studio" in bg_path.name
 
-        if is_pattern_bg or render_mode == "branded_3d":
-            # Tạo phông nền 3D Tường - Sàn có phối cảnh hoa văn logo
+        if is_prerendered_bg:
+            # Dùng trực tiếp phông nền studio 3D đạt chuẩn độ nét cao, không bị warp biến dạng
+            bg_img = Image.open(bg_path).convert("RGBA").resize((1024, 1024), Image.Resampling.LANCZOS)
+            ground_baseline = 850 if is_bis_bg else 690
+        else:
+            # Nếu người dùng tải lên mẫu hoa văn 2D phẳng riêng thì mới dựng phối cảnh tường - sàn
             bg_img = self.create_3d_branded_backdrop(
                 pattern_img_path=bg_path,
-                canvas_w=1000,
-                canvas_h=1000,
+                canvas_w=1024,
+                canvas_h=1024,
                 horizon_y=horizon_y,
                 depth_ratio=depth_ratio
             )
-        else:
-            bg_img = Image.open(bg_path).convert("RGBA").resize((1000, 1000), Image.Resampling.LANCZOS)
+            ground_baseline = min(960, horizon_y + int((1024 - horizon_y) * 0.72))
 
-        # 2. Xử lý ảnh sản phẩm và tách nền trắng/xám đơn sắc
+        # 2. Tiền xử lý sản phẩm: Loại bỏ viền đen / viền trắng
         raw_prod = Image.open(product_img_path)
-        prod_rgba = raw_prod.convert("RGBA")
-        
-        # Tự động loại bỏ nền trắng nếu ảnh chưa có kênh trong suốt
-        import numpy as np
-        arr = np.array(prod_rgba, dtype=np.uint8)
-        if (arr[:, :, 3] < 250).sum() < 100:
-            # Ảnh dạng nền trắng đục -> Tách nền thông minh
-            r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
-            mask_white = (r > 235) & (g > 235) & (b > 235)
-            arr[:, :, 3][mask_white] = 0
-            prod_rgba = Image.fromarray(arr, mode="RGBA")
-            bbox = prod_rgba.getbbox()
-            if bbox:
-                prod_rgba = prod_rgba.crop(bbox)
+        prod_rgba = self.smart_prepare_product(raw_prod)
 
-        # 3. Dựng khối theo chế độ
+        # 3. Dựng khối và co giãn kích thước nổi bật (Tỷ lệ chuẩn 68-72% khung hình như Hanna & MQuant)
         if render_mode == "book_3d":
-            rendered_obj = self.render_3d_book_mockup(prod_rgba, target_height=490)
+            rendered_obj = self.render_3d_book_mockup(prod_rgba, target_height=680)
         elif render_mode == "product_25d":
-            rendered_obj = self.render_3d_product_mockup(prod_rgba, target_height=520)
+            rendered_obj = self.render_3d_product_mockup(prod_rgba, target_height=700)
         else:
-            rendered_obj = prod_rgba
-            # Co giãn vừa vặn 65-70% khung hình
-            rendered_obj.thumbnail((680, 680), Image.Resampling.LANCZOS)
+            # Chế độ branded_3d hoặc flat_2d: Giữ nguyên form thực tế của sản phẩm
+            target_h = 700
+            target_w = int(prod_rgba.size[0] * (target_h / prod_rgba.size[1]))
+            if target_w > 800:
+                target_w = 800
+                target_h = int(prod_rgba.size[1] * (target_w / prod_rgba.size[0]))
+            rendered_obj = prod_rgba.resize((target_w, target_h), Image.Resampling.LANCZOS)
 
         obj_w, obj_h = rendered_obj.size
-        pos_x = (1000 - obj_w) // 2
-        
-        # Định vị sản phẩm đứng chính xác trên mặt sàn phối cảnh
-        if is_pattern_bg or render_mode == "branded_3d":
-            ground_baseline = min(960, horizon_y + int((1000 - horizon_y) * 0.72))
-            pos_y = ground_baseline - obj_h
-            if pos_y < 80:
-                # Nếu sản phẩm quá cao, điều chỉnh tỉ lệ
-                scale = (ground_baseline - 80) / obj_h
-                new_w = max(50, int(obj_w * scale))
-                new_h = max(50, int(obj_h * scale))
-                rendered_obj = rendered_obj.resize((new_w, new_h), Image.Resampling.LANCZOS)
-                obj_w, obj_h = rendered_obj.size
-                pos_x = (1000 - obj_w) // 2
-                pos_y = ground_baseline - obj_h
-        else:
-            pos_y = 690 - obj_h
+        pos_x = (1024 - obj_w) // 2
+        pos_y = ground_baseline - obj_h
 
         # 4. Áp dụng hệ thống đổ bóng vật lý 2 lớp chân thực
         composed = self.apply_realistic_contact_shadow(
