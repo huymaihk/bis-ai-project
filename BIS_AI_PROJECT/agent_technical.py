@@ -106,6 +106,54 @@ class PageExtractionResult(BaseModel):
     products: List[ExtractedProductFact] = Field(default_factory=list)
 
 
+def resolve_related_standard_doc(record: dict) -> tuple[str, str]:
+    """
+    Tự động suy luận Tiêu chuẩn & Tài liệu kỹ thuật liên quan thực tế (Khối 7):
+    - Tuyệt đối KHÔNG lưu trùng lặp với mã SKU (như 'Tra cứu sản phẩm mã 03017C...').
+    - Ưu tiên bóc tách mã tiêu chuẩn (AATCC TM, ISO 105, ASTM D...) từ mô tả hoặc tên sản phẩm.
+    - Với sách, manual, subscription: gán đúng tên tiêu chuẩn/sổ tay/cơ sở dữ liệu tương ứng.
+    """
+    sku = str(record.get("sku", "")).strip()
+    custom_title = record.get("related_doc_title")
+    if custom_title and not str(custom_title).strip().startswith("Tra cứu sản phẩm mã"):
+        return custom_title, record.get("related_doc_url") or f"https://bistextile.com/search?q={urllib.parse.quote(str(custom_title))}"
+
+    text = f"{record.get('product_name', '')} {record.get('product_name_en', '')} {record.get('description', '')} {record.get('notes', '')}"
+    vendor = record.get("brand") or record.get("vendor") or "AATCC"
+    
+    # 1. Tìm kiếm các mã tiêu chuẩn cụ thể trong văn bản
+    matches_tm = re.findall(r'\b(AATCC\s+(?:TM|LP|EP|M|Monograph)\s*\d+[\.\d]*)\b', text, re.I)
+    matches_iso = re.findall(r'\b(ISO\s+105(?:-[A-Z0-9]+)?)\b', text, re.I)
+    matches_astm = re.findall(r'\b(ASTM\s+[D|E|F]\s*\d+)\b', text, re.I)
+    
+    if matches_tm:
+        code = matches_tm[0].upper().strip()
+        return f"Tiêu chuẩn phương pháp thử {code}", f"https://bistextile.com/search?q={urllib.parse.quote(code)}"
+    if matches_iso:
+        code = matches_iso[0].upper().strip()
+        return f"Tiêu chuẩn quốc tế {code}", f"https://bistextile.com/search?q={urllib.parse.quote(code)}"
+    if matches_astm:
+        code = matches_astm[0].upper().strip()
+        return f"Tiêu chuẩn kỹ thuật {code}", f"https://bistextile.com/search?q={urllib.parse.quote(code)}"
+        
+    if "compass" in text.lower():
+        return "Hệ thống cơ sở dữ liệu tiêu chuẩn trực tuyến ASTM Compass®", "https://bistextile.com/search?q=ASTM+Compass"
+        
+    if any(k in text.lower() for k in ["crock", "ma sát", "rubbing"]):
+        return "Tiêu chuẩn phương pháp kiểm tra độ bền màu ma sát AATCC TM8", "https://bistextile.com/search?q=AATCC+TM8"
+
+    if any(k in text.lower() for k in ["giặt", "washing", "launder"]):
+        return "Tiêu chuẩn phương pháp thử nghiệm độ bền màu giặt AATCC TM61", "https://bistextile.com/search?q=AATCC+TM61"
+
+    if any(k in text.lower() for k in ["len xanh", "blue wool", "ánh sáng", "lightfastness"]):
+        return "Tiêu chuẩn độ bền màu với ánh sáng AATCC TM16.3", "https://bistextile.com/search?q=AATCC+TM16"
+
+    if any(k in text.lower() for k in ["sách", "sổ tay", "manual", "quốc tế", "quy trình"]):
+        return f"Sổ tay phương pháp thử nghiệm và Tiêu chuẩn dệt may {vendor}", f"https://bistextile.com/search?q={urllib.parse.quote(vendor)}+Manual"
+        
+    return f"Quy trình và Tiêu chuẩn kiểm nghiệm dệt may quốc tế {vendor}", f"https://bistextile.com/search?q={urllib.parse.quote(vendor)}"
+
+
 class AgentTechnical:
     def __init__(self, storage_dir: str | Path | None = None):
         self.storage_dir = Path(storage_dir) if storage_dir else Path(__file__).parent.resolve()
@@ -288,11 +336,11 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
             "has_warnings": not b5["pass"]
         }
 
-    def build_7_block_html(self, record: dict) -> str:
+    def build_7_block_html(self, record: dict, force_refresh: bool = False) -> str:
         """Generate standard BIS 7-block product description HTML with high contrast & pristine styling."""
-        # Nếu custom_html chứa các thông tin cũ bị cấm (Đơn vị tính, Trang nguồn, chính ngạch), bỏ qua để tạo mới chuẩn
+        # Nếu custom_html chứa các thông tin cũ bị cấm (Đơn vị tính, Trang nguồn, chính ngạch, Đơn vị phân phối, Tra cứu sản phẩm mã), bỏ qua để tạo mới chuẩn
         c_html = record.get("custom_html", "")
-        if c_html and "Trang nguồn tài liệu" not in c_html and "Đơn vị tính" not in c_html and "chính ngạch" not in c_html:
+        if not force_refresh and c_html and "Trang nguồn tài liệu" not in c_html and "Đơn vị tính" not in c_html and "chính ngạch" not in c_html and "Đơn vị phân phối" not in c_html and "Tra cứu sản phẩm mã" not in c_html:
             return c_html
 
         title_vi = record.get("product_name") or ""
@@ -327,8 +375,7 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
 
         # KHỐI 6 & 7: Phạm vi áp dụng & Tài liệu liên quan tùy biến
         app_scope = record.get("application_scope") or "Phương pháp kiểm nghiệm dệt may quốc tế"
-        doc_title = record.get("related_doc_title") or f"Tra cứu sản phẩm mã {sku} trên cổng BIS Textile"
-        doc_url = record.get("related_doc_url") or f"https://bistextile.com/search?q={sku}"
+        doc_title, doc_url = resolve_related_standard_doc(record)
 
         html = f"""<div class="bis-product-card bis-product-description" style="background-color: #ffffff !important; color: #1e293b !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; padding: 24px; border-radius: 12px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 100%; box-sizing: border-box;">
 
@@ -344,7 +391,7 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
   
   <!-- KHỐI 3: Hãng ban hành, vai trò, xuất xứ -->
   <div style="font-size: 13px; color: #1e293b !important; padding: 8px 14px; background: #f0f9ff !important; border-left: 4px solid #0284c7; border-radius: 6px; margin-bottom: 16px; border: 1px solid #bae6fd;">
-    <strong>Tổ chức / Hãng:</strong> <span style="color: #0369a1; font-weight: 700;">{vendor}</span> &bull; <strong>Đơn vị phân phối:</strong> <span style="color: #0f172a; font-weight: 600;">BIS Textile Việt Nam</span>
+    <strong>Tổ chức / Hãng ban hành:</strong> <span style="color: #0369a1; font-weight: 700;">{vendor}</span>
   </div>
 
   <!-- KHỐI 4: Giới thiệu sản phẩm -->

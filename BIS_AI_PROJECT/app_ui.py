@@ -1,3 +1,4 @@
+from agent_technical import resolve_related_standard_doc
 """
 BIS TEXTILE - MULTI-AGENT AUTONOMOUS SYSTEM & COMMAND CENTER
 Giao diện trung tâm điều hành AI phong cách Cyberpunk / Sci-Fi HUD Canvas
@@ -2161,7 +2162,7 @@ with tab_tech:
                 default_hl_str = "Tiêu chuẩn thử nghiệm chính hãng được chuẩn hóa áp dụng toàn cầu trong ngành dệt may.\nĐầy đủ tài liệu hướng dẫn và quy trình thực hành phòng lab QA/QC."
 
             default_scope = p.get("application_scope") or "Phương pháp kiểm nghiệm dệt may quốc tế"
-            default_doc_title = p.get("related_doc_title") or f"Tra cứu sản phẩm mã {p.get('sku')} trên cổng BIS Textile"
+            default_doc_title, default_doc_url = resolve_related_standard_doc(p)
 
             with tab_unified:
                 active_meeting_tab2 = learning_engine.get_active_meeting_request() if learning_engine and hasattr(learning_engine, "get_active_meeting_request") else None
@@ -2306,6 +2307,7 @@ with tab_tech:
                         p["highlights"] = hl_list
                         p["application_scope"] = edit_scope.strip()
                         p["related_doc_title"] = edit_doc_title.strip()
+            p["related_doc_url"] = default_doc_url
                         p["source_page"] = edit_page_str.strip()
 
                         if approve_btn:

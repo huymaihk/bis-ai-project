@@ -65,8 +65,7 @@ def build_7_block_html(product: dict) -> str:
         <tr><td style="width: 39%; background: #f8fafc; font-weight: 600; border: 1px solid #e2e8f0; padding: 8px 12px; font-size: 13px;">Mã sản phẩm (SKU)</td><td style="border: 1px solid #e2e8f0; padding: 8px 12px; font-size: 13px;">{sku}</td></tr>
         <tr><td style="width: 39%; background: #f8fafc; font-weight: 600; border: 1px solid #e2e8f0; padding: 8px 12px; font-size: 13px;">Tổ chức ban hành</td><td style="border: 1px solid #e2e8f0; padding: 8px 12px; font-size: 13px;">{vendor}</td></tr>
         <tr><td style="width: 39%; background: #f8fafc; font-weight: 600; border: 1px solid #e2e8f0; padding: 8px 12px; font-size: 13px;">Phạm vi chuyên ngành</td><td style="border: 1px solid #e2e8f0; padding: 8px 12px; font-size: 13px;">Kiểm nghiệm và đánh giá chất lượng dệt may</td></tr>
-        <tr><td style="width: 39%; background: #f8fafc; font-weight: 600; border: 1px solid #e2e8f0; padding: 8px 12px; font-size: 13px;">Đơn vị phân phối</td><td style="border: 1px solid #e2e8f0; padding: 8px 12px; font-size: 13px;">BIS Textile Việt Nam (bistextile.com)</td></tr>
-      </tbody>
+              </tbody>
     </table>
   </div>
 
