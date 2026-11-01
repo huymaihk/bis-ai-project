@@ -2458,10 +2458,15 @@ with tab_media:
                     type=["jpg", "png", "jpeg", "webp"], 
                     key=f"up_{clean_sku}"
                 )
+                sig_key_up = f"proc_up_{clean_sku}"
                 if uploaded_user_img:
-                    saved_path = media_agent.register_user_image(clean_sku, uploaded_user_img.getvalue(), uploaded_user_img.name)
-                    st.toast(f"✓ Đã lưu ảnh `{saved_path.name}` vào Drive!", icon="📁")
-                    st.rerun()
+                    f_bytes = uploaded_user_img.getvalue()
+                    f_sig = f"{uploaded_user_img.name}_{len(f_bytes)}"
+                    if st.session_state.get(sig_key_up) != f_sig:
+                        st.session_state[sig_key_up] = f_sig
+                        saved_path = media_agent.register_user_image(clean_sku, f_bytes, uploaded_user_img.name)
+                        st.toast(f"✓ Đã lưu ảnh `{saved_path.name}` vào Drive!", icon="📁")
+                        st.rerun()
 
             with c_src_thumb:
                 if chosen_source_img and chosen_source_img.exists():
@@ -2493,10 +2498,15 @@ with tab_media:
             
             with c_bg_up:
                 new_pat_file = st.file_uploader("Nạp mẫu hoa văn mới:", type=["jpg", "png"], key=f"new_pat_{clean_sku}")
+                sig_key_pat = f"proc_pat_{clean_sku}"
                 if new_pat_file:
-                    media_agent.register_background(new_pat_file.name, new_pat_file.getvalue())
-                    st.toast("✓ Đã lưu phôi hoa văn mới!", icon="🎨")
-                    st.rerun()
+                    p_bytes = new_pat_file.getvalue()
+                    p_sig = f"{new_pat_file.name}_{len(p_bytes)}"
+                    if st.session_state.get(sig_key_pat) != p_sig:
+                        st.session_state[sig_key_pat] = p_sig
+                        media_agent.register_background(new_pat_file.name, p_bytes)
+                        st.toast("✓ Đã lưu phôi hoa văn mới!", icon="🎨")
+                        st.rerun()
 
             # 2. Phong cách render
             render_style = st.radio(
@@ -2631,14 +2641,19 @@ with tab_media:
                     type=["jpg", "png", "jpeg"],
                     key=f"canva_up_{clean_sku}"
                 )
+                sig_key_canva = f"proc_canva_{clean_sku}"
                 if up_canva:
-                    if hasattr(media_agent, "register_final_composite"):
-                        media_agent.register_final_composite(clean_sku, up_canva.getvalue())
-                    else:
-                        out_p = media_agent.final_dir / f"{clean_sku}_final.jpg"
-                        out_p.write_bytes(up_canva.getvalue())
-                    st.toast(f"✓ Đã lưu và duyệt ảnh Mockup ngoài cho mã {clean_sku}!", icon="🎉")
-                    st.rerun()
+                    c_bytes = up_canva.getvalue()
+                    c_sig = f"{up_canva.name}_{len(c_bytes)}"
+                    if st.session_state.get(sig_key_canva) != c_sig:
+                        st.session_state[sig_key_canva] = c_sig
+                        if hasattr(media_agent, "register_final_composite"):
+                            media_agent.register_final_composite(clean_sku, c_bytes)
+                        else:
+                            out_p = media_agent.final_dir / f"{clean_sku}_final.jpg"
+                            out_p.write_bytes(c_bytes)
+                        st.toast(f"✓ Đã lưu và duyệt ảnh Mockup ngoài cho mã {clean_sku}!", icon="🎉")
+                        st.rerun()
 
         # ── CỘT PHẢI: LIVE PREVIEW 2K & CỔNG PHÊ DUYỆT HARAVAN ────────────────
         with col_m2:
