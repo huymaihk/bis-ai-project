@@ -98,12 +98,14 @@ Hệ thống được thiết kế theo mô hình **Autonomous Multi-Agent Comma
 
 ### 3.2. Chuẩn 7 Khối HTML Bài Viết Haravan (Nền trắng sắc nét)
 1. **Khối 1:** Tên sản phẩm tiếng Việt (Font bold 20px, màu `#0f172a`).
-2. **Khối 2:** Tên sản phẩm tiếng Anh (Font bold 15px, màu xanh `#0284c7`).
+   * **Cấu trúc bắt buộc:** `Tên tiếng Việt + Mã SKU + Hãng sản xuất` (Ví dụ: `Bộ thử sắc giác chuyên sâu Farnsworth Munsell 100-Hue Test 88900A AATCC`).
+2. **Khối 2:** Tên sản phẩm tiếng Anh (Font bold 15px, màu xanh `#0284c7`, UPPERCASE giữ nguyên từ Catalogue gốc).
 3. **Khối 3:** Hãng sản xuất / Tổ chức ban hành (`AATCC (Hoa Kỳ)`).
    * **ĐẶC BIỆT LƯU Ý:** **TUYỆT ĐỐI KHÔNG ĐƯỢC CHỨA CỤM TỪ `• Đơn vị phân phối: BIS Textile Việt Nam`**. Toàn bộ hệ sinh thái đã thống nhất gỡ bỏ hoàn toàn cụm từ này khỏi Khối 3.
-4. **Khối 4:** Giới thiệu sản phẩm (Mô tả kỹ thuật chuyên sâu, súc tích).
+4. **Khối 4:** Giới thiệu sản phẩm (Mô tả kỹ thuật chuyên sâu, súc tích). Tiếp nhận thông số gộp từ Khối 6 nếu sản phẩm có quá ít dữ liệu bảng.
 5. **Khối 5:** Đặc điểm nổi bật (Dạng danh sách `<ul><li>` rõ ràng, có emoji ✨).
 6. **Khối 6:** Bảng thông số kỹ thuật chính 2 cột (Cột 1 rộng 39% nền xám nhạt `#f8fafc`, Cột 2 rộng 61% nền trắng `#ffffff`).
+   * **Quy tắc linh hoạt:** NẾU SẢN PHẨM CÓ QUÁ ÍT THÔNG TIN (dưới 2 tiêu chí), cho phép KHÔNG CẦN LẬP BẢNG mà gộp trực tiếp nội dung vào Khối 4 để giao diện bài viết gọn gàng, súc tích.
 7. **Khối 7:** Liên kết / Tài liệu tiêu chuẩn phương pháp thử liên quan (AATCC TM, EP, v.v.).
 
 ### 3.3. Công thức chuẩn SEO Google Meta Description
@@ -146,3 +148,6 @@ $$\text{[Tên tiếng Việt]} - \text{[Tên tiếng Anh]} \text{ ([SKU]) chính
   * *Bài học 1 (Deep Content Scanning):* Đối soát sản phẩm thương mại điện tử B2B bắt buộc phải đọc sâu vào `body_html` và bảng thông số của bài viết sàn, vì 1 bài viết lớn (ví dụ máy thử thấm nước hay bột giặt 1993) thường gộp nhiều mã SKU và phụ tùng bên trong. Đã phát hiện chính xác 28 mã trùng và bảo vệ an toàn 69 mã mới.
   * *Bài học 2 (Regex Robustness):* Khi viết regex character class chứa nhiều ký tự phân tách đặc biệt (`—`, `–`, `_`, `-`), dấu `-` phải luôn được đặt ở cuối cùng để tránh lỗi `bad character range`.
   * *Bài học 3 (Single Source of Truth):* Dữ liệu bóc tách phải luôn đồng bộ song song giữa Google Drive Workspace và Git Repo (`C:\Users\Dell\bis-ai-project\BIS_AI_PROJECT`) để đảm bảo Streamlit Cloud và local runtime đồng nhất 100%.
+  * *Bài học 4 (Quy chuẩn Tiêu đề & Linh hoạt Bảng thông số):* Cấu trúc Khối 1 bắt buộc có cả Tên TV + Mã SKU + Hãng (AATCC); Khối 6 linh hoạt không bắt buộc vẽ bảng nếu thông số quá ngắn để tránh giao diện bị vụn, cho phép gộp trực tiếp vào phần giới thiệu Khối 4.
+  * *Bài học 5 (Dọn dẹp tệp tin rác):* Định kỳ dọn sạch các script test một lần (`test_*.py`, `.docx` cũ, file debug tạm) để giữ kho lưu trữ nhẹ, tinh gọn và chuyên nghiệp.
+
