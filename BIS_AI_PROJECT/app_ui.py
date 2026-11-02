@@ -2042,7 +2042,7 @@ with tab_tech:
         # ── 2. BỘ LỌC TÁCH RIÊNG TRONG Ô CHỌN SKU DUYỆT ────────────────────────────
         c_sync_head1, c_sync_head2 = st.columns([7.5, 4.5])
         with c_sync_head1:
-            st.markdown(f"**⚡ Đối soát an toàn Haravan:** `🛡️ {len(dups_products)} SP đã có trên sàn (Đã khóa) &bull; ✅ {len(valid_products)} SP mới sẵn sàng xuất bản`")
+            st.markdown(f"**⚡ Đối soát an toàn Haravan:** `🛡️ {len(dups_products)} SP đã có trên sàn (Đã khóa) • ✅ {len(valid_products)} SP mới sẵn sàng xuất bản`")
         with c_sync_head2:
             if st.button("🔄 CẬP NHẬT ĐỐI SOÁT LIVE HARAVAN NGAY", key="btn_sync_haravan_tab3", type="primary", use_container_width=True, help="Bấm vào đây ngay khi bạn vừa cập nhật/đăng sản phẩm trên Haravan để hệ thống kéo dữ liệu mới nhất về đối soát lại!"):
                 if operations_agent:
