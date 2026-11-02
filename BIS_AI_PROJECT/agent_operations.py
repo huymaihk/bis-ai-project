@@ -62,77 +62,44 @@ def tokenize_technical_text(text: str) -> set:
 
 def is_duplicate_product(p: dict, existing_store_items: list) -> tuple[bool, str, str]:
     """
-    Hệ thống phát hiện trùng đa tầng kết hợp đọc nội dung (Content & Semantic De-duplication):
-    - Tier 1: Trùng mã SKU chính xác hoặc Variant SKU trên sàn Haravan.
-    - Tier 2: Trùng mã số tiêu chuẩn cốt lõi (Core Number: 03026 trong 03026A/B) trên URL handle, tiêu đề, tags.
-    - Tier 3: Trùng nội dung mô tả & tiêu đề tiếng Anh (Jaccard Overlap >= 70% từ khóa chuyên môn).
-    - Tier 4: Trùng tiêu đề tiếng Việt & danh mục kỹ thuật dệt may.
-    Trả về: (is_duplicate: bool, match_url: str, reason: str)
+    Hệ thống phát hiện trùng chuẩn xác cao (Precision De-duplication):
+    - Tier 1: Trùng mã SKU chính xác trong danh sách Variant SKU trên sàn Haravan.
+    - Tier 2: Trùng mã SKU xuất hiện dưới dạng từ/token độc lập trong URL handle, tiêu đề hoặc tags trên sàn.
+    - Tier 3: Trùng mã số tiêu chuẩn cốt lõi (Core Number: e.g. 03026 trong 03026A/B) xuất hiện độc lập trong URL/tiêu đề.
+    Tuyệt đối KHÔNG đối soát trùng bằng từ khóa chung chung (như dệt, nhuộm, may, scale, detergent) để tránh khóa nhầm sản phẩm khác biệt.
     """
     if not p or not existing_store_items:
         return False, "", ""
 
-    sku = str(p.get("sku", "")).strip()
-    sku_upper = sku.upper()
-    sku_lower = sku.lower()
-    p_core_numbers = extract_core_numbers(sku)
-
-    p_title_vi = str(p.get("product_name") or p.get("title") or "").strip()
-    p_title_en = str(p.get("product_name_en") or "").strip()
-    p_desc = str(p.get("description") or "").strip()
-
-    p_tokens_en = tokenize_technical_text(p_title_en)
-    p_tokens_vi = tokenize_technical_text(remove_accents(p_title_vi))
+    sku = str(p.get("sku", "")).strip().upper()
+    if not sku:
+        return False, "", ""
+    sku_low = sku.lower()
 
     for item in existing_store_items:
         it_url = item.get("url", f"/products/{item.get('handle', '')}")
-        it_title = str(item.get("title", ""))
-        it_handle = str(item.get("handle", ""))
-        it_content = str(item.get("content_text", "") or item.get("body_html", "") or "")
+        it_title = str(item.get("title", "")).strip()
+        it_handle = str(item.get("handle", "")).strip()
         it_tags = item.get("tags", [])
         it_tags_str = " ".join(it_tags) if isinstance(it_tags, list) else str(it_tags)
 
-        full_it_text = f"{it_title} {it_handle} {it_content} {it_tags_str}"
-        full_it_text_lower = full_it_text.lower()
-
-        # 1. Tier 1: Exact SKU match
+        # 1. Tier 1: Exact Variant SKU match
         variant_skus = [str(v).strip().upper() for v in item.get("variants_skus", []) if v]
-        if sku_upper and sku_upper in variant_skus:
+        if sku in variant_skus:
             return True, it_url, f"Trùng mã SKU chính xác '{sku}' với sản phẩm '{it_title}'"
 
-        if sku_lower and (f"-{sku_lower}" in it_handle.lower() or f"_{sku_lower}" in it_handle.lower() or f" {sku_lower} " in f" {full_it_text_lower} "):
-            return True, it_url, f"Mã SKU '{sku}' xuất hiện trong URL/Tiêu đề của '{it_title}'"
+        # 2. Tier 2: Exact SKU as independent token in handle, title or tags
+        pat_sku = rf'(?:^|[-_ \(\)]){re.escape(sku_low)}(?:$|[-_ \(\)])'
+        tag_list_upper = [t.upper() for t in (it_tags if isinstance(it_tags, list) else [])]
+        if re.search(pat_sku, it_handle.lower()) or re.search(pat_sku, it_title.lower()) or sku in tag_list_upper:
+            return True, it_url, f"Mã SKU '{sku}' xuất hiện trong tên/URL của '{it_title}'"
 
-        # 2. Tier 2: Core numeric code (e.g. 03026 from 03026A/B vs so-tay-tieu-chuan-kiem-nghiem-det-may-aatcc-03026)
-        it_numbers = extract_core_numbers(it_handle) | extract_core_numbers(it_title) | extract_core_numbers(it_tags_str)
-        common_numbers = p_core_numbers & it_numbers
-        # Loại trừ năm thông thường (2020-2030) nếu không có ngữ cảnh thương hiệu
-        significant_numbers = {n for n in common_numbers if not (2020 <= int(n) <= 2030 and len(n) == 4)}
-
-        if significant_numbers:
-            num = list(significant_numbers)[0]
-            brand_in_p = "aatcc" if "aatcc" in f"{sku_lower} {p_title_en.lower()} {p_title_vi.lower()}" else ""
-            brand_in_it = "aatcc" if "aatcc" in full_it_text_lower else ""
-            if brand_in_p and brand_in_p == brand_in_it:
-                return True, it_url, f"Trùng mã tiêu chuẩn cốt lõi '{num}' ({brand_in_p.upper()}) với sản phẩm '{it_title}'"
-            elif f"-{num}" in it_handle.lower() or it_handle.lower().endswith(num):
-                return True, it_url, f"Trùng mã số '{num}' trong URL handle '{it_handle}' của '{it_title}'"
-
-        # 3. Tier 3: English title & content semantic similarity
-        if p_tokens_en:
-            it_tokens_en = tokenize_technical_text(it_content[:800] + " " + it_title)
-            intersection = p_tokens_en & it_tokens_en
-            if len(p_tokens_en) >= 4 and len(intersection) / len(p_tokens_en) >= 0.70:
-                matched_words = ", ".join(list(intersection)[:4])
-                return True, it_url, f"Trùng nội dung & Tiêu đề tiếng Anh (Từ khóa: {matched_words}) với '{it_title}'"
-
-        # 4. Tier 4: Vietnamese title & category semantic similarity
-        if p_tokens_vi:
-            it_tokens_vi = tokenize_technical_text(remove_accents(it_title))
-            intersection_vi = p_tokens_vi & it_tokens_vi
-            if len(p_tokens_vi) >= 4 and len(intersection_vi) / len(p_tokens_vi) >= 0.70:
-                matched_words = ", ".join(list(intersection_vi)[:4])
-                return True, it_url, f"Trùng tiêu đề tiếng Việt (Từ khóa: {matched_words}) với '{it_title}'"
+        # 3. Tier 3: Core numeric code (e.g. 03026 từ 03026A/B khớp với sách 03026)
+        core_num = re.sub(r'[A-Za-z]+$', '', sku)
+        if len(core_num) >= 5:
+            pat_core = rf'(?:^|[-_ \(\)]){re.escape(core_num.lower())}(?:$|[-_ \(\)])'
+            if re.search(pat_core, it_handle.lower()) or re.search(pat_core, it_title.lower()):
+                return True, it_url, f"Trùng mã số cốt lõi '{core_num}' với '{it_title}'"
 
     return False, "", ""
 
@@ -264,6 +231,12 @@ class AgentOperations:
                 p["notes"] = f"CẢNH BÁO: Đã tồn tại trên website bistextile.com ({match_url}) - {reason}"
                 if sku not in website_dups_locked:
                     website_dups_locked.append(sku)
+            else:
+                if p.get("status") == STATUS_REJECTED:
+                    p["status"] = STATUS_EXTRACTED
+                    p["notes"] = f"Trích xuất trực tiếp từ Catalogue AATCC Trang {p.get('source_page', '1')}. SKU: {sku}."
+                    p.pop("haravan_matched_id", None)
+                    p.pop("haravan_matched_status", None)
 
             sku_key = sku.upper()
             if sku_key not in deduped_cache_dict:
@@ -477,9 +450,11 @@ class AgentOperations:
                     "haravan_id": match_item.get("id")
                 })
             else:
-                if p.get("status") == STATUS_REJECTED and "Haravan" in p.get("notes", ""):
+                if p.get("status") == STATUS_REJECTED:
                     p["status"] = STATUS_EXTRACTED
-                    p["notes"] = ""
+                    p["notes"] = f"Trích xuất trực tiếp từ Catalogue AATCC Trang {p.get('source_page', '1')}. SKU: {sku}."
+                    p.pop("haravan_matched_id", None)
+                    p.pop("haravan_matched_status", None)
                 unmatched.append(sku)
 
         # Lưu lại cache
