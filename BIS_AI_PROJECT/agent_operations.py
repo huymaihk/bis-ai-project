@@ -62,11 +62,13 @@ def tokenize_technical_text(text: str) -> set:
 
 def is_duplicate_product(p: dict, existing_store_items: list) -> tuple[bool, str, str]:
     """
-    Hệ thống phát hiện trùng chuẩn xác cao (Precision De-duplication):
+    Hệ thống phát hiện trùng chuẩn xác cao kết hợp đọc full nội dung chi tiết (Deep Content De-duplication):
     - Tier 1: Trùng mã SKU chính xác trong danh sách Variant SKU trên sàn Haravan.
-    - Tier 2: Trùng mã SKU xuất hiện dưới dạng từ/token độc lập trong URL handle, tiêu đề hoặc tags trên sàn.
-    - Tier 3: Trùng mã số tiêu chuẩn cốt lõi (Core Number: e.g. 03026 trong 03026A/B) xuất hiện độc lập trong URL/tiêu đề.
-    Tuyệt đối KHÔNG đối soát trùng bằng từ khóa chung chung (như dệt, nhuộm, may, scale, detergent) để tránh khóa nhầm sản phẩm khác biệt.
+    - Tier 2: Trùng mã SKU trong tên Variant (Option/Title của Variant chứa SKU).
+    - Tier 3: Trùng mã SKU xuất hiện dưới dạng từ/token độc lập trong URL handle, tiêu đề hoặc tags trên sàn.
+    - Tier 4: Trùng mã SKU xuất hiện trong toàn bộ nội dung chi tiết bài viết (body_html / body_plain).
+    - Tier 5: Trùng mã số tiêu chuẩn cốt lõi (Core Number >= 5 chữ số: e.g. 03026 từ 03026A/B) xuất hiện độc lập trong URL/tiêu đề hoặc nội dung chi tiết.
+    - Tier 6: Trùng khớp cụm thuật ngữ kỹ thuật tiếng Anh độc bản đặc trưng của sản phẩm (e.g. gray scale color change, gray scale staining, light transmission verification fabric, spray tester funnel, spray tester nozzle) bên trong bài viết hoặc tiêu đề sản phẩm.
     """
     if not p or not existing_store_items:
         return False, "", ""
@@ -75,6 +77,15 @@ def is_duplicate_product(p: dict, existing_store_items: list) -> tuple[bool, str
     if not sku:
         return False, "", ""
     sku_low = sku.lower()
+    name_en = str(p.get("product_name_en", "")).strip()
+
+    pat_token = rf'(?:^|[\s,;:\(\)\[\]/#"\'<>–—_-])({re.escape(sku_low)})(?:$|[\s,;:\(\)\[\]/#"\'<>–—_-])'
+
+    # Clean English title keywords
+    en_clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', name_en.lower()).strip()
+    tokens_en = [w for w in en_clean.split() if len(w) > 3 and w not in ["standard", "aatcc", "test", "testing", "textile", "order", "item", "procedur", "international"]]
+
+    core_num = re.sub(r'[A-Za-z]+$', '', sku)
 
     for item in existing_store_items:
         it_url = item.get("url", f"/products/{item.get('handle', '')}")
@@ -82,27 +93,52 @@ def is_duplicate_product(p: dict, existing_store_items: list) -> tuple[bool, str
         it_handle = str(item.get("handle", "")).strip()
         it_tags = item.get("tags", [])
         it_tags_str = " ".join(it_tags) if isinstance(it_tags, list) else str(it_tags)
+        tag_list_upper = [str(t).strip().upper() for t in (it_tags if isinstance(it_tags, list) else str(it_tags).split(","))]
+
+        b_html = str(item.get("body_html", "") or "")
+        b_plain = str(item.get("body_plain", "") or "")
+        b_clean = re.sub(r'<[^>]+>', ' ', b_html)
+        full_content = f"{it_title} {it_handle} {b_plain} {b_clean} {it_tags_str}".lower()
 
         # 1. Tier 1: Exact Variant SKU match
         variant_skus = [str(v).strip().upper() for v in item.get("variants_skus", []) if v]
+        if "variants" in item and isinstance(item.get("variants"), list):
+            for v in item.get("variants"):
+                v_s = str(v.get("sku", "")).replace("#", "").strip().upper()
+                if v_s and v_s not in variant_skus:
+                    variant_skus.append(v_s)
         if sku in variant_skus:
             return True, it_url, f"Trùng mã SKU chính xác '{sku}' với sản phẩm '{it_title}'"
 
-        # 2. Tier 2: Exact SKU as independent token in handle, title or tags
-        pat_sku = rf'(?:^|[-_ \(\)]){re.escape(sku_low)}(?:$|[-_ \(\)])'
-        tag_list_upper = [t.upper() for t in (it_tags if isinstance(it_tags, list) else [])]
-        if re.search(pat_sku, it_handle.lower()) or re.search(pat_sku, it_title.lower()) or sku in tag_list_upper:
+        # 2. Tier 2: Variant title match
+        if "variants" in item and isinstance(item.get("variants"), list):
+            v_titles = [str(v.get("title", "")).upper() for v in item.get("variants") if v.get("title")]
+            if any(sku in vt for vt in v_titles):
+                return True, it_url, f"Trùng mã SKU '{sku}' trong tên Variant của '{it_title}'"
+
+        # 3. Tier 3: SKU token in handle, title or tags
+        if re.search(pat_token, it_handle.lower()) or re.search(pat_token, it_title.lower()) or sku in tag_list_upper:
             return True, it_url, f"Mã SKU '{sku}' xuất hiện trong tên/URL của '{it_title}'"
 
-        # 3. Tier 3: Core numeric code (e.g. 03026 từ 03026A/B khớp với sách 03026)
-        core_num = re.sub(r'[A-Za-z]+$', '', sku)
+        # 4. Tier 4: SKU token anywhere in full body content (body_html / body_plain)
+        if re.search(pat_token, full_content):
+            return True, it_url, f"Mã SKU '{sku}' xuất hiện trong toàn bộ nội dung chi tiết bài viết (body_html) của '{it_title}'"
+
+        # 5. Tier 5: Core numeric code (e.g. 03026 trong 03026A/B khớp với sách 03026)
         if len(core_num) >= 5:
-            pat_core = rf'(?:^|[-_ \(\)]){re.escape(core_num.lower())}(?:$|[-_ \(\)])'
+            pat_core = rf'(?:^|[\s,;:\(\)\[\]/#"\'<>–—_-])({re.escape(core_num.lower())})(?:$|[\s,;:\(\)\[\]/#"\'<>–—_-])'
             if re.search(pat_core, it_handle.lower()) or re.search(pat_core, it_title.lower()):
                 return True, it_url, f"Trùng mã số cốt lõi '{core_num}' với '{it_title}'"
+            if re.search(pat_core, full_content) and "aatcc" in full_content:
+                return True, it_url, f"Mã số cốt lõi '{core_num}' xuất hiện trong toàn bộ nội dung bài viết '{it_title}'"
+
+        # 6. Tier 6: High-precision technical phrase match (độc bản đặc thù)
+        if len(tokens_en) >= 2:
+            match_cnt = sum(1 for w in tokens_en if w in full_content)
+            if match_cnt == len(tokens_en):
+                return True, it_url, f"Khớp cụm tên kỹ thuật tiếng Anh ({' '.join(tokens_en)}) trong bài viết '{it_title}'"
 
     return False, "", ""
-
 
 class AgentOperations:
     def __init__(self, storage_dir: str | Path | None = None):
@@ -388,22 +424,50 @@ class AgentOperations:
                 print(f"  ⚠ Lỗi kết nối collections/all (page {page}): {e}")
                 break
 
-        # Tổng hợp danh mục sàn
+        # Tổng hợp danh mục sàn (Bao gồm full nội dung body_html, body_plain và tags để đọc chi tiết)
         unified_store = []
+        seen_handles = set()
         for h in haravan_products:
+            handle = str(h.get("handle", "")).strip()
+            seen_handles.add(handle)
             v_skus = [str(v.get("sku", "")).replace("#", "").strip() for v in h.get("variants", []) if v.get("sku")]
             is_pub = bool(h.get("published_at"))
             unified_store.append({
                 "id": h.get("id"),
                 "title": h.get("title"),
-                "handle": h.get("handle"),
-                "url": f"/products/{h.get('handle')}",
+                "handle": handle,
+                "url": f"/products/{handle}",
                 "published": is_pub,
                 "status_str": "ĐÃ ĐĂNG" if is_pub else "ĐÃ ẨN",
                 "variants_skus": v_skus,
+                "variants": h.get("variants", []),
+                "tags": h.get("tags", []),
+                "body_html": h.get("body_html", "") or "",
+                "body_plain": h.get("body_plain", "") or "",
                 "created_at": h.get("created_at"),
                 "updated_at": h.get("updated_at")
             })
+
+        for w in web_products:
+            handle = str(w.get("handle", "")).strip()
+            if handle not in seen_handles:
+                seen_handles.add(handle)
+                v_skus = [str(v.get("sku", "")).replace("#", "").strip() for v in w.get("variants", []) if v.get("sku")]
+                unified_store.append({
+                    "id": w.get("id"),
+                    "title": w.get("title"),
+                    "handle": handle,
+                    "url": f"/products/{handle}",
+                    "published": True,
+                    "status_str": "ĐÃ ĐĂNG",
+                    "variants_skus": v_skus,
+                    "variants": w.get("variants", []),
+                    "tags": w.get("tags", []),
+                    "body_html": w.get("body_html", "") or "",
+                    "body_plain": re.sub(r'<[^>]+>', ' ', w.get("body_html", "") or ""),
+                    "created_at": w.get("created_at"),
+                    "updated_at": w.get("updated_at")
+                })
 
         # Lưu lại bản cập nhật mới nhất vào bistextile_existing_products.json
         if unified_store:
