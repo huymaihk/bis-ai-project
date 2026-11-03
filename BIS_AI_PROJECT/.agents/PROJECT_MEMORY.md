@@ -125,6 +125,14 @@ $$\text{[Tên tiếng Việt]} - \text{[Tên tiếng Anh]} \text{ ([SKU]) chính
   * **Tier 6:** Trùng khớp cụm thuật ngữ tiếng Anh độc bản đặc trưng của sản phẩm (ví dụ: `gray scale color change` -> `28359C`, `gray scale staining` -> `28360C`, `light transmission verification fabric` -> `38618A`, `spray tester funnel` -> `78911A`, `spray tester nozzle` -> `78386A`).
 * **Hiện trạng đối soát chuẩn:** **28 sản phẩm trùng** (được khóa an toàn) và **69 sản phẩm mới 100%**.
 
+### 3.5. Quy chuẩn Ảnh Thành phẩm Đạt chuẩn (Benchmark 6_Final_Composites)
+Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc phải đối chiếu theo bộ ảnh mẫu đạt chuẩn tại thư mục `Google_Drive_Storage/6_Final_Composites/` (như các file: `AATCC Weight Trio on BIS Backdrop.png`, `Branded 2.0 KG Weight Discs Display.png`, `BIS_Metal_Rack_FIXED.png`, `09616A.png`):
+1. **Định dạng & Kích thước:** $1254 \times 1254$ pixel (tỷ lệ 1:1 vuông), độ phân giải cao 24-bit RGB.
+2. **Phông nền thương hiệu (Brand Backdrop):** Nền hoa văn lặp logo `Bis TEXTILE GARMENT` chuẩn, phủ đều khung hình, có gradient ánh sáng phòng studio (sáng trung tâm và phía trên, đầm dần xuống dưới).
+3. **Bảo toàn vật thể gốc 100%:** Giữ nguyên vẹn 100% hình khối thật của thiết bị, thớ kim loại, ốc vít, các dòng chữ dập chìm quy chuẩn (ví dụ `2.0 KG`, logo lục giác `AATCC ®`), tuyệt đối không để AI vẽ lại làm sai lệch chi tiết kỹ thuật.
+4. **Bóng đổ 3D tiếp xúc chân thực:** Đổ bóng tiếp xúc (Contact Shadow / Ambient Occlusion) tự nhiên dưới đáy sản phẩm lên mặt nền thương hiệu, tạo cảm giác sản phẩm được đặt chụp thực tế trên mặt bàn studio có trải phông nền BIS Textile.
+5. **Bố cục:** Vật thể đặt ở trung tâm, chiếm 55% – 70% diện tích khung hình, có khoảng thở (padding) an toàn 4 phía.
+
 ---
 
 ## 🚫 4. "SỔ ĐEN" CÁC LỖI KỸ THUẬT ĐÃ GIẢI QUYẾT (BLACKBOOK - CẤM TÁI PHẠM)
