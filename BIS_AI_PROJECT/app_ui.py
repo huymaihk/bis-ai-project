@@ -39,6 +39,8 @@ from config import (
 )
 from agent_leader import AgentLeader
 from learning_engine import LearningEngine
+from persistent_memory import MemoryStore
+from memory_ui import maintain_memory, render_memory_panel
 
 try:
     from agent_employee_pool import (
@@ -791,8 +793,6 @@ if products:
             _ch = _re_dist.sub(r'•\s*</div>', '</div>', _ch)
             _p["custom_html"] = _ch
 
-if "orchestrator" not in st.session_state and BISEmployeeOrchestrator:
-    st.session_state.orchestrator = BISEmployeeOrchestrator()
 if "selected_dept_id" not in st.session_state:
     st.session_state.selected_dept_id = "RD"
 if "selected_emp_id" not in st.session_state:
@@ -994,12 +994,12 @@ if not st.session_state.authenticated:
         submit_login = st.form_submit_button("XÁC THỰC QUYỀN TRUY CẬP (LOGIN)", use_container_width=True)
 
         if submit_login:
-            valid_pin = (BIS_ACCESS_PIN or "1133").strip()
+            valid_pin = (BIS_ACCESS_PIN or "").strip()
             entered_user = user_input.strip()
             entered_pin = pin_input.strip()
 
             is_valid_user = entered_user.lower() in ["adminhuy", "admin", "huy.md", "huy"]
-            is_valid_pin = entered_pin in [valid_pin, "1133", "bis2026"]
+            is_valid_pin = bool(valid_pin) and entered_pin == valid_pin
 
             if is_valid_user and is_valid_pin:
                 st.session_state.authenticated = True
@@ -1025,6 +1025,14 @@ if not st.session_state.authenticated:
     </div>
     """, unsafe_allow_html=True)
     st.stop()  # DỪNG THỰC THI NẾU CHƯA ĐĂNG NHẬP
+
+bis_memory = MemoryStore(PROJECT_DIR)
+maintain_memory(bis_memory)
+if "orchestrator" not in st.session_state and BISEmployeeOrchestrator:
+    st.session_state.orchestrator = BISEmployeeOrchestrator(PROJECT_DIR)
+if st.session_state.get("orchestrator"):
+    st.session_state.orchestrator.reload_history()
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1672,6 +1680,7 @@ with tab_lego:
 
                 if final_prompt:
                     result = orch.chat_with_employee(active_emp.emp_id, final_prompt)
+                    maintain_memory(bis_memory, force=True)
                     st.session_state.last_3d_command = {
                         "agent_key": result.get("emp_id", active_emp.emp_id),
                         "state": result["state_3d"],
@@ -3796,6 +3805,8 @@ with tab_ops:
 
 # ── TAB 8: BỘ NHỚ TỰ HỌC TIẾN HÓA & PHẢN TỈNH (EVOLVING LEARNING ENGINE) ───────
 with tab_learn:
+    render_memory_panel(bis_memory)
+    st.divider()
     st.markdown("### 🧠 Bộ Não Tự Học Tiến Hóa & Phản Tỉnh (Evolving Learning Engine)")
     st.write("Kiến trúc tự học đa tầng kết hợp giữa **Voyager** (Kho kỹ năng theo Hãng), **Reflexion** (Tự suy ngẫm nguyên nhân sai sót) và **Generative Agents** (Nén tri thức không gây loãng prompt).")
 

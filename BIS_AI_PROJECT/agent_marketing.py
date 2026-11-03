@@ -6,6 +6,8 @@ Responsible for:
 - Commercial e-commerce product pitch, Value propositions & Buyer persona targeting
 - Social media snippets / Google Search Snippet preview
 """
+from persistent_memory import MemoryStore
+import hashlib
 import os
 import json
 from pathlib import Path
@@ -17,6 +19,7 @@ from config import GEMINI_API_KEY, GEMINI_MODEL
 class AgentMarketing:
     def __init__(self, workspace_dir: str | Path | None = None):
         self.workspace_dir = Path(workspace_dir) if workspace_dir else Path(__file__).parent.resolve()
+        self.memory = MemoryStore(self.workspace_dir)
         self.cache_dir = self.workspace_dir / "marketing_cache"
         self.cache_dir.mkdir(exist_ok=True)
         self.client = genai.Client(api_key=GEMINI_API_KEY)
@@ -39,11 +42,15 @@ class AgentMarketing:
         category = product.get("category", "Tài liệu tiêu chuẩn")
         brand = product.get("brand_evidence", "AATCC (Hoa Kỳ)")
 
+        context = self.memory.context(f"{sku} {name_vi} {brand}", max_chars=7000)
+        revision = hashlib.sha256((context + json.dumps(product, sort_keys=True, ensure_ascii=False)).encode()).hexdigest()
         cache_path = self.cache_dir / f"seo_{sku}.json"
         if cache_path.exists():
             try:
                 with open(cache_path, "r", encoding="utf-8") as f:
-                    return json.load(f)
+                    cached = json.load(f)
+                    if cached.get("_memory_revision") == revision:
+                        return cached
             except Exception:
                 pass
 
@@ -76,7 +83,7 @@ Chỉ trả về JSON thuần túy, không có thẻ markdown ```json.
         try:
             response = self.client.models.generate_content(
                 model=GEMINI_MODEL,
-                contents=prompt
+                contents=context + "\n" + prompt
             )
             raw = response.text.strip()
             if raw.startswith("```json"): raw = raw[7:]
@@ -101,6 +108,7 @@ Chỉ trả về JSON thuần túy, không có thẻ markdown ```json.
                 "target_audience": "Trưởng phòng QA/QC dệt may, Kỹ thuật viên phòng thí nghiệm, Nhà máy may xuất khẩu"
             }
 
+        data["_memory_revision"] = revision
         with open(cache_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
@@ -226,7 +234,7 @@ Chỉ trả về JSON thuần túy, không có thẻ markdown ```json.
         try:
             response = self.client.models.generate_content(
                 model=GEMINI_MODEL,
-                contents=prompt
+                contents=self.memory.context("marketing SEO", max_chars=7000) + "\n" + prompt
             )
             raw = response.text.strip()
             if raw.startswith("```json"): raw = raw[7:]

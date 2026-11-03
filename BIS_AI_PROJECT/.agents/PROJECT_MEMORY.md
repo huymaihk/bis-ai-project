@@ -163,3 +163,8 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
   * *Bài học 7 (Golden Benchmark Compositing 1254x1254):* Chuẩn hóa toàn bộ hệ thống (`flow_2d_studio.py`, `agent_media.py`, `app_ui.py`) theo độ phân giải chuẩn $1254 \times 1254\text{ px}$, phôi nền `BIS_BACKDROP_1254.png`, tỷ lệ vật thể 55%–65% khung hình, đường chân đế $y=980$, và bóng đổ vật lý 3 lớp (Ambient Occlusion + Soft Shadow + Subtle floor reflection).
   * *Bài học 8 (Quản trị vận hành Streamlit Cloud):* Streamlit Cloud tự động ngủ khi không có lượt truy cập (Sleep mode); hướng dẫn người dùng nhấn "Yes, get this app back up!" để khởi động lại sau 30s hoặc làm việc trực tiếp trên Local runtime (`http://localhost:8501`).
 
+
+* **2026-11-03 (Nâng cấp bộ nhớ bền vững):**
+  * Lịch sử chat BIS giờ lưu tại Google_Drive_Storage/8_AI_Memory/events, không chỉ st.session_state. Sửa/thu hồi có phiên bản; xung đột cần giải quyết. Đọc MEMORY_GUIDE.md và CURRENT_MEMORY.md khi tiếp tục dự án.
+  * Chat nhân viên dùng Gemini với ngữ cảnh thật; không còn trả tool giả hay tiến độ ngẫu nhiên. Khung chat tư vấn, chưa tự thực thi Haravan/dịch file/tạo ảnh. Những tuyên bố cũ “15 nhân viên tự vận hành” không phải bằng chứng công việc đã hoàn thành.
+  * Sau thay đổi code/tri thức: cập nhật bàn giao, chạy python sync_memory.py --local-only --record-update "nội dung đã kiểm tra". Chủ dự án đã duyệt bảng BIS_Textile_Product_Master. memory_sync_config.json bật đồng bộ vào tab BIS_AI_MEMORY_V1, nhưng khóa service account local hiện lỗi invalid_grant / Invalid JWT Signature. Không đưa kho sự kiện/backup lên Git.

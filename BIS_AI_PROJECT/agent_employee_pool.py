@@ -10,6 +10,8 @@ from __future__ import annotations
 import time
 import random
 from dataclasses import dataclass, field
+from persistent_memory import MemoryStore
+from memory_chat import reply_with_memory
 from datetime import datetime
 from typing import Dict, List, Optional, Callable, Any
 
@@ -62,9 +64,9 @@ class AIEmployee:
     tools: List[str]
     autonomous_tasks: List[str]
     collaborates_with: List[str]
-    state: str = EmployeeState.WORKING
+    state: str = EmployeeState.IDLE
     current_task: str = ""
-    progress_pct: int = 85
+    progress_pct: int = 0
     chat_memory: List[ChatMessage] = field(default_factory=list)
 
     def __post_init__(self):
@@ -537,7 +539,8 @@ def build_initial_employee_pool() -> Dict[str, AIEmployee]:
 class BISEmployeeOrchestrator:
     """Quản lý toàn bộ 15 nhân viên AI, vòng lặp tự động và xử lý Chat 1-1 / Họp Toàn Thể."""
 
-    def __init__(self):
+    def __init__(self, workspace_dir=None):
+        self.memory = MemoryStore(workspace_dir)
         self.employees: Dict[str, AIEmployee] = build_initial_employee_pool()
         self.group_meeting_log: List[ChatMessage] = []
         self.system_event_feed: List[Dict[str, str]] = [
@@ -545,10 +548,12 @@ class BISEmployeeOrchestrator:
                 "time": datetime.now().strftime("%H:%M:%S"),
                 "actor": "HỆ THỐNG",
                 "state": "WORKING",
-                "text": "15 nhân sự AI thuộc 5 Phòng ban đã kích hoạt vòng lặp tự vận hành (Autonomous Loop).",
+                "text": "Các phòng ban sẵn sàng. Lịch sử được lưu trong bộ nhớ dự án.",
                 "color": "#38bdf8",
             }
         ]
+
+        self.reload_history()
 
     def get_departments(self) -> Dict[str, str]:
         return {
@@ -577,191 +582,54 @@ class BISEmployeeOrchestrator:
         emp_id = mapping_default.get(avatar_3d_key, "rd_lead")
         return self.employees[emp_id]
 
+    def reload_history(self):
+        for emp in self.employees.values():
+            events = self.memory.messages("employee:" + emp.emp_id)
+            if events:
+                emp.chat_memory = [
+                    ChatMessage(sender="ceo" if e["actor"] == "user" else emp.emp_id,
+                                sender_name="Huy Mai" if e["actor"] == "user" else emp.name,
+                                role_badge=emp.department_name, content=e["content"],
+                                timestamp=e["created_at"])
+                    for e in events
+                ]
+
     def step_autonomous_loop(self) -> Dict[str, Any]:
-        """
-        Thực thi 1 chu kỳ tự động hóa (Autonomous Task Loop) cho các nhân viên AI.
-        Chuyển đổi linh hoạt giữa IDLE -> WORKING -> COLLABORATING -> REPORTING
-        và trả về lệnh điều khiển 3D tương ứng.
-        """
-        emp_list = list(self.employees.values())
-        chosen_emp = random.choice(emp_list)
-
-        transitions = [
-            EmployeeState.WORKING,
-            EmployeeState.COLLABORATING,
-            EmployeeState.REPORTING,
-            EmployeeState.IDLE,
-        ]
-        weights = [0.48, 0.24, 0.16, 0.12]
-        next_state = random.choices(transitions, weights=weights, k=1)[0]
-        chosen_emp.state = next_state
-
-        if next_state == EmployeeState.WORKING:
-            chosen_emp.current_task = random.choice(chosen_emp.autonomous_tasks)
-            chosen_emp.progress_pct = min(100, chosen_emp.progress_pct + random.randint(5, 15))
-            msg_3d = f"{chosen_emp.avatar_emoji} {chosen_emp.name}: {chosen_emp.current_task}"
-        elif next_state == EmployeeState.COLLABORATING:
-            partner_id = random.choice(chosen_emp.collaborates_with)
-            partner = self.employees.get(partner_id, chosen_emp)
-            chosen_emp.current_task = f"Bàn giao & phản biện dữ liệu với {partner.name} ({partner.department_name})"
-            msg_3d = f"🤝 {chosen_emp.name} -> {partner.name}: Chuyển giao kết quả xử lý để duyệt chéo!"
-        elif next_state == EmployeeState.REPORTING:
-            chosen_emp.current_task = "Cập nhật báo cáo tiến độ trực tiếp lên Bảng điều khiển của Chủ tịch Huy Mai"
-            chosen_emp.progress_pct = 100
-            msg_3d = f"📊 {chosen_emp.name}: Báo cáo Chủ tịch Huy Mai — Hoàn tất 100% chỉ tiêu phiên hiện tại!"
-        else:
-            chosen_emp.current_task = "Đang nghỉ ngơi nạp năng lượng tại Pantry & sẵn sàng nhận lệnh mới"
-            msg_3d = f"☕ {chosen_emp.name}: Đang chờ dữ liệu mới tại Pantry, sẵn sàng nhận lệnh từ Chủ tịch!"
-
-        event_record = {
-            "time": datetime.now().strftime("%H:%M:%S"),
-            "emp_id": chosen_emp.emp_id,
-            "actor": f"{chosen_emp.name} ({chosen_emp.title})",
-            "state": next_state,
-            "text": msg_3d,
-            "color": chosen_emp.badge_color,
-            "avatar_3d_key": chosen_emp.avatar_3d_key,
-            "state_3d": STATE_TO_3D_MAP[next_state],
-        }
-        self.system_event_feed.insert(0, event_record)
-        self.system_event_feed = self.system_event_feed[:35]
-        return event_record
+        # An animated office must not manufacture progress or evidence.
+        emp = list(self.employees.values())[0]
+        return {"time": datetime.now().strftime("%H:%M:%S"), "emp_id": emp.emp_id,
+                "actor": "HỆ THỐNG", "state": EmployeeState.IDLE,
+                "text": "Sẵn sàng nhận yêu cầu. Tiến độ chỉ ghi nhận từ kết quả thực thi.",
+                "color": emp.badge_color, "avatar_3d_key": emp.avatar_3d_key,
+                "state_3d": "BREAK"}
 
     def chat_with_employee(self, emp_id: str, ceo_message: str) -> Dict[str, Any]:
-        """
-        Xử lý tin nhắn trực tiếp 1-1 từ Chủ tịch Huy Mai gửi tới đúng nhân viên AI.
-        Nhân viên trả lời đúng Persona, thực thi Tool nếu có và cập nhật trạng thái 3D.
-        """
         emp = self.employees[emp_id]
-
-        # 1. Lưu tin nhắn của Chủ tịch Huy Mai vào bộ nhớ của nhân viên
-        emp.chat_memory.append(
-            ChatMessage(
-                sender="ceo",
-                sender_name="Chủ tịch Huy Mai (CEO)",
-                role_badge="Ban Lãnh Đạo Tối Cao • BIS Textile",
-                content=ceo_message,
-            )
-        )
-
-        # 2. Phân tích yêu cầu để tự động kích hoạt Tool chuyên môn trong mã nguồn
-        msg_lower = ceo_message.lower()
-        executed_tool_output = None
-
-        # Tách mã SKU nếu Chủ tịch nhắc tới (ví dụ: 03026A)
-        detected_sku = "03026A"
-        for token in ceo_message.replace(",", " ").split():
-            if any(char.isdigit() for char in token) and len(token) >= 4:
-                detected_sku = token.strip()
-                break
-
-        if emp.department_id == "RD":
-            if "test" in msg_lower or "bền màu" in msg_lower or "co rút" in msg_lower or emp.emp_id == "rd_qa":
-                executed_tool_output = EmployeeToolkit.extract_lab_qa_data(detected_sku)
-            elif "chuẩn hóa" in msg_lower or "đơn vị" in msg_lower or emp.emp_id == "rd_spec":
-                executed_tool_output = EmployeeToolkit.normalize_spec_units()
-            else:
-                executed_tool_output = EmployeeToolkit.verify_sku_spec(detected_sku)
-
-        elif emp.department_id == "MKT":
-            if "html" in msg_lower or "viết" in msg_lower or "mô tả" in msg_lower or emp.emp_id == "seo_copy":
-                executed_tool_output = EmployeeToolkit.generate_7block_html(detected_sku)
-            else:
-                executed_tool_output = EmployeeToolkit.audit_seo_keywords(detected_sku)
-
-        elif emp.department_id == "STUDIO":
-            executed_tool_output = EmployeeToolkit.render_3d_lab_mockup(detected_sku)
-
-        elif emp.department_id == "TRANS":
-            executed_tool_output = EmployeeToolkit.translate_technical_doc(ceo_message)
-
-        elif emp.department_id == "OPS":
-            executed_tool_output = EmployeeToolkit.haravan_guard_control(ceo_message)
-
-        # 3. Cập nhật trạng thái nhân viên sang WORKING hoặc REPORTING theo nội dung lệnh
-        if "họp" in msg_lower or "báo cáo" in msg_lower:
-            emp.state = EmployeeState.REPORTING
-        elif "phối hợp" in msg_lower or "bàn giao" in msg_lower:
-            emp.state = EmployeeState.COLLABORATING
-        else:
-            emp.state = EmployeeState.WORKING
-
-        emp.current_task = f"Thực thi chỉ đạo trực tiếp của Chủ tịch Huy Mai: '{ceo_message[:55]}...'"
-        emp.progress_pct = 100
-
-        # 4. Sinh câu trả lời chuẩn phong cách xưng hô với Chủ tịch Huy Mai
-        reply_text = (
-            f"Kính gửi **Chủ tịch / Anh Huy Mai**,\n\n"
-            f"Em là **{emp.name}** (*{emp.title} - {emp.department_name}*). "
-            f"Em đã tiếp nhận chỉ đạo của Anh: *\"{ceo_message}\"*.\n\n"
-            f"- **Đánh giá chuyên môn ({emp.specialties[0]}):** Em đã rà soát toàn bộ dữ liệu liên quan theo đúng quy chuẩn của BIS Textile.\n"
-            f"- **Hành động thực thi ngay:** Đã kích hoạt bộ công cụ `{emp.tools[0]}` trên hệ thống.\n"
-            f"- **Đề xuất kỹ thuật trình Anh:** Sau khi hoàn tất bước này, em sẽ chuyển kết quả sang bộ phận liên quan ({', '.join(emp.collaborates_with)}) để đồng bộ liền mạch 100% ạ!"
-        )
-
-        reply_msg = ChatMessage(
-            sender=emp.emp_id,
-            sender_name=emp.name,
-            role_badge=f"{emp.title} • {emp.department_name}",
-            content=reply_text,
-            action_log=executed_tool_output,
-        )
-        emp.chat_memory.append(reply_msg)
-
-        # Ghi nhận vào nhật ký toàn hệ thống
-        short_3d_bubble = f"{emp.avatar_emoji} {emp.name}: Đã thực thi lệnh của Chủ tịch Huy Mai!"
-        self.system_event_feed.insert(
-            0,
-            {
-                "time": reply_msg.timestamp,
-                "actor": f"{emp.name} (Trả lời Chủ tịch)",
-                "state": emp.state,
-                "text": short_3d_bubble,
-                "color": emp.badge_color,
-            },
-        )
-
-        return {
-            "employee": emp,
-            "emp_id": emp.emp_id,
-            "reply": reply_msg,
-            "avatar_3d_key": emp.avatar_3d_key,
-            "state_3d": STATE_TO_3D_MAP[emp.state],
-            "bubble_3d": short_3d_bubble,
-        }
+        session = "employee:" + emp_id
+        self.memory.refresh_sources()
+        self.memory.append("message", ceo_message, actor="user", session=session, source="BIS chat")
+        emp.state = EmployeeState.WORKING
+        emp.progress_pct = 0
+        try:
+            answer = reply_with_memory(self.memory, emp, ceo_message)
+        except Exception as exc:
+            answer = ("Đã lưu yêu cầu vào bộ nhớ nhưng chưa nhận được phản hồi AI ("
+                      + type(exc).__name__ + "). Vui lòng kiểm tra cấu hình/quota Gemini rồi thử lại. "
+                      "Chưa có tác vụ nghiệp vụ nào được thực thi.")
+        saved = self.memory.append("message", answer, actor=emp_id, session=session, source="Gemini chat")
+        emp.state = EmployeeState.IDLE
+        emp.current_task = "Đã lưu hội thoại; chờ yêu cầu tiếp theo."
+        self.reload_history()
+        reply = emp.chat_memory[-1]
+        return {"employee": emp, "emp_id": emp_id, "reply": reply,
+                "avatar_3d_key": emp.avatar_3d_key, "state_3d": "BREAK",
+                "bubble_3d": "Đã lưu phản hồi và lịch sử tương tác."}
 
     def summon_all_hands_meeting(self, ceo_directive: str) -> List[ChatMessage]:
-        """Triệu tập Họp Toàn Thể: 5 Trưởng phòng đại diện 5 Khối báo cáo đồng loạt trước Chủ tịch Huy Mai."""
-        self.group_meeting_log.append(
-            ChatMessage(
-                sender="ceo",
-                sender_name="Chủ tịch Huy Mai (CEO)",
-                role_badge="Chủ trì Họp Giao Ban Toàn Công Ty",
-                content=ceo_directive,
-            )
-        )
-
-        department_leads = ["rd_lead", "seo_lead", "studio_lead", "trans_lead", "ops_manager"]
-        responses: List[ChatMessage] = []
-
-        for lead_id in department_leads:
-            lead = self.employees[lead_id]
-            lead.state = EmployeeState.REPORTING
-            lead.current_task = f"Họp giao ban toàn thể cùng Chủ tịch Huy Mai: {ceo_directive[:40]}"
-
-            report_content = (
-                f"**Báo cáo Chủ tịch Huy Mai:** Thay mặt **{lead.department_name}**, em ({lead.name}) xin cam kết thực thi ngay chỉ đạo *\"{ceo_directive}\"*. "
-                f"Toàn bộ 3 nhân sự trong phòng đang đạt tiến độ **{lead.progress_pct}%**, sẵn sàng phối hợp liên phòng ban!"
-            )
-            msg = ChatMessage(
-                sender=lead.emp_id,
-                sender_name=lead.name,
-                role_badge=f"{lead.title} • {lead.department_name}",
-                content=report_content,
-                action_log=f"[ALL-HANDS SYNC] {lead.department_name} -> Sẵn sàng 100%",
-            )
-            self.group_meeting_log.append(msg)
-            lead.chat_memory.append(msg)
-            responses.append(msg)
-
+        self.memory.append("message", ceo_directive, actor="user", session="meeting", source="BIS meeting")
+        responses = []
+        for emp_id in ["rd_lead", "seo_lead", "studio_lead", "trans_lead", "ops_manager"]:
+            result = self.chat_with_employee(emp_id, ceo_directive)
+            responses.append(result["reply"])
+        self.group_meeting_log.extend(responses)
         return responses

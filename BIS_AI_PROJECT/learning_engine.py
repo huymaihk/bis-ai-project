@@ -8,6 +8,7 @@ Implements modern Agentic Self-Improvement architectures:
 - Proactive Meeting Triggers: Agent requests direct review when edit count reaches confidence thresholds.
 """
 
+from persistent_memory import MemoryStore
 import os
 import json
 import time
@@ -32,6 +33,7 @@ class LearningEngine:
 
     def __init__(self, storage_dir: str | Path | None = None):
         self.storage_dir = Path(storage_dir) if storage_dir else Path(__file__).parent.resolve()
+        self.persistent_memory = MemoryStore(self.storage_dir)
         self.memory_path = self.storage_dir / MEMORY_FILE_NAME
         self.rules_path = self.storage_dir / RULES_FILE_NAME
         self.memory_data = self._load_memory()
@@ -120,6 +122,7 @@ class LearningEngine:
             data["last_updated"] = datetime.utcnow().isoformat() + "Z"
             with open(self.rules_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
+            self.persistent_memory.refresh_sources()
         except Exception as e:
             print(f"⚠ Failed to save consolidated rules: {e}")
 
@@ -128,6 +131,7 @@ class LearningEngine:
             self.memory_data["last_updated"] = datetime.utcnow().isoformat() + "Z"
             with open(self.memory_path, "w", encoding="utf-8") as f:
                 json.dump(self.memory_data, f, ensure_ascii=False, indent=2)
+            self.persistent_memory.refresh_sources()
         except Exception as e:
             print(f"⚠ Failed to save memory: {e}")
 
@@ -213,6 +217,12 @@ YÊU CẦU PHẢN TỈNH (REFLEXION PROTOCOL):
         if not rule_text:
             first_field = list(diff.keys())[0]
             rule_text = f"Với hãng {brand}, chuẩn hóa trường {first_field} thành '{diff[first_field]['human_fixed']}'."
+
+        for corrected_field, values in diff.items():
+            self.persistent_memory.revise(
+                f"correction:{human_edited.get('sku', original_extracted.get('sku', ''))}:{corrected_field}",
+                json.dumps({"brand": brand, "field": corrected_field, **values}, ensure_ascii=False),
+                kind="correction", source="Hiệu chỉnh sản phẩm")
 
         # Lưu vào danh sách reflections
         reflection_entry = {
@@ -423,6 +433,8 @@ Chỉ trả về JSON thuần túy, không có markdown bọc ngoài.
     # =========================================================================
     def get_focused_guidelines(self, brand: str = "General", category: str | None = None) -> str:
         """Truy xuất có chọn lọc quy tắc theo Hãng & Danh mục của tài liệu đang đọc."""
+        self.memory_data = self._load_memory()
+        self.rules_data = self._load_rules()
         guidelines = []
         guidelines.extend(self.rules_data.get("global_rules", []))
 
@@ -438,7 +450,7 @@ Chỉ trả về JSON thuần túy, không có markdown bọc ngoài.
                 if ck in cat_key or cat_key in ck:
                     guidelines.extend(crules)
 
-        blocks = []
+        blocks = [self.persistent_memory.context(f"{brand} {category or ''}", max_chars=7000)]
         if guidelines:
             unique_rules = list(dict.fromkeys(guidelines))
             rule_lines = "\n".join([f"- [BÀI HỌC]: {r}" for r in unique_rules])
@@ -471,6 +483,8 @@ Chỉ trả về JSON thuần túy, không có markdown bọc ngoài.
             "context": context
         }
 
+        self.persistent_memory.revise(f"correction:{sku}:{field_name}",
+            json.dumps(record, ensure_ascii=False), kind="correction", source="Hiệu chỉnh sản phẩm")
         self.memory_data.setdefault("examples", []).append(record)
         field_dict = self.memory_data.setdefault("field_corrections", {}).setdefault(field_name, {})
         key = str(ai_val).strip().lower()

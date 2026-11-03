@@ -163,6 +163,8 @@ class AgentLeader:
         print(f"  Đã khóa trùng web    : {summary['duplicates_locked']}")
         print(f"  Chờ BIS phê duyệt     : {summary['ready_for_review']}")
         print("=" * 65)
+        self.learning_engine.persistent_memory.append("update", json.dumps(summary, ensure_ascii=False),
+            source="run_catalogue_pipeline", actor="leader")
         return summary
 
     def request_haravan_sync(self) -> dict:
