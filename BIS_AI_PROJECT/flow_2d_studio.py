@@ -37,9 +37,18 @@ for d in [STORAGE_DIR, PRODUCT_DIR, BG_DIR, PREVIEW_DIR, FINAL_DIR]:
     d.mkdir(parents=True, exist_ok=True)
 
 
+# Kích thước tiêu chuẩn vàng (Golden Benchmark từ 6_Final_Composites)
+CANVAS_SIZE = (1254, 1254)
+CANVAS_W = 1254
+CANVAS_H = 1254
+
+
 def find_bis_backdrop() -> Path:
-    """Tìm phôi nền BIS_BACKGROUND.png đạt chuẩn thương hiệu."""
+    """Tìm phôi nền BIS Textile đạt chuẩn thương hiệu 1254x1254 (hoặc 1024x1024)."""
     candidates = [
+        BG_DIR / "BIS_BACKDROP_1254.png",
+        PRODUCT_DIR / "BIS_BACKDROP_1254.png",
+        PROJECT_DIR / "BIS_BACKDROP_1254.png",
         BG_DIR / "BIS_BACKGROUND.png",
         PRODUCT_DIR / "BIS_BACKGROUND.png",
         PROJECT_DIR / "BIS_BACKGROUND.png",
@@ -47,14 +56,16 @@ def find_bis_backdrop() -> Path:
     for c in candidates:
         if c.exists():
             return c
-    raise FileNotFoundError("Không tìm thấy file BIS_BACKGROUND.png trong thư mục Studio Backgrounds hoặc Product Images.")
+    raise FileNotFoundError("Không tìm thấy file BIS_BACKDROP_1254.png hoặc BIS_BACKGROUND.png trong thư mục Studio Backgrounds.")
 
 
 def clean_and_cutout_product(prod_img: Image.Image) -> Image.Image:
     """
-    Tách nền sản phẩm thông minh:
-    - Loại bỏ viền đen scan nếu có.
-    - Dùng FloodFill từ các góc viền để loại bỏ nền trắng/xám bên ngoài mà không làm thủng ruột sản phẩm.
+    Tách nền sản phẩm quang học thông minh (Optical Matting):
+    - Cắt viền đen scan nếu có.
+    - Dùng FloodFill đa điểm từ các góc viền để loại bỏ nền trắng/xám bên ngoài.
+    - Tự động feathering biên dạng 1.5px để triệt tiêu răng cưa viền trắng.
+    - Bảo toàn 100% chi tiết cơ khí, rãnh xẻ, ốc vít, font chữ dập chìm và logo.
     """
     im = prod_img.convert("RGBA")
     arr = np.array(im)
@@ -70,35 +81,59 @@ def clean_and_cutout_product(prod_img: Image.Image) -> Image.Image:
             arr = np.array(im)
             h, w = arr.shape[:2]
 
-    # 2. Xử lý nền trắng bên ngoài
-    if (arr[:, :, 3] < 250).sum() < 100:
-        corners = [arr[0, 0, :3], arr[0, w-1, :3], arr[h-1, 0, :3], arr[h-1, w-1, :3]]
-        if any(c.mean() > 220 for c in corners):
-            bgr = cv2.cvtColor(arr[:, :, :3], cv2.COLOR_RGB2BGR)
-            flood_mask = np.zeros((h + 2, w + 2), np.uint8)
-            seeds = [
-                (0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1),
-                (0, h // 2), (w - 1, h // 2), (w // 2, 0), (w // 2, h - 1)
-            ]
-            for sx, sy in seeds:
-                if bgr[sy, sx].mean() > 215:
-                    cv2.floodFill(
-                        bgr.copy(), flood_mask, (sx, sy),
-                        (0, 0, 0), (18, 18, 18), (18, 18, 18),
-                        flags=4 | cv2.FLOODFILL_MASK_ONLY | (255 << 8)
-                    )
-            ext_bg_mask = (flood_mask[1:h+1, 1:w+1] == 255)
-            arr[:, :, 3][ext_bg_mask] = 0
-            im = Image.fromarray(arr, mode="RGBA")
-            bbox = im.getbbox()
-            if bbox:
-                im = im.crop(bbox)
+    # 2. Xử lý nền trắng/sáng bên ngoài
+    bgr = cv2.cvtColor(arr[:, :, :3], cv2.COLOR_RGB2BGR)
+    gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+    
+    # Kiểm tra màu nền ở 4 dải viền ngoài cùng
+    edge_strip = np.concatenate([gray[:12, :].flatten(), gray[-12:, :].flatten(), gray[:, :12].flatten(), gray[:, -12:].flatten()])
+    bg_median = float(np.median(edge_strip))
+
+    if (arr[:, :, 3] < 250).sum() < 100 and bg_median > 180:
+        flood_mask = np.zeros((h + 2, w + 2), np.uint8)
+        seeds = [
+            (0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1),
+            (0, h // 2), (w - 1, h // 2), (w // 2, 0), (w // 2, h - 1),
+            (2, 2), (w - 3, 2), (2, h - 3), (w - 3, h - 3)
+        ]
+        diff_tol = max(16, int(abs(bg_median - 255) + 18))
+        for sx, sy in seeds:
+            if gray[sy, sx] > (bg_median - diff_tol):
+                cv2.floodFill(
+                    bgr.copy(), flood_mask, (sx, sy),
+                    (0, 0, 0), (diff_tol, diff_tol, diff_tol), (diff_tol, diff_tol, diff_tol),
+                    flags=4 | cv2.FLOODFILL_MASK_ONLY | (255 << 8)
+                )
+        
+        ext_bg_mask = (flood_mask[1:h+1, 1:w+1] == 255)
+        alpha = np.where(ext_bg_mask, 0, 255).astype(np.uint8)
+
+        # Lấp các lỗ rỗng nhỏ bên trong chi tiết kim loại/chữ dập chìm
+        contours, _ = cv2.findContours(alpha, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        solid_mask = np.zeros_like(alpha)
+        for cnt in contours:
+            if cv2.contourArea(cnt) > 800:
+                cv2.drawContours(solid_mask, [cnt], -1, 255, -1)
+        
+        # Làm mịn viền (Antialiasing feathering 1.5px)
+        feathered = cv2.GaussianBlur(solid_mask, (5, 5), sigmaX=1.5)
+        arr[:, :, 3] = feathered
+        im = Image.fromarray(arr, mode="RGBA")
+        bbox = im.getbbox()
+        if bbox:
+            im = im.crop(bbox)
 
     return im
 
 
 def enhance_product_sharpness(prod_rgba: Image.Image, boost: float = 1.6) -> Image.Image:
-    """Tăng độ nét viền, chữ và chi tiết tem nhãn sản phẩm."""
+    """
+    Thuật toán làm nét quang học không biến dạng (Zero-Hallucination Optical Sharpening):
+    - LAB CLAHE trên kênh Luminance (L): Tăng tương phản vi cấu trúc và khắc nổi chữ 2.0 KG / logo AATCC.
+    - Bilateral Filter: Khử nhiễu cảm biến hạt mà không làm mờ cạnh viền sắc nét.
+    - High-Pass Unsharp Masking: Nâng độ nét tần số cao của chi tiết máy móc.
+    - Tuyệt đối bảo toàn 100% hình khối, vị trí chữ và logo nguyên bản.
+    """
     if boost <= 1.0:
         return prod_rgba
     
@@ -107,11 +142,24 @@ def enhance_product_sharpness(prod_rgba: Image.Image, boost: float = 1.6) -> Ima
     rgb = Image.merge("RGB", (r, g, b))
     bgr = cv2.cvtColor(np.array(rgb), cv2.COLOR_RGB2BGR)
 
-    denoised = cv2.bilateralFilter(bgr, d=5, sigmaColor=30, sigmaSpace=30)
+    # 1. LAB CLAHE trên kênh Luminance
+    lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
+    l_chan, a_chan, b_chan = cv2.split(lab)
+    clip_lim = float(np.clip(1.5 + (boost - 1.0) * 0.8, 1.5, 2.5))
+    clahe = cv2.createCLAHE(clipLimit=clip_lim, tileGridSize=(8, 8))
+    l_enhanced = clahe.apply(l_chan)
+    lab_enhanced = cv2.merge([l_enhanced, a_chan, b_chan])
+    bgr_clahe = cv2.cvtColor(lab_enhanced, cv2.COLOR_LAB2BGR)
+
+    # 2. Khử nhiễu bảo toàn cạnh sắc
+    denoised = cv2.bilateralFilter(bgr_clahe, d=5, sigmaColor=25, sigmaSpace=25)
+
+    # 3. High-Pass Unsharp Masking
     gaussian = cv2.GaussianBlur(denoised, (0, 0), sigmaX=2.0)
-    weight = float(np.clip(1.0 + (boost - 1.0) * 1.4, 1.2, 2.5))
+    weight = float(np.clip(1.0 + (boost - 1.0) * 1.5, 1.2, 2.6))
     unsharp = cv2.addWeighted(denoised, weight, gaussian, -(weight - 1.0), 0)
 
+    # 4. Detail enhance
     try:
         enhanced_cv = cv2.detailEnhance(unsharp, sigma_s=8, sigma_r=0.15)
     except Exception:
@@ -119,8 +167,8 @@ def enhance_product_sharpness(prod_rgba: Image.Image, boost: float = 1.6) -> Ima
 
     rgb_enh = cv2.cvtColor(enhanced_cv, cv2.COLOR_BGR2RGB)
     pil_enh = Image.fromarray(rgb_enh)
-    pil_enh = ImageEnhance.Contrast(pil_enh).enhance(1.06)
-    pil_enh = ImageEnhance.Sharpness(pil_enh).enhance(1.2)
+    pil_enh = ImageEnhance.Contrast(pil_enh).enhance(1.05)
+    pil_enh = ImageEnhance.Sharpness(pil_enh).enhance(1.15)
 
     res_rgba = pil_enh.convert("RGBA")
     res_rgba.putalpha(a)
@@ -137,9 +185,9 @@ def apply_2d_contact_shadow(
 ) -> Image.Image:
     """
     Tạo bóng tiếp xúc chân đế chân thực chuẩn ảnh chụp studio:
-    - Lớp 1 (Ambient Occlusion): Dải elip đậm dẹp sát chân đáy.
+    - Lớp 1 (Ambient Occlusion): Dải elip đậm dẹp sát chân đáy (opacity ~85-90%).
     - Lớp 2 (Soft Drop Shadow): Bóng tỏa mềm nhẹ phía dưới và hơi tràn sang 2 bên.
-    - Lớp 3 (Floor Reflection nhẹ): Phản chiếu mờ 15% chân đế xuống mặt sàn.
+    - Lớp 3 (Floor Reflection nhẹ): Phản chiếu mờ 18% chân đế xuống mặt sàn mica/studio.
     """
     canvas_w, canvas_h = backdrop.size
     prod_w, prod_h = prod_rgba.size
@@ -149,7 +197,7 @@ def apply_2d_contact_shadow(
 
     # 1. Subtle Floor Reflection (Phản xạ sàn bóng mờ)
     if enable_reflection:
-        refl_h = max(int(prod_h * 0.16), 12)
+        refl_h = max(int(prod_h * 0.16), 14)
         bottom_part = prod_rgba.crop((0, prod_h - refl_h, prod_w, prod_h))
         flipped = bottom_part.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
 
@@ -162,7 +210,7 @@ def apply_2d_contact_shadow(
         f_r, f_g, f_b, f_a = flipped.split()
         comb_a = Image.fromarray((np.array(f_a).astype(float) * np.array(grad_mask).astype(float) / 255.0).astype(np.uint8))
         flipped.putalpha(comb_a)
-        flipped = flipped.filter(ImageFilter.GaussianBlur(1.5))
+        flipped = flipped.filter(ImageFilter.GaussianBlur(1.8))
 
         refl_layer = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
         refl_layer.paste(flipped, (pos_x, ground_y))
@@ -171,32 +219,32 @@ def apply_2d_contact_shadow(
     # 2. Soft Drop Shadow (Bóng tỏa mềm)
     soft_shadow = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
     s_draw = ImageDraw.Draw(soft_shadow)
-    soft_opacity = int(65 * float(shadow_density))
+    soft_opacity = int(70 * float(shadow_density))
     soft_w_expand = int(prod_w * 0.12)
-    soft_h = max(int(prod_h * 0.07), 20)
+    soft_h = max(int(prod_h * 0.08), 24)
     soft_box = [
         pos_x - soft_w_expand,
         ground_y - int(soft_h * 0.25),
         pos_x + prod_w + soft_w_expand,
-        ground_y + int(soft_h * 1.1)
+        ground_y + int(soft_h * 1.15)
     ]
     s_draw.ellipse(soft_box, fill=(20, 20, 25, soft_opacity))
-    soft_shadow = soft_shadow.filter(ImageFilter.GaussianBlur(12))
+    soft_shadow = soft_shadow.filter(ImageFilter.GaussianBlur(16))
     comp = Image.alpha_composite(comp, soft_shadow)
 
     # 3. Ambient Occlusion (Bóng tiếp xúc chân đế sát sàn)
     ao_shadow = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
     ao_draw = ImageDraw.Draw(ao_shadow)
-    ao_opacity = int(195 * float(shadow_density))
-    ao_h = max(int(prod_h * 0.024), 6)
+    ao_opacity = int(210 * float(shadow_density))
+    ao_h = max(int(prod_h * 0.026), 8)
     ao_box = [
         pos_x + int(prod_w * 0.04),
         ground_y - int(ao_h * 0.5),
         pos_x + prod_w - int(prod_w * 0.04),
-        ground_y + int(ao_h * 0.65)
+        ground_y + int(ao_h * 0.75)
     ]
     ao_draw.ellipse(ao_box, fill=(10, 10, 15, ao_opacity))
-    ao_shadow = ao_shadow.filter(ImageFilter.GaussianBlur(2.5))
+    ao_shadow = ao_shadow.filter(ImageFilter.GaussianBlur(3))
     comp = Image.alpha_composite(comp, ao_shadow)
 
     # 4. Đặt sản phẩm lên trên cùng
@@ -207,48 +255,50 @@ def apply_2d_contact_shadow(
 def generate_2d_studio_product(
     sku: str,
     source_img_path: Path | str,
-    target_ground_y: int = 800,
-    target_height: int = 580,
+    target_ground_y: int = 980,
+    target_height: int = 720,
     auto_approve: bool = True
 ) -> Path:
     """
-    Quy trình cốt lõi tạo 1 ảnh sản phẩm 2D chuẩn BIS Textile:
-    - Tự động nạp BIS_BACKGROUND.png
-    - Cắt nền sản phẩm, tăng độ nét
-    - Đặt thẳng đứng 2D, căn giữa, chân đế chạm y = target_ground_y
-    - Lưu thẳng vào thư mục Google Drive: 6_Final_Composites/{sku}_final.jpg
+    Quy trình cốt lõi tạo 1 ảnh sản phẩm chuẩn Benchmark BIS Textile (1254x1254):
+    - Tự động nạp BIS_BACKDROP_1254.png (hoặc BIS_BACKGROUND.png scale 1254x1254)
+    - Tách nền quang học, khử răng cưa viền (Antialiasing)
+    - Làm nét không biến dạng (Zero-Hallucination): giữ nguyên 100% hình khối, chữ và logo
+    - Cân chỉnh kích thước tỷ lệ vàng (~58% khung hình), chân đế chạm y = target_ground_y
+    - Đổ bóng vật lý 3 lớp (AO + Soft Shadow + Subtle floor reflection)
+    - Lưu thẳng vào thư mục Google Drive: 6_Final_Composites/{sku}.png và {sku}_final.jpg
     """
     clean_sku = sku.strip().replace(" ", "_")
     src_p = Path(source_img_path)
     if not src_p.exists():
         raise FileNotFoundError(f"Không tìm thấy ảnh nguồn cho SKU {clean_sku} tại: {src_p}")
 
-    # 1. Tải phôi nền BIS Textile
+    # 1. Tải phôi nền BIS Textile chuẩn 1254x1254
     bg_p = find_bis_backdrop()
-    backdrop = Image.open(bg_p).convert("RGBA").resize((1024, 1024), Image.Resampling.LANCZOS)
+    backdrop = Image.open(bg_p).convert("RGBA").resize((CANVAS_W, CANVAS_H), Image.Resampling.LANCZOS)
 
     # 2. Xử lý ảnh sản phẩm 2D
     raw_prod = Image.open(src_p)
     prod_clean = clean_and_cutout_product(raw_prod)
 
-    # 3. Co giãn kích thước chuẩn catalogue
+    # 3. Co giãn kích thước chuẩn catalogue (tỷ lệ 55% - 65% khung hình)
     orig_w, orig_h = prod_clean.size
     aspect = orig_w / orig_h
     h = target_height
     w = int(h * aspect)
-    # Giới hạn chiều rộng không quá 680px để giữ cân đối
-    if w > 680:
-        w = 680
+    # Giới hạn chiều rộng không quá 880px để giữ cân đối trên khung hình 1254px
+    if w > 880:
+        w = 880
         h = int(w / aspect)
 
     prod_resized = prod_clean.resize((w, h), Image.Resampling.LANCZOS)
-    prod_enhanced = enhance_product_sharpness(prod_resized, boost=1.5)
+    prod_enhanced = enhance_product_sharpness(prod_resized, boost=1.6)
 
     # 4. Tính toán tọa độ đặt sản phẩm
-    pos_x = (1024 - w) // 2
+    pos_x = (CANVAS_W - w) // 2
     pos_y = target_ground_y - h
 
-    # 5. Đổ bóng vật lý 2 lớp
+    # 5. Đổ bóng vật lý 3 lớp
     composed = apply_2d_contact_shadow(
         backdrop=backdrop,
         prod_rgba=prod_enhanced,
@@ -260,19 +310,22 @@ def generate_2d_studio_product(
 
     # 6. Tinh chỉnh màu và hoàn thiện
     final_rgb = composed.convert("RGB")
-    final_rgb = ImageEnhance.Sharpness(final_rgb).enhance(1.1)
+    final_rgb = ImageEnhance.Sharpness(final_rgb).enhance(1.08)
 
-    # 7. Lưu trực tiếp vào Google Drive
-    final_path = FINAL_DIR / f"{clean_sku}_final.jpg"
+    # 7. Lưu trực tiếp vào Google Drive theo chuẩn Benchmark PNG + JPG
+    final_path_png = FINAL_DIR / f"{clean_sku}.png"
+    final_path_jpg = FINAL_DIR / f"{clean_sku}_final.jpg"
     preview_path = PREVIEW_DIR / f"{clean_sku}_preview.jpg"
-    final_rgb.save(final_path, quality=96)
-    final_rgb.save(preview_path, quality=96)
+
+    final_rgb.save(final_path_png, format="PNG")
+    final_rgb.save(final_path_jpg, format="JPEG", quality=96)
+    final_rgb.save(preview_path, format="JPEG", quality=96)
 
     # 8. Cập nhật Manifest
-    update_manifest(clean_sku, final_path, preview_path, approved=auto_approve)
+    update_manifest(clean_sku, final_path_png, preview_path, approved=auto_approve)
 
-    print(f"✓ ĐÃ HOÀN TẤT ẢNH 2D CHUẨN BIS CHO SKU {clean_sku}: {final_path.resolve()}")
-    return final_path
+    print(f"✓ ĐÃ HOÀN TẤT ẢNH CHUẨN BENCHMARK BIS 1254x1254 CHO SKU {clean_sku}: {final_path_png.resolve()}")
+    return final_path_png
 
 
 def update_manifest(sku: str, final_p: Path, preview_p: Path, approved: bool = True):
@@ -427,3 +480,4 @@ if __name__ == "__main__":
             src = find_source_image_for_sku(sample_sku)
             if src:
                 generate_2d_studio_product(sample_sku, src, auto_approve=True)
+

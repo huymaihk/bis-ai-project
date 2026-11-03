@@ -522,8 +522,16 @@ class AgentMedia:
         return target_path
 
     def get_backgrounds(self) -> List[Path]:
-        """Return list of available background templates."""
-        return list(self.bg_dir.glob("*.jpg")) + list(self.bg_dir.glob("*.png"))
+        """Return list of available background templates, prioritizing 1254x1254 BIS backdrop."""
+        bgs = list(self.bg_dir.glob("*.jpg")) + list(self.bg_dir.glob("*.png"))
+        def sort_priority(p: Path):
+            name = p.name.lower()
+            if "bis_backdrop_1254" in name:
+                return 0
+            if "bis_background" in name:
+                return 1
+            return 2
+        return sorted(bgs, key=sort_priority)
 
     def create_3d_branded_backdrop(
         self, 
@@ -1110,10 +1118,11 @@ class AgentMedia:
         is_bis_bg = "BIS_BACKGROUND" in bg_path.name
         is_prerendered_bg = is_bis_bg or "modern_textile_lab" in bg_path.name or "luxury_marble_podium" in bg_path.name or "clean_studio" in bg_path.name
 
+        canvas_w, canvas_h = (1254, 1254) if is_bis_bg else (1024, 1024)
         if is_prerendered_bg:
-            # Dùng trực tiếp phông nền studio 3D đạt chuẩn độ nét cao, không bị warp biến dạng
-            bg_img = Image.open(bg_path).convert("RGBA").resize((1024, 1024), Image.Resampling.LANCZOS)
-            ground_baseline = 850 if is_bis_bg else 690
+            # Dùng trực tiếp phông nền studio 3D đạt chuẩn độ nét cao 1254x1254 (hoặc 1024x1024)
+            bg_img = Image.open(bg_path).convert("RGBA").resize((canvas_w, canvas_h), Image.Resampling.LANCZOS)
+            ground_baseline = 980 if is_bis_bg else 690
         else:
             # Nếu người dùng tải lên mẫu hoa văn 2D phẳng riêng thì mới dựng phối cảnh tường - sàn
             bg_img = self.create_3d_branded_backdrop(
@@ -1148,7 +1157,7 @@ class AgentMedia:
             rendered_obj = self.enhance_sharpness_and_clarity(rendered_obj, sharpness_boost=sharpness_boost)
 
         obj_w, obj_h = rendered_obj.size
-        pos_x = (1024 - obj_w) // 2
+        pos_x = (canvas_w - obj_w) // 2
         pos_y = ground_baseline - obj_h
 
         # 4. Áp dụng hệ thống đổ bóng vật lý 2 lớp chân thực

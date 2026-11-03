@@ -2802,7 +2802,12 @@ with tab_mkt:
 # ── TAB 4: PHÒNG EDIT & DUYỆT ẢNH SẢN PHẨM (MEDIA STUDIO) ────────────────────
 with tab_media:
     st.markdown("### 🎨 Phòng Edit & Duyệt Ảnh Sản Phẩm (Agent_Media Studio)")
-    st.write("Quy trình chuẩn hóa: Bạn đặt ảnh sản phẩm vào Google Drive đặt tên trùng với mã SKU (`{sku}.jpg` hoặc `{sku}.png`), AI sẽ tự động đọc ảnh từ Drive, tách nền, đổ bóng chân thực và ghép vào bối cảnh Studio/Lab chuyên nghiệp.")
+    
+    col_inf1, col_inf2 = st.columns([7, 5])
+    with col_inf1:
+        st.info("💎 **Chuẩn ảnh thành phẩm Golden Benchmark (1254x1254 px):** Giữ nguyên 100% hình khối thực tế, font chữ dập chìm và logo gốc (Zero-Hallucination). Tự động tách nền quang học, khử răng cưa viền và đổ bóng 3D tiếp xúc chân thực lên phông nền thương hiệu BIS Textile.")
+    with col_inf2:
+        st.caption("⚡ **Lưu ý Streamlit Cloud:** Nếu gặp thông báo `Zzzz This app has gone to sleep...`, bạn chỉ cần bấm nút xanh **'Yes, get this app back up!'** để cloud khởi động lại sau 30s. Hoặc truy cập bản local tại `http://localhost:8501`.")
 
     if not media_agent:
         st.warning("⚠️ Đang chờ đồng bộ file `agent_media.py` trên GitHub. Hãy tải file lên để kích hoạt.")
@@ -2961,9 +2966,9 @@ with tab_media:
             # Nút Render chính
             st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
 
-            # 🌟 NÚT 1: TẠO ẢNH 2D CHUẨN BIS TEXTILE (THEO ĐÚNG ẢNH MẪU - LƯU VÀO GOOGLE DRIVE)
-            if st.button(f"📸 TẠO ẢNH 2D CHUẨN BIS TEXTILE CHO {clean_sku} (LƯU GOOGLE DRIVE)", type="primary", use_container_width=True, key=f"btn_flow_2d_{clean_sku}"):
-                with st.spinner(f"Đang tự động tách nền, căn chỉnh 2D và lưu vào Google Drive cho {clean_sku}..."):
+            # 🌟 NÚT 1: TẠO ẢNH CHUẨN BENCHMARK BIS TEXTILE 1254x1254 (LƯU VÀO GOOGLE DRIVE)
+            if st.button(f"📸 TẠO ẢNH CHUẨN BENCHMARK BIS 1254x1254 CHO {clean_sku} (LƯU DRIVE)", type="primary", use_container_width=True, key=f"btn_flow_2d_{clean_sku}"):
+                with st.spinner(f"Đang bóc tách quang học, làm nét bảo toàn chữ/logo và tạo ảnh 1254x1254 cho {clean_sku}..."):
                     import flow_2d_studio
                     try:
                         src_to_use = chosen_source_img
@@ -2993,14 +2998,14 @@ with tab_media:
                             out_final = flow_2d_studio.generate_2d_studio_product(
                                 sku=clean_sku,
                                 source_img_path=src_to_use,
-                                target_ground_y=800,
-                                target_height=580,
+                                target_ground_y=980,
+                                target_height=720,
                                 auto_approve=True
                             )
                             if media_agent:
                                 media_agent.manifest = media_agent._load_manifest()
-                            st.toast(f"🎉 ĐÃ LƯU ẢNH 2D CHUẨN BIS TEXTILE CHO {clean_sku} VÀO GOOGLE DRIVE!", icon="📸")
-                            st.success(f"✓ Hoàn tất! Ảnh thành phẩm đã lưu tại: `{out_final.name}`")
+                            st.toast(f"🎉 ĐÃ LƯU ẢNH CHUẨN BENCHMARK 1254x1254 CHO {clean_sku} VÀO GOOGLE DRIVE!", icon="📸")
+                            st.success(f"✓ Hoàn tất! Ảnh thành phẩm 1254x1254 đã lưu tại: `{out_final.name}`")
                             st.rerun()
                     except Exception as ex_2d:
                         st.error(f"❌ Lỗi tạo ảnh 2D: {ex_2d}")
