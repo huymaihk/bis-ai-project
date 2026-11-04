@@ -258,3 +258,8 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 
 ## 2026-11-04 — Blank 3D viewport mitigation
 - Default office view now uses the concept image; interactive WebGL remains selectable. Added error boundary with explicit fallback and replaced GPU fence polling with bounded timer scheduling; lowered GPU requirements. TypeScript/build passed. Exact browser failure not established; user screenshot was a cropped empty viewport, no console evidence.
+
+## 2026-11-04 — Apply Studio office to live entry
+- Rechecked AI/1: Studio source matches imported files except deliberate integration fixes. Found live entry bypassed Studio office through separate nested demo/login. Added LiveOffice directly to live Overview, real selected SKU and navigation, 6 department tiles and optional 3D/static views with 15-second startup watchdog. Scene remains labelled simulation; live task data separate.
+- Removed lazy demo App from live route so prototype login/mock credentials and demo Operations no longer appear in the live navigation. Preserved real product/memory handlers and backend gates. Source export unchanged.
+- TypeScript and Vite build passed. Browser visual validation unavailable; full agent orchestration is not implemented by this design integration.

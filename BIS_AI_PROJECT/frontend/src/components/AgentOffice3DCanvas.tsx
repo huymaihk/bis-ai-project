@@ -43,7 +43,7 @@ import {
 } from 'lucide-react';
 
 interface AgentOffice3DCanvasProps {
-  activeProduct: ProductRecord;
+  activeProduct: Pick<ProductRecord, 'sku'>;
   reduceMotion: boolean;
   eyeStyle: RobotEyeStyle;
   finishPreset: RobotFinishPreset;
