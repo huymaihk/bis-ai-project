@@ -263,3 +263,7 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - Rechecked AI/1: Studio source matches imported files except deliberate integration fixes. Found live entry bypassed Studio office through separate nested demo/login. Added LiveOffice directly to live Overview, real selected SKU and navigation, 6 department tiles and optional 3D/static views with 15-second startup watchdog. Scene remains labelled simulation; live task data separate.
 - Removed lazy demo App from live route so prototype login/mock credentials and demo Operations no longer appear in the live navigation. Preserved real product/memory handlers and backend gates. Source export unchanged.
 - TypeScript and Vite build passed. Browser visual validation unavailable; full agent orchestration is not implemented by this design integration.
+
+## 2026-11-04 — Studio AI/2 applied to live workspace
+- Compared AI/2 export with integrated frontend: actual design source/assets already match except intentional entry/WebGL/Streamlit fixes. Imported design-system reference, applied warm ivory inspection panels to live tabs and added 4-step workflow navigation; preserved real data/auth/memory and direct office overview. Original source folder unchanged.
+- TypeScript and Vite build pass. No backend changes; no claims of live agent execution. Browser visual QA not available.
