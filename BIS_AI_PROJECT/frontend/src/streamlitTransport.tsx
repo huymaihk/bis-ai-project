@@ -6,6 +6,19 @@ type Work={id:string;url:string;method:string;body?:string;resolve:(r:Response)=
 const queue:Work[]=[];
 let current:Work|undefined;
 let connected=false;
+let framePending=false;
+let lastHeight=0;
+function fitFrame(){
+  if(!embedded||framePending)return;
+  framePending=true;
+  requestAnimationFrame(()=>{
+    framePending=false;
+    const root=document.getElementById('root');
+    if(!root)return;
+    const height=Math.max(720,Math.ceil(root.getBoundingClientRect().height));
+    if(height!==lastHeight){lastHeight=height;Streamlit.setFrameHeight(height);}
+  });
+}
 function next(){
   if(!connected||current||!queue.length)return;
   current=queue.shift();
@@ -13,6 +26,11 @@ function next(){
   Streamlit.setComponentValue({id,url,method,body});
 }
 if(embedded){
+  document.documentElement.classList.add('bis-embedded');
+  const root=document.getElementById('root');
+  if(root)new ResizeObserver(fitFrame).observe(root);
+  window.addEventListener('resize',fitFrame);
+  document.fonts.ready.then(fitFrame);
   Streamlit.events.addEventListener(Streamlit.RENDER_EVENT,(event:any)=>{
     connected=true;
     const response=event.detail.args.response;
@@ -24,7 +42,7 @@ if(embedded){
         work.resolve(new Response(bytes,{status:response.status,headers:{'Content-Type':response.content_type}}));
       }
     }
-    Streamlit.setFrameHeight(1100);
+    fitFrame();
     next();
   });
   Streamlit.setComponentReady();

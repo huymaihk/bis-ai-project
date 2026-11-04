@@ -9,7 +9,7 @@ import streamlit.components.v1 as components
 from fastapi.testclient import TestClient
 from bis_api import create_app
 
-BRIDGE_PROTOCOL = 'workflow-v2-1'
+BRIDGE_PROTOCOL = 'workflow-v2-2'
 
 
 class SessionBridge:
@@ -80,7 +80,11 @@ def render_react_workspace(root, services=None):
         render_workspace(root, *services, active_step=st.session_state['_bis_native_step'])
         return
     component=components.declare_component('bis_workspace',path=str(folder))
-    st.markdown('<style>section[data-testid="stMain"] .block-container{max-width:100%;padding:0 0.5rem;} iframe[title="streamlit_react_host.bis_workspace"]{border:0;}</style>',unsafe_allow_html=True)
+    st.markdown('''<style>
+    section[data-testid="stMain"] .block-container,
+    [data-testid="stMainBlockContainer"]{width:100%!important;max-width:none!important;padding:3.25rem 0 0!important;}
+    iframe[title="streamlit_react_host.bis_workspace"]{border:0;display:block;width:100%!important;}
+    </style>''',unsafe_allow_html=True)
     request=component(response=st.session_state.get('_bis_react_response'),key='bis_live_workspace',default=None)
     if isinstance(request,dict) and request.get('id')!=st.session_state.get('_bis_react_last_request'):
         if request.get('url')=='/api/logout' and request.get('method')=='POST':

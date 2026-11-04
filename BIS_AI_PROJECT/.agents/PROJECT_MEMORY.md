@@ -226,3 +226,7 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
 - User screenshot shows a TypeError at app_ui.py calling render_react_workspace with services; full cloud exception message is redacted. Reproduced old cached one-argument renderer incompatibility locally.
 - Added protocol-aware module loader and session bridge reset for incompatible hot deployments. Reload API first, then renderer; preserve persistent product/memory stores. Haravan code/config unchanged.
 - 16 API/bridge tests passed, including cached old-signature reproduction and stale session reset. Cloud visual result remains unverified.
+
+## 2026-11-04 — Full width embedded workspace
+- Removed React main width cap and Streamlit horizontal padding; iframe now follows root content height with ResizeObserver instead of fixed 1100px. Embedded intrinsic minimums avoid viewport-height feedback loops. Host protocol bumped for hot deployment refresh.
+- TypeScript/build and 5 bridge tests pass. Browser layout not visually confirmed; this changes layout only, not Haravan business rules.
