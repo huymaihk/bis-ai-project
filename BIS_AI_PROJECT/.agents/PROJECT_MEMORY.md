@@ -239,3 +239,8 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
 ## 2026-11-04 — Scroll reachability fix
 - Disabled OrbitControls wheel zoom and enabled vertical touch pan so the office does not consume page scrolling. Frame sizing includes root overflow and image/DOM updates with bottom clearance. Embedded memory list no longer uses a nested height-limited scroll box.
 - TypeScript and production build passed. Browser use remains disabled, so actual deployed scrolling awaits visual verification. Haravan unchanged.
+
+## Catalogue scan and analysis selection
+- Added explicit catalogue folder scan, persistent hash-bound completion state, green completed-file labels and confirmation checkbox before reanalysis in native PDF tool.
+- Full-document extraction records page jobs, preserves existing drafts, fails closed on empty/unconfirmed page results. Six workspace regression tests pass; real AI extraction not validated.
+- Cloud scans its own filesystem, not desktop G drive. Upload or separate file sync required. Haravan unchanged.

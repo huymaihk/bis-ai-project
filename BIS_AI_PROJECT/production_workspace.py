@@ -35,6 +35,16 @@ def render_workspace(root,technical,media,knowledge,translator,memory,active_ste
     sources+=list(source_dir.rglob("*.pdf"))
     if active_step is None or active_step == 0:
         with tabs[0]:
+            st.caption('Quét thư mục 1_Catalogues trên máy đang chạy BIS. Web Cloud không tự đọc ổ G của máy cá nhân; cần tải PDF lên hoặc đồng bộ file lên máy chủ.')
+            if st.button('Quét thư mục Catalogue',key='q_scan_catalogues'):
+                st.session_state['q_catalogue_files'] = sorted(str(p.relative_to(root)) for p in source_dir.rglob('*') if p.is_file() and p.suffix.lower()=='.pdf')
+            if 'q_catalogue_files' in st.session_state:
+                sources=[root/p for p in st.session_state['q_catalogue_files'] if (root/p).is_file()]
+            ledger_path=memory.root/'catalogue_analysis.json'
+            try:
+                analysis=json.loads(ledger_path.read_text(encoding='utf-8'))
+            except (OSError,ValueError):
+                analysis={}
             upload=st.file_uploader("Thêm catalogue PDF",type=["pdf"],key="q_source_upload")
             if upload and st.button("Lưu tài liệu nguồn"):
                 import pymupdf
@@ -52,7 +62,49 @@ def render_workspace(root,technical,media,knowledge,translator,memory,active_ste
                     except Exception as exc:
                         st.error("Không đọc được tài liệu: "+type(exc).__name__)
             chosen=st.selectbox("Tài liệu đang làm việc",sources,
-                                format_func=lambda p:p.relative_to(root).as_posix(),key="q_pdf") if sources else None
+                                format_func=lambda p:('🟢 ' if analysis.get(str(p.relative_to(root)),{}).get('state')=='COMPLETED' and analysis.get(str(p.relative_to(root)),{}).get('sha256')==hashlib.sha256(p.read_bytes()).hexdigest() else '⚪ ')+p.relative_to(root).as_posix(),key="q_pdf") if sources else None
+            if chosen:
+                file_hash=hashlib.sha256(chosen.read_bytes()).hexdigest()
+                record=analysis.get(str(chosen.relative_to(root)),{})
+                done=record.get('sha256')==file_hash and record.get('state')=='COMPLETED'
+                if done:
+                    st.success('Đã phân tích tài liệu này thành công.')
+                elif record:
+                    st.warning('Tài liệu đã thay đổi hoặc lần phân tích trước chưa hoàn tất.')
+                confirm=st.checkbox('Bạn có muốn phân tích lại tài liệu này không?',key='q_reanalyse_'+file_hash) if done else False
+                if st.button('Phân tích toàn bộ tài liệu',disabled=done and not confirm,key='q_analyse_document'):
+                    import pymupdf
+                    key=str(chosen.relative_to(root))
+                    analysis[key]={'sha256':file_hash,'state':'RUNNING'}
+                    atomic_json(ledger_path,analysis)
+                    try:
+                        total_rows=0
+                        with pymupdf.open(chosen) as document:
+                            if document.needs_pass:
+                                raise ValueError('PDF cần mật khẩu')
+                            progress=st.progress(0)
+                            for index in range(len(document)):
+                                rows=runner.run('catalogue_page',{'file':key,'sha256':file_hash,'page':index+1},
+                                    lambda i=index: technical.extract_page(document[i].get_pixmap(matrix=pymupdf.Matrix(1.5,1.5)).tobytes('jpeg'),i+1,len(document)))
+                                if not isinstance(rows,list) or not rows:
+                                    raise ValueError(f'Trang {index+1} chưa có kết quả xác minh; dùng trích từng trang để kiểm tra.')
+                                for row in rows:
+                                    from media_quality import safe_name
+                                    row.update(source_file=key,source_page=index+1,status='EXTRACTED_UNVERIFIED')
+                                    row['custom_html']=render_product(row)
+                                    target=folder/(safe_name(row['sku'])+'.json')
+                                    if not target.exists():
+                                        atomic_json(target,row)
+                                    total_rows+=1
+                                progress.progress((index+1)/len(document))
+                        analysis[key]={'sha256':file_hash,'state':'COMPLETED','products':total_rows}
+                        atomic_json(ledger_path,analysis)
+                        memory.append('update',f'Đã phân tích {key}: {total_rows} kết quả; dữ liệu cần nghiệm thu.',source='catalogue_analysis')
+                        st.rerun()
+                    except Exception as exc:
+                        analysis[key]={'sha256':file_hash,'state':'FAILED'}
+                        atomic_json(ledger_path,analysis)
+                        st.error('Phân tích chưa hoàn tất: '+str(exc))
             page=st.number_input("Trang cần trích xuất",min_value=1,value=1,step=1,key="q_source_page")
             if chosen:
                 if st.button("Xem trang",key="q_render_page"):
