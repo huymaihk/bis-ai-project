@@ -1,0 +1,88 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  /* BIS TEXTILE AI Design Tokens — Obsidian Precision & Tactile Agent Studio */
+  --bg-canvas: #0B0C0F;
+  --bg-surface: #12141A;
+  --bg-elevated: #181B23;
+  --bg-inspector-light: #F7F6F2;
+  --border-subtle: #222631;
+  --border-strong: #323846;
+
+  --text-primary: #F3F4F6;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
+
+  /* Brand & Agent Identity Tokens (Inspired by Video 1 & Video 2) */
+  --bis-crimson: #E11D48;
+  --agent-technical: #F59E0B;    /* Amber Gold — Atlas/Technical */
+  --agent-marketing: #E2E8F0;    /* Anodized Silver — Archer/Marketing */
+  --agent-imagestudio: #0EA5E9;  /* Electric Cyan — Blue/Image Studio */
+  --agent-operations: #EF4444;   /* Signal Red — Sage/Operations */
+  --agent-knowledge: #10B981;    /* Emerald — Knowledge */
+  --agent-memory: #A855F7;       /* Amethyst — Memory */
+
+  /* Semantic Status Tokens */
+  --status-verified: #16A34A;
+  --status-review: #D97706;
+  --status-error: #DC2626;
+  --status-unchecked: #64748B;
+
+  /* Spacing & Radius Tokens */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Isometric Agent Floor Grid */
+.agent-floor-grid {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Studio Checkerboard for 1254x1254 Transparency Inspection */
+.studio-checkerboard {
+  background-image: 
+    linear-gradient(45deg, #1E222B 25%, transparent 25%), 
+    linear-gradient(-45deg, #1E222B 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #1E222B 75%), 
+    linear-gradient(-45deg, transparent 75%, #1E222B 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  background-color: #14171E;
+}
+
+/* Reduced Motion Compliance */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.reduce-motion *, .reduce-motion ::before, .reduce-motion ::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}

@@ -16,10 +16,17 @@ credentials.json
 # Temporary caches
 .pytest_cache/
 extracted_products_cache.json
+.antigravity_sync/
 
+# Private, append-only AI memory and local backups
 Google_Drive_Storage/8_AI_Memory/
-
 _memory_upgrade_backup/
 
-# Local quality previews
+# Local visual QA only
 tmp/quality/
+
+# React build and local bridge
+frontend/node_modules/
+frontend/dist/
+frontend/.env*
+frontend/public/**/*.mp4

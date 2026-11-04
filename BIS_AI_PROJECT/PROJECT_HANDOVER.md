@@ -240,3 +240,8 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - Tham khảo hai video của chủ dự án và GitHub Langflow/Open WebUI/Agent Chat UI; thêm nền tối/sáng, hero agent CSS, số liệu thật, chọn SKU bên trái và thẻ ngữ cảnh. Xem UI_DESIGN_RELEASE.md.
 - 53 kiểm thử offline đạt, gồm chuyển theme vẫn giữ SKU và chặn đăng khi chưa duyệt. Chưa nghiệm thu hình ảnh trình duyệt/cloud; preview localhost trước đó bị từ chối nên không tìm cách vượt quyền.
 - Bài học: giao diện agent chỉ mô tả vai trò; không trình bày agent chạy nền hoặc kết nối khỏe khi chưa có bằng chứng. Không thay PIN hay thao tác Haravan. Đồng bộ Google vẫn chưa xác minh hoạt động.
+
+## 2026-11-04 — React bridge bước 1–2
+- Thêm frontend/ từ bản AI Studio (giữ nguyên thư mục gốc), bis_api.py và giao diện kết nối thật: 97 sản phẩm, 476 PDF/ảnh qua HTTP, sửa sản phẩm có revision + memory event, ghi chú sửa/thu hồi/phiên bản. Chi tiết REACT_BRIDGE_RELEASE.md.
+- 61 test Python, TypeScript lint và Vite build đạt. Sửa 2 lỗi TS có sẵn; npm build trên C vì Google Drive gây lỗi ghi file. Browser visual chưa nghiệm thu.
+- Bài học: địa chỉ API trong mock adapter không phải kết nối thật; không bật Haravan hay trạng thái agent từ mô phỏng. React đang chạy local; cloud/worker/agent/ảnh nghiệp vụ và Google sync còn cần triển khai.

@@ -4,11 +4,15 @@ on:
     paths:
       - 'BIS_AI_PROJECT/**.py'
       - 'BIS_AI_PROJECT/requirements.txt'
+      - 'BIS_AI_PROJECT/requirements-bridge.txt'
+      - 'BIS_AI_PROJECT/frontend/**'
       - '.github/workflows/bis-quality.yml'
   pull_request:
     paths:
       - 'BIS_AI_PROJECT/**.py'
       - 'BIS_AI_PROJECT/requirements.txt'
+      - 'BIS_AI_PROJECT/requirements-bridge.txt'
+      - 'BIS_AI_PROJECT/frontend/**'
       - '.github/workflows/bis-quality.yml'
 jobs:
   regression:
@@ -27,8 +31,25 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install test dependencies
-        run: pip install streamlit pymupdf pillow requests beautifulsoup4 python-dotenv google-genai gspread google-auth
+        run: pip install streamlit pymupdf pillow requests beautifulsoup4 python-dotenv google-genai gspread google-auth fastapi httpx
       - name: Test workflows without external writes
-        run: python -m unittest test_quality_workflow test_persistent_memory test_production_workspace -v
+        run: python -m unittest test_quality_workflow test_persistent_memory test_production_workspace test_bis_api -v
       - name: Validate syntax
         run: python -m compileall -q -x '(_memory_upgrade_backup|\.antigravity_sync)' .
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: BIS_AI_PROJECT/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: BIS_AI_PROJECT/frontend/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run lint
+      - run: npm run build
