@@ -53,4 +53,3 @@ def edit_studio(source_path,background_path,output_path,sku,benchmark_path=None)
                 "note":"AI có thể đổi chi tiết. Cần đối chiếu chữ/logo/hình khối với nguồn trước khi duyệt."}
     finally:
         client.close()
-

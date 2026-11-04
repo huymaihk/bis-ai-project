@@ -46,4 +46,3 @@
 - https://docs.haravan.com/docs/omni-apis/products/
 
 Release dùng các cơ chế nhỏ có thể kiểm thử trong kiến trúc hiện có; chưa cài LangGraph/DeepEval/Playwright vào runtime BIS.
-

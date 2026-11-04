@@ -37,4 +37,3 @@ def index_pdf(workspace,path,max_pages=100):
     return {"chunks":count,"pages_indexed":min(total,max_pages),"total_pages":total,
             "pages_need_ocr":scanned,"state":"PARTIAL" if total>max_pages or scanned else "INDEXED",
             "note":"Đã lập chỉ mục văn bản; chưa thẩm định tính đúng của tài liệu."}
-

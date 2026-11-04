@@ -39,4 +39,3 @@ class JobRunner:
             except (ValueError,OSError):
                 continue
         return sorted(rows,key=lambda x:x["started_at"],reverse=True)
-

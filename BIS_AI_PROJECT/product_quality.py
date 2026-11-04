@@ -148,4 +148,3 @@ def seo_draft(product):
             "url_slug":slug,"focus_keywords":[x for x in (vi,en,sku) if x],
             "secondary_keywords":[],"selling_points":[],"target_audience":"",
             "_quality":{"state":"NEEDS_REVIEW","issues":issues,"version":VERSION}}
-

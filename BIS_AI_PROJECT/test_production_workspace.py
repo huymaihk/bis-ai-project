@@ -56,4 +56,3 @@ render_workspace(root,None,media,None,None,MemoryStore(root))
 
 if __name__=="__main__":
     unittest.main()
-

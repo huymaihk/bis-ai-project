@@ -32,4 +32,3 @@ jobs:
         run: python -m unittest test_quality_workflow test_persistent_memory test_production_workspace -v
       - name: Validate syntax
         run: python -m compileall -q -x '(_memory_upgrade_backup|\.antigravity_sync)' .
-

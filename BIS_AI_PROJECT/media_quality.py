@@ -117,4 +117,3 @@ def studio_draft(source_path,background_path,output_path, *, remove_white=False)
     return {"source_sha256":hashlib.sha256(data).hexdigest(),"size":[1254,1254],
             "object_size":list(size),"status":"PENDING_REVIEW",
             "note":"Bản ghép bảo toàn pixel; cần kiểm tra nền, chữ, logo và độ chân thật."}
-

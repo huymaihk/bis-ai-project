@@ -317,4 +317,3 @@ def render_workspace(root,technical,media,knowledge,translator,memory):
         with st.expander("Nhật ký tác vụ"):
             st.dataframe(runner.list_jobs(),use_container_width=True)
         render_memory_panel(memory)
-
