@@ -1,5 +1,3 @@
-"""
-Haravan App Credentials Notes
-"""
+"""Compatibility configuration; secrets are loaded only from config."""
+from config import HARAVAN_TOKEN
 HARAVAN_APP_NAME = "BIS TEXTILE N8N PRODUCT SYNC"
-HARAVAN_TOKEN = "8651987CA6839C2F9131175200D9542DD046AF86EF211FF46AA34E54377B691D"

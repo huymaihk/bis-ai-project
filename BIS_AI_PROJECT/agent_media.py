@@ -180,71 +180,9 @@ class AgentMedia:
         - BƯỚC 2: Chỉ khi trang đó không có ảnh và scan_all=True (và không phải dạng sách/tiêu chuẩn) thì mới quét các trang khác chứa đúng mã SKU.
         - XÓA BỎ HOÀN TOÀN đoạn fallback pixmap chụp nguyên trang bìa. Nếu không có ảnh > 5KB, trả về None để kích hoạt tìm kiếm Web.
         """
-        import pymupdf
-        clean_sku = sku.strip().replace(" ", "_")
-        target_path = self.brand_dir / f"{clean_sku}_brand_1.jpg"
-
-        # Kiểm tra xem sản phẩm có phải tài liệu/tiêu chuẩn/sổ tay không
-        name_lower = (product_name or "").lower()
-        is_book_or_standard = any(k in name_lower for k in [
-            "manual", "standard", "tiêu chuẩn", "tieu chuan", "book", "sách", "aatcc", "iso", "astm"
-        ])
-
-        # 1. Thử bóc trực tiếp từ đúng trang page_num
-        exact_page_imgs = self.extract_images_from_exact_page(pdf_path, page_num)
-        # Chỉ nhận ảnh thực sự có dung lượng > 5KB (5000 bytes) để tránh lấy icon nhỏ hoặc viền
-        valid_page_imgs = [img for img in exact_page_imgs if img.get("size_bytes", 0) > 5000]
-
-        if valid_page_imgs:
-            best_img = valid_page_imgs[0]
-            with open(target_path, "wb") as f:
-                f.write(best_img["image_bytes"])
-            print(f"✓ Đã trích ảnh {clean_sku} chuẩn xác từ trang {page_num} ({best_img['width']}x{best_img['height']}, {best_img['size_bytes']:,} bytes)")
-            return target_path
-
-        # Nếu là sách / tiêu chuẩn mà trang PDF không có ảnh bìa > 5KB:
-        # Ngừng ngay lập tức, trả về None để hệ thống chuyển sang tìm ảnh Web (tránh bóc nhầm máy móc/tủ sấy ở trang khác)
-        if is_book_or_standard:
-            print(f"ℹ️ Sản phẩm '{sku}' là sách/tiêu chuẩn ({product_name}) - Không tìm thấy ảnh bìa > 5KB trên trang {page_num}. Chuyển sang tìm kiếm Web.")
-            return None
-
-        # 2. Với thiết bị máy móc thông thường: nếu trang không có ảnh và cho phép scan_all:
-        if scan_all:
-            if not os.path.exists(str(pdf_path)):
-                possible_paths = [
-                    self.workspace_dir / "catalogue_sample.pdf",
-                    self.gdrive_storage / "1_Catalogues" / "catalogue_sample.pdf",
-                    self.workspace_dir.parent / "catalogue_sample.pdf",
-                ]
-                for p in possible_paths:
-                    if p.exists():
-                        pdf_path = p
-                        break
-            if os.path.exists(str(pdf_path)):
-                try:
-                    doc = pymupdf.open(str(pdf_path))
-                    sku_clean_lower = sku.strip().lower()
-                    for p_idx in range(len(doc)):
-                        if p_idx == page_num - 1:
-                            continue
-                        txt = doc[p_idx].get_text().lower()
-                        if sku_clean_lower in txt:
-                            sku_page_imgs = self.extract_images_from_exact_page(pdf_path, p_idx + 1)
-                            valid_sku_imgs = [img for img in sku_page_imgs if img.get("size_bytes", 0) > 5000]
-                            if valid_sku_imgs:
-                                best_img = valid_sku_imgs[0]
-                                with open(target_path, "wb") as f:
-                                    f.write(best_img["image_bytes"])
-                                print(f"✓ Tìm thấy {clean_sku} tại trang {p_idx + 1} qua quét SKU text ({best_img['size_bytes']:,} bytes)")
-                                doc.close()
-                                return target_path
-                    doc.close()
-                except Exception as e:
-                    print(f"Error scanning PDF: {e}")
-
-        # ❌ XÓA BỎ HOÀN TOÀN ĐOẠN CHỤP NGUYÊN TRANG BÌA (FALLBACK BITMAP) CŨ!
-        # Nếu không có ảnh thiết bị hoặc sách thực tế trong PDF, trả về None để hệ thống chuyển sang tìm Web
-        print(f"⚠️ Không tìm thấy ảnh sản phẩm hợp lệ (> 5KB) cho SKU {clean_sku} trong file PDF này.")
+        # Candidate selection must happen in the UI; a page can contain multiple SKUs.
+        from pdf_candidates import candidates
+        self.last_pdf_candidates = candidates(pdf_path, sku)
         return None
 
     def clean_search_query(self, query: str) -> str:
@@ -301,6 +239,7 @@ class AgentMedia:
                         "image_url": item.get("link"),
                         "thumb_url": img_info.get("thumbnailLink") or item.get("link"),
                         "title": item.get("title", clean_q),
+                        "page_url": img_info.get("contextLink", ""),
                         "domain": item.get("displayLink", "Google")
                     })
                 if results:
@@ -316,18 +255,7 @@ class AgentMedia:
         - Lọc bỏ các hư từ (of, and, the, procedures, methods, hardbound, book, standard, test, -, :).
         - Chỉ giữ lại: [Brand] + [SKU] + [2-3 từ định danh cốt lõi].
         """
-        if not query:
-            return ""
-        clean_q = self.clean_search_query(query)
-        words = clean_q.strip().split()
-        stop_words = {"of", "and", "the", "for", "procedures", "methods", "hardbound", "book", "standard", "test", "-", ":"}
-        clean_words = [w for w in words if w.lower() not in stop_words]
-
-        if len(clean_words) >= 4:
-            return " ".join(clean_words[:4])
-        elif clean_words:
-            return " ".join(clean_words)
-        return clean_q.strip()
+        return self.clean_search_query(query or "")
 
     def search_web_images(self, query: str, max_results: int = 8) -> list[dict]:
         """
@@ -376,7 +304,7 @@ class AgentMedia:
                     domain = (r.get("source") or "").lower()
 
                     # Bỏ qua nếu dính danh sách đen
-                    if any(bad in title or bad in img_url or bad in domain for bad in blacklist):
+                    if any(__import__("re").search(r"\\b"+__import__("re").escape(bad)+r"\\b", title+" "+domain) for bad in blacklist):
                         continue
 
                     raw_img = r.get("image")
@@ -385,6 +313,7 @@ class AgentMedia:
                             "image_url": raw_img,
                             "thumb_url": r.get("thumbnail") or raw_img,
                             "title": r.get("title", short_query),
+                            "page_url": r.get("url") or "",
                             "domain": r.get("source") or "DuckDuckGo"
                         })
                     if len(results) >= max_results:
@@ -409,64 +338,25 @@ class AgentMedia:
 
     def download_and_save_brand_image(self, sku: str, image_url: str, index: int = 1) -> Optional[Path]:
         """Tải ảnh từ URL đã chọn và lưu vào thư mục ảnh hãng của SKU trên Google Drive."""
-        clean_sku = sku.strip().replace(" ", "_")
-        target_path = self.brand_dir / f"{clean_sku}_brand_{index}.jpg"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-        }
+        from media_quality import download_image, safe_name, checked_image
         try:
-            try:
-                from curl_cffi import requests as http_client
-                r = http_client.get(image_url, headers=headers, impersonate="chrome", timeout=20)
-            except ImportError:
-                import requests as http_client
-                r = http_client.get(image_url, headers=headers, timeout=20)
-            if r.status_code == 200 and len(r.content) > 1500:
-                with open(target_path, "wb") as f:
-                    f.write(r.content)
-                print(f"✓ Đã lưu ảnh sản phẩm {clean_sku} ({len(r.content):,} bytes) từ {image_url}")
-                return target_path
-        except Exception as e:
-            print(f"Error downloading image from {image_url}: {e}")
-        return None
+            data = download_image(image_url)
+            image = checked_image(data)
+            target = self.brand_dir / f"{safe_name(sku)}_brand_{index}.png"
+            image.save(target, format="PNG")
+            return target
+        except Exception:
+            return None
 
     def fetch_brand_image_from_web(self, sku: str, brand_name: str, title: str, product_name_vi: str = "") -> Optional[Path]:
         """
         Tìm và lưu ảnh sản phẩm thực tế từ Web kết hợp thông minh:
         - Tên hãng (Brand) + Mã SKU + Tên sản phẩm tiếng Anh / tiếng Việt.
         """
-        clean_sku = sku.strip().replace(" ", "_")
-        
-        # Tạo danh sách các truy vấn theo độ ưu tiên từ cụ thể nhất đến tổng quát
-        queries = []
-        if title:
-            queries.append(f"{brand_name} {sku} {title}".strip())
-        queries.append(f"{brand_name} {sku}".strip())
-        if product_name_vi and product_name_vi != title:
-            queries.append(f"{brand_name} {sku} {product_name_vi}".strip())
-        if title:
-            queries.append(f"{brand_name} {title}".strip())
-
-        for q in queries:
-            results = self.search_web_images(q, max_results=5)
-            for res in results:
-                saved = self.download_and_save_brand_image(clean_sku, res["image_url"])
-                if saved and saved.exists():
-                    return saved
-
-        # Fallback phụ: thử cào trang web thương hiệu trực tiếp
-        try:
-            from brand_web_enricher import resolve_brand_domain, fetch_brand_product_page
-            domain = resolve_brand_domain(brand_name)
-            web_data = fetch_brand_product_page(domain, sku, title)
-            if web_data and web_data.get("images"):
-                for img_url in web_data["images"]:
-                    saved = self.download_and_save_brand_image(clean_sku, img_url)
-                    if saved and saved.exists():
-                        return saved
-        except Exception as e:
-            print(f"Error in brand domain fallback: {e}")
-
+        from media_quality import rank_candidates
+        query = f'{brand_name} "{sku}" {title}'
+        self.last_web_candidates = rank_candidates(self.search_web_images(query), sku, title, brand_name)
+        # Human selection is required; no "first downloaded image = verified" fallback.
         return None
 
     def get_product_image_for_sku(self, sku: str) -> Optional[Path]:
@@ -479,6 +369,9 @@ class AgentMedia:
         """
         clean_sku = sku.strip().replace(" ", "_")
         clean_sku_lower = clean_sku.lower()
+        chosen = self.user_dir / f"{sku}_user_1.png"
+        if chosen.exists():
+            return chosen
         search_dirs = [self.user_dir, self.brand_dir]
 
         # 1. Khớp chính xác {sku}.ext
@@ -505,10 +398,10 @@ class AgentMedia:
 
     def register_user_image(self, sku: str, image_bytes: bytes, filename: str) -> Path:
         """Save user supplied product photo with strict SKU naming format."""
-        clean_sku = sku.strip().replace(" ", "_")
-        target_path = self.user_dir / f"{clean_sku}_user_1.jpg"
-        with open(target_path, "wb") as f:
-            f.write(image_bytes)
+        from media_quality import checked_image, safe_name
+        image = checked_image(image_bytes)
+        target_path = self.user_dir / f"{safe_name(sku)}_user_1.png"
+        image.save(target_path, format="PNG")
         return target_path
 
     def register_background(self, name: str, image_bytes: bytes) -> Path:
@@ -897,194 +790,20 @@ class AgentMedia:
         Hỗ trợ cả Gemini Developer API (Google AI Studio Key) và Vertex AI Enterprise mode.
         LOẠI BỎ HOÀN TOÀN việc ghép ảnh 2D chắp vá bằng OpenCV.
         """
-        clean_sku = sku.strip().replace(" ", "_")
-        preview_target = self.preview_dir / f"{clean_sku}_preview.jpg"
-        
-        # 1. Khởi tạo Google GenAI SDK
-        from google import genai
-        from google.genai import types
-        import config
+        from gemini_studio import edit_studio
+        from media_quality import safe_name
+        source = self.get_product_image_for_sku(sku)
+        backgrounds = self.get_backgrounds()
+        if not source or not backgrounds:
+            raise ValueError("Cần chọn ảnh nguồn và nền trước khi chỉnh sửa AI")
+        preview = self.preview_dir / f"{safe_name(sku)}_preview.png"
+        result = edit_studio(source, backgrounds[0], preview, sku)
+        self.manifest[sku] = dict(result, sku=sku)
+        self._save_manifest()
+        return preview
 
-        active_key = (
-            api_key 
-            or os.environ.get("GEMINI_API_KEY") 
-            or getattr(config, "GEMINI_API_KEY", "")
-        )
-        if not active_key or len(str(active_key).strip()) < 10:
-            raise ValueError("Chưa cấu hình GEMINI_API_KEY hợp lệ. Vui lòng kiểm tra file config.py hoặc ô nhập API Key.")
-
-        # 2. Xây dựng Prompt nhiếp ảnh thương mại chuẩn Studio cao cấp
-        name_lower = product_name.lower()
-        is_book = any(w in name_lower for w in ["manual", "book", "sách", "tiêu chuẩn", "standard", "guide", "tập san", "tài liệu"])
-        
-        if is_book:
-            prompt_subject = (
-                f"A luxury commercial 3D product mockup of the official hardcover technical book titled '{product_name}' "
-                f"(Model/SKU: {sku}) published by '{brand}'. "
-                f"The book stands upright in three-quarter perspective on a clean, luxury reflective studio tabletop. "
-                f"Ultra-detailed hardcover with crisp typography, sharp gold embossed lettering of the title, "
-                f"pristine straight book spine and realistic fine paper texture on page edges. "
-            )
-        else:
-            prompt_subject = (
-                f"Photorealistic 3D commercial studio product photography of high-precision textile testing instrument '{product_name}' "
-                f"(Model/SKU: {sku}) manufactured by '{brand}'. "
-                f"The device is placed on a pristine reflective laboratory workbench. "
-                f"Ultra-high precision industrial design, crisp metallic dials, clear digital display screen, immaculate product finish with model '{sku}' clearly marked. "
-            )
-
-        full_prompt = (
-            f"{prompt_subject} "
-            f"The scene is illuminated by balanced, soft studio softbox lighting. "
-            f"Natural soft contact drop shadow underneath, subtle reflection on the table surface, ultra-sharp focus on details, "
-            f"4K resolution, hyper-realistic, commercial catalog aesthetic, no distortion, no watermarks, perfectly centered."
-        )
-
-        client = genai.Client(api_key=str(active_key).strip())
-        img_bytes = None
-
-        # 3. Điều hướng gọi phương thức phù hợp theo chế độ API
-        try:
-            # Nếu chạy ở chế độ Vertex AI (Enterprise)
-            if getattr(getattr(client, "_api_client", None), "vertexai", False):
-                print(f"[AgentMedia] Đang gọi Imagen 3 qua Vertex AI cho SKU {clean_sku}...")
-                result = client.models.generate_images(
-                    model='imagen-3.0-generate-002',
-                    prompt=full_prompt,
-                    config=types.GenerateImagesConfig(
-                        number_of_images=1,
-                        aspect_ratio="1:1"
-                    )
-                )
-                if result and hasattr(result, "generated_images") and result.generated_images:
-                    img_bytes = result.generated_images[0].image.image_bytes
-            else:
-                # Chế độ Gemini Developer API (Google AI Studio Key AQ...)
-                print(f"[AgentMedia] Đang gọi Google Developer Image API cho SKU {clean_sku}...")
-                image_models_to_try = [
-                    "gemini-2.5-flash-image",
-                    "gemini-3.1-flash-image",
-                    "gemini-3-pro-image"
-                ]
-                last_err = None
-                for m_name in image_models_to_try:
-                    try:
-                        resp = client.models.generate_content(
-                            model=m_name,
-                            contents=full_prompt,
-                            config=types.GenerateContentConfig(
-                                response_modalities=["IMAGE"]
-                            )
-                        )
-                        if resp.candidates and resp.candidates[0].content and resp.candidates[0].content.parts:
-                            for part in resp.candidates[0].content.parts:
-                                if hasattr(part, "inline_data") and part.inline_data and part.inline_data.data:
-                                    raw_data = part.inline_data.data
-                                    if isinstance(raw_data, str):
-                                        import base64
-                                        img_bytes = base64.b64decode(raw_data)
-                                    else:
-                                        img_bytes = raw_data
-                                    break
-                        if img_bytes:
-                            break
-                    except Exception as ex_m:
-                        last_err = ex_m
-                        err_str = str(ex_m)
-                        if "RESOURCE_EXHAUSTED" in err_str or "limit: 0" in err_str:
-                            raise RuntimeError(
-                                "Tài khoản Google AI Studio của bạn đang ở gói Free Tier (Google quy định hạn mức tạo ảnh AI là 0 lượt/ngày trên gói miễn phí, chỉ miễn phí các model văn bản). "
-                                "Để kích hoạt tạo ảnh AI, bạn cần bật Pay-as-you-go (gắn thẻ thanh toán) tại https://aistudio.google.com/app/plan_information "
-                                "hoặc sử dụng nút 'Tùy chọn Studio Ngoài (Canva)' ngay bên dưới để tạo mockup miễn phí."
-                            )
-                        continue
-
-                if not img_bytes and last_err:
-                    raise last_err
-
-            if img_bytes and len(img_bytes) > 1000:
-                with open(preview_target, "wb") as f:
-                    f.write(img_bytes)
-
-                # Cập nhật manifest trạng thái PENDING_REVIEW chờ duyệt
-                self.manifest[clean_sku] = {
-                    "sku": clean_sku,
-                    "status": "PENDING_REVIEW",
-                    "source": "GEMINI_IMAGEN3_AI",
-                    "render_mode": "Gemini AI Studio",
-                    "preview_image": str(preview_target),
-                    "prompt": full_prompt,
-                    "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
-                }
-                self._save_manifest()
-                print(f"✓ Đã tạo thành công ảnh 3D Studio qua Gemini AI: {preview_target} ({len(img_bytes):,} bytes)")
-                return preview_target
-            else:
-                raise RuntimeError("Không nhận được dữ liệu hình ảnh từ Google AI Studio API.")
-
-        except Exception as e:
-            print(f"❌ [AgentMedia] Lỗi gọi Google Image API: {e}")
-            raise e
-
-
-
-
-    def generate_studio_mockup_cloud_free(
-        self,
-        sku: str,
-        product_name: str,
-        brand: str = "AATCC"
-    ) -> Optional[Path]:
-        """
-        Tạo ảnh Mockup 3D Studio thương mại cao cấp hoàn toàn MIỄN PHÍ qua Cloud Serverless.
-        Không cần GPU rời (chạy ngay trên Intel Iris Xe), không yêu cầu API Key hay liên kết thẻ.
-        """
-        import urllib.parse
-        import requests
-        clean_sku = sku.strip().replace(" ", "_")
-        preview_target = self.preview_dir / f"{clean_sku}_preview.jpg"
-        
-        name_lower = product_name.lower()
-        is_book = any(w in name_lower for w in ["manual", "book", "sách", "tiêu chuẩn", "standard", "guide", "tập san", "tài liệu"])
-        
-        if is_book:
-            prompt = (
-                f"Commercial 3D studio product shot of the technical reference book '{product_name}' (Code: {sku}) published by '{brand}'. "
-                f"Hardcover binding, standing firmly at a natural 15-degree perspective on a clean white reflective studio floor. "
-                f"Soft contact shadows beneath the book, even studio lighting, sharp 4K catalog quality, raytraced reflection."
-            )
-        else:
-            prompt = (
-                f"Commercial 3D studio product shot of precision textile testing instrument '{product_name}' (Model: {sku}) by '{brand}'. "
-                f"Standing on a clean white reflective laboratory workbench. Soft contact drop shadow, bright studio softbox lighting, 4K UHD catalog quality."
-            )
-
-        encoded = urllib.parse.quote(prompt)
-        url = f"https://image.pollinations.ai/prompt/{encoded}?seed=42"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-        }
-
-        print(f"[AgentMedia] Đang kết nối Cloud AI Serverless miễn phí cho SKU {clean_sku}...")
-        res = requests.get(url, headers=headers, timeout=60)
-        if res.status_code == 200 and len(res.content) > 5000:
-            with open(preview_target, "wb") as f:
-                f.write(res.content)
-
-            self.manifest[clean_sku] = {
-                "sku": clean_sku,
-                "status": "PENDING_REVIEW",
-                "source": "CLOUD_AI_SERVERLESS",
-                "render_mode": "Cloud AI Studio (Free)",
-                "preview_image": str(preview_target),
-                "prompt": prompt,
-                "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
-            }
-            self._save_manifest()
-            print(f"✓ Đã tạo thành công ảnh 3D Studio qua Cloud AI: {preview_target} ({len(res.content):,} bytes)")
-            return preview_target
-        else:
-            raise RuntimeError(f"Cloud AI Serverless trả về mã HTTP {res.status_code}")
+    def generate_studio_mockup_cloud_free(self, *args, **kwargs):
+        raise ValueError("Tạo ảnh từ tên không xác minh được sản phẩm. Hãy chọn ảnh nguồn và dùng chỉnh sửa theo ảnh tham chiếu.")
 
     def composite_product_image(
         self, 
@@ -1105,180 +824,58 @@ class AgentMedia:
         - Đặt sản phẩm lớn nổi bật (chiếm 68-72% khung hình), vững vàng trên mặt sàn.
         - Đổ bóng vật lý 2 lớp: Bóng tiếp xúc chân đế (Ambient Occlusion) + Bóng tỏa mềm + Phản xạ mờ mặt sàn.
         """
-        clean_sku = sku.strip().replace(" ", "_")
-        final_path = self.final_dir / f"{clean_sku}_final.jpg"
-        preview_path = self.preview_dir / f"{clean_sku}_preview.jpg"
-
-        # 1. Chuẩn bị ảnh phông nền
-        if bg_path is None or not Path(bg_path).exists():
-            bg_list = self.get_backgrounds()
-            bg_path = bg_list[0] if bg_list else (self.bg_dir / "BIS_BACKGROUND.png")
-            
-        bg_path = Path(bg_path)
-        is_bis_bg = "BIS_BACKGROUND" in bg_path.name
-        is_prerendered_bg = is_bis_bg or "modern_textile_lab" in bg_path.name or "luxury_marble_podium" in bg_path.name or "clean_studio" in bg_path.name
-
-        canvas_w, canvas_h = (1254, 1254) if is_bis_bg else (1024, 1024)
-        if is_prerendered_bg:
-            # Dùng trực tiếp phông nền studio 3D đạt chuẩn độ nét cao 1254x1254 (hoặc 1024x1024)
-            bg_img = Image.open(bg_path).convert("RGBA").resize((canvas_w, canvas_h), Image.Resampling.LANCZOS)
-            ground_baseline = 980 if is_bis_bg else 690
-        else:
-            # Nếu người dùng tải lên mẫu hoa văn 2D phẳng riêng thì mới dựng phối cảnh tường - sàn
-            bg_img = self.create_3d_branded_backdrop(
-                pattern_img_path=bg_path,
-                canvas_w=1024,
-                canvas_h=1024,
-                horizon_y=horizon_y,
-                depth_ratio=depth_ratio
-            )
-            ground_baseline = min(960, horizon_y + int((1024 - horizon_y) * 0.72))
-
-        # 2. Tiền xử lý sản phẩm: Loại bỏ viền đen / viền trắng
-        raw_prod = Image.open(product_img_path)
-        prod_rgba = self.smart_prepare_product(raw_prod)
-
-        # 3. Dựng khối và co giãn kích thước nổi bật (Tỷ lệ chuẩn 68-72% khung hình như Hanna & MQuant)
-        if render_mode == "book_3d":
-            rendered_obj = self.render_3d_book_mockup(prod_rgba, target_height=680)
-        elif render_mode == "product_25d":
-            rendered_obj = self.render_3d_product_mockup(prod_rgba, target_height=700)
-        else:
-            # Chế độ branded_3d hoặc flat_2d: Giữ nguyên form thực tế của sản phẩm
-            target_h = 700
-            target_w = int(prod_rgba.size[0] * (target_h / prod_rgba.size[1]))
-            if target_w > 800:
-                target_w = 800
-                target_h = int(prod_rgba.size[1] * (target_w / prod_rgba.size[0]))
-            rendered_obj = prod_rgba.resize((target_w, target_h), Image.Resampling.LANCZOS)
-
-        # Tăng cường độ nét AI Super-Resolution & tương phản viền chữ
-        if sharpness_boost > 1.0:
-            rendered_obj = self.enhance_sharpness_and_clarity(rendered_obj, sharpness_boost=sharpness_boost)
-
-        obj_w, obj_h = rendered_obj.size
-        pos_x = (canvas_w - obj_w) // 2
-        pos_y = ground_baseline - obj_h
-
-        # 4. Áp dụng hệ thống đổ bóng vật lý 2 lớp chân thực
-        composed = self.apply_realistic_contact_shadow(
-            backdrop=bg_img,
-            prod_rgba=rendered_obj,
-            pos_x=pos_x,
-            pos_y=pos_y,
-            shadow_density=shadow_density,
-            enable_reflection=enable_reflection
-        )
-
-        # 5. Tinh chỉnh màu sắc và độ sắc nét hoàn thiện
-        enhancer = ImageEnhance.Sharpness(composed.convert("RGB"))
-        final_img = enhancer.enhance(1.15)
-        color_enhancer = ImageEnhance.Color(final_img)
-        final_img = color_enhancer.enhance(1.05)
-
-        final_img.save(preview_path, quality=95)
-
-        # Ghi nhận trạng thái PENDING_REVIEW
-        self.manifest[clean_sku] = {
-            "sku": clean_sku,
-            "status": "PENDING_REVIEW",
-            "render_mode": render_mode,
-            "background": bg_path.name,
-            "horizon_y": horizon_y,
-            "depth_ratio": depth_ratio,
-            "shadow_density": shadow_density,
-            "sharpness_boost": sharpness_boost,
-            "preview_image": str(preview_path),
-            "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
-        }
+        from media_quality import studio_draft, safe_name
+        clean_sku = safe_name(sku)
+        if bg_path is None:
+            backgrounds = self.get_backgrounds()
+            if not backgrounds:
+                raise ValueError("Cần chọn phông nền")
+            bg_path = backgrounds[0]
+        preview = self.preview_dir / f"{clean_sku}_preview.png"
+        report = studio_draft(product_img_path, bg_path, preview, remove_white=False)
+        self.manifest[clean_sku] = dict(report, sku=clean_sku, preview_image=str(preview))
         self._save_manifest()
-        return preview_path
+        return preview
 
     def register_final_composite(self, sku: str, image_bytes: bytes) -> Path:
         """Lưu trực tiếp ảnh mockup thành phẩm từ Canva/Photoroom và đưa vào cổng duyệt."""
-        clean_sku = sku.strip().replace(" ", "_")
-        final_path = self.final_dir / f"{clean_sku}_final.jpg"
-        preview_path = self.preview_dir / f"{clean_sku}_preview.jpg"
-        with open(final_path, "wb") as f:
-            f.write(image_bytes)
-        self.manifest[clean_sku] = {
-            "sku": clean_sku,
-            "status": "APPROVED",
-            "source": "EXTERNAL_MOCKUP (Canva/Photoroom)",
-            "final_image": str(final_path),
-            "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
-        }
+        from media_quality import checked_image, safe_name
+        image = checked_image(image_bytes)
+        if image.size != (1254,1254):
+            raise ValueError("Ảnh thành phẩm cần đúng 1254×1254")
+        target = self.preview_dir / f"{safe_name(sku)}_preview.png"
+        image.convert("RGB").save(target, format="PNG")
+        self.manifest[sku] = {"sku":sku, "status":"PENDING_REVIEW", "preview_image":str(target)}
         self._save_manifest()
-        return final_path
+        return target
 
-    def approve_image(self, sku: str, source_override: Optional[Path] = None) -> bool:
-        """
-        Chinh thuc PHE DUYET anh san pham:
-        - Chi khi nguoi dung bam DUYET thi anh moi duoc luu chinh thuc vao 6_Final_Composites.
-        - Tu dong dong bo sang Google Drive may tinh.
-        - Danh dau trang thai APPROVED trong manifest cho Haravan sync.
-        """
-        import shutil
-        clean_sku = sku.strip().replace(" ", "_")
-        preview_path = self.preview_dir / f"{clean_sku}_preview.jpg"
-        final_path = self.final_dir / f"{clean_sku}_final.jpg"
-
-        src_to_save = None
-        if source_override and Path(source_override).exists():
-            src_to_save = Path(source_override)
-        elif preview_path.exists():
-            src_to_save = preview_path
-
-        if src_to_save and src_to_save.exists():
-            shutil.copy2(src_to_save, final_path)
-
-        # Dong bo truc tiep sang Google Drive may tinh
-        alt_gdrive = Path(r"g:\My Drive\BIS_AI_PROJECT\Google_Drive_Storage\6_Final_Composites")
-        if alt_gdrive.exists() and alt_gdrive.resolve() != self.final_dir.resolve() and final_path.exists():
-            try:
-                shutil.copy2(final_path, alt_gdrive / final_path.name)
-            except Exception:
-                pass
-
-        if clean_sku in self.manifest:
-            self.manifest[clean_sku]["status"] = "APPROVED"
-            self.manifest[clean_sku]["final_image"] = str(final_path)
-            self.manifest[clean_sku]["approved_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
-        else:
-            self.manifest[clean_sku] = {
-                "sku": clean_sku,
-                "status": "APPROVED",
-                "final_image": str(final_path),
-                "approved_at": time.strftime("%Y-%m-%d %H:%M:%S")
-            }
+    def approve_image(self, sku, source_override=None):
+        from media_quality import safe_name
+        import hashlib, shutil
+        entry = self.manifest.get(sku,{})
+        source = Path(source_override or entry.get("preview_image") or self.preview_dir/f"{safe_name(sku)}_preview.png")
+        if not source.is_file():
+            return False
+        with Image.open(source) as image:
+            if image.size != (1254,1254):
+                return False
+        digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        target = self.final_dir / f"{safe_name(sku)}_approved_{digest[:12]}{source.suffix}"
+        if source.resolve() != target.resolve():
+            shutil.copy2(source, target)
+        entry.update(sku=sku, status="APPROVED", final_image=str(target), approved_sha256=digest,
+                     approved_at=time.strftime("%Y-%m-%d %H:%M:%S"))
+        self.manifest[sku]=entry
         self._save_manifest()
         return True
 
-    def reject_image(self, sku: str, reason: str = "") -> bool:
-        """
-        Tu choi anh: Xoa anh khoi 6_Final_Composites de khong bao gio luu nham anh chua duyet.
-        """
-        clean_sku = sku.strip().replace(" ", "_")
-        final_path = self.final_dir / f"{clean_sku}_final.jpg"
-        if final_path.exists():
-            try:
-                final_path.unlink()
-            except Exception:
-                pass
-        alt_gdrive = Path(r"g:\My Drive\BIS_AI_PROJECT\Google_Drive_Storage\6_Final_Composites") / f"{clean_sku}_final.jpg"
-        if alt_gdrive.exists():
-            try:
-                alt_gdrive.unlink()
-            except Exception:
-                pass
-
-        if clean_sku in self.manifest:
-            self.manifest[clean_sku]["status"] = "REJECTED"
-            self.manifest[clean_sku]["reject_reason"] = reason
-            self.manifest[clean_sku]["final_image"] = None
-            self._save_manifest()
-            return True
-        return False
+    def reject_image(self, sku, reason=""):
+        # Keep approved files and benchmarks intact; only update review state.
+        if sku not in self.manifest:
+            return False
+        self.manifest[sku].update(status="REJECTED", reject_reason=reason)
+        self._save_manifest()
+        return True
 
     def process_product_image(self, sku: str, images: list, bg_path: Path = None) -> dict:
         """Process and composite product images with default or selected background."""

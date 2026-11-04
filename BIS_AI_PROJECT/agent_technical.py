@@ -201,7 +201,7 @@ class AgentTechnical:
     def __init__(self, storage_dir: str | Path | None = None):
         self.storage_dir = Path(storage_dir) if storage_dir else Path(__file__).parent.resolve()
         self.learning_engine = LearningEngine(self.storage_dir)
-        self.client = genai.Client(api_key=GEMINI_API_KEY)
+        self.client = genai.Client(api_key=GEMINI_API_KEY, http_options=types.HttpOptions(timeout=30000))
 
     def _build_prompt(self, page_num: int, total_pages: int, brand: str = "AATCC") -> str:
         focused_guidelines = self.learning_engine.get_focused_guidelines(brand=brand)
@@ -245,7 +245,7 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
 
     def extract_page(self, img_bytes: bytes, page_num: int, total_pages: int, brand: str = "AATCC") -> List[dict]:
         prompt = self._build_prompt(page_num, total_pages, brand=brand)
-        max_retries = 3
+        max_retries = 2
 
         for attempt in range(max_retries):
             try:
@@ -332,7 +332,7 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
             except Exception as e:
                 err_str = str(e)
                 if "429" in err_str or "quota" in err_str.lower():
-                    wait = 30 * (attempt + 1)
+                    wait = 3 * (attempt + 1)
                     print(f"  ⚠ Quota limit on page {page_num} — waiting {wait}s…")
                     time.sleep(wait)
                 else:
@@ -353,138 +353,19 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
         B5: Brand & Origin Verification (or MISSING_BRAND_EVIDENCE warning)
         B6: HTML 7-Block match
         """
-        sku = record.get("sku") or ""
-        evidence = record.get("evidence_quote") or ""
-        brand_ev = record.get("brand_evidence")
-
-        b1 = {"step": "B1 Catalogue Integrity", "pass": True, "detail": f"Trang nguồn {record.get('source_page')} hợp lệ."}
-        b2 = {"step": "B2 SKU Identity", "pass": bool(sku and not sku.startswith("UNKNOWN")), "detail": f"Mã SKU: {sku}"}
-        b3 = {"step": "B3 Facts & Evidence", "pass": bool(len(evidence) > 10), "detail": f"Trích dẫn: '{evidence[:60]}...'"}
-        b4 = {"step": "B4 Bilingual SEO", "pass": bool(record.get("product_name") and record.get("product_name_en")), "detail": "Đủ tiêu đề Việt - Anh."}
-        
-        # B5 Gate: Never block pipeline, tag warning if missing
-        if brand_ev:
-            b5 = {"step": "B5 Brand/Role Evidence", "pass": True, "detail": f"Xác nhận: {brand_ev}"}
-        else:
-            b5 = {"step": "B5 Brand/Role Evidence", "pass": False, "warning": "MISSING_BRAND_EVIDENCE", "detail": "Cảnh báo: Chưa rõ vai trò hãng/xuất xứ. Không tự suy diễn từ trụ sở."}
-
-        # B6: Validate HTML generation
-        html = self.build_7_block_html(record)
-        b6 = {"step": "B6 HTML 7-Block Match", "pass": ("bis-product-card" in html or "bis-product-description" in html) and sku in html, "detail": "Khớp cấu trúc 7 khối chuẩn BIS."}
-
-        is_all_pass = all([b1["pass"], b2["pass"], b3["pass"], b4["pass"], b6["pass"]])
-        return {
-            "overall_pass": is_all_pass,
-            "b1": b1, "b2": b2, "b3": b3, "b4": b4, "b5": b5, "b6": b6,
-            "has_warnings": not b5["pass"]
-        }
+        from product_quality import validate_product
+        from safe_publish import source_text
+        try:
+            source = source_text(self.storage_dir, record)
+        except Exception:
+            source = None
+        report = validate_product(record, source)
+        step = {"step": "Evidence and structure", "pass": report["passed"],
+                "detail": "; ".join(report["errors"]) or "Đã đối chiếu nguồn và cấu trúc"}
+        return {"overall_pass": report["passed"], "has_warnings": not report["passed"],
+                **{f"b{i}": dict(step, step=f"B{i}") for i in range(1,7)},
+                "quality_report": report}
 
     def build_7_block_html(self, record: dict, force_refresh: bool = False) -> str:
-        """Generate standard BIS 7-block product description HTML with high contrast & pristine styling."""
-        # Nếu custom_html chứa các thông tin cũ bị cấm (Đơn vị tính, Trang nguồn, chính ngạch, Đơn vị phân phối, Tra cứu sản phẩm mã), bỏ qua để tạo mới chuẩn
-        c_html = record.get("custom_html", "")
-        if not force_refresh and c_html and "Trang nguồn tài liệu" not in c_html and "Đơn vị tính" not in c_html and "chính ngạch" not in c_html and "Đơn vị phân phối" not in c_html and "Tra cứu sản phẩm mã" not in c_html:
-            return c_html
-
-        title_vi = record.get("product_name") or ""
-        title_en = record.get("product_name_en") or ""
-        sku = record.get("sku") or ""
-        desc = record.get("description") or ""
-        # Đảm bảo phần mô tả dịch sang tiếng Việt
-        desc = translate_to_vi(desc)
-        vendor = record.get("brand") or record.get("brand_evidence") or "AATCC (Hoa Kỳ)"
-
-        # KHỐI 5: Đặc điểm nổi bật tùy biến theo người dùng
-        highlights_raw = record.get("highlights")
-        if highlights_raw:
-            if isinstance(highlights_raw, list):
-                hl_items = [str(x).strip() for x in highlights_raw if str(x).strip()]
-            else:
-                hl_items = [line.strip().lstrip("-*• ") for line in str(highlights_raw).split("\n") if line.strip()]
-        else:
-            hl_items = [
-                "Tiêu chuẩn thử nghiệm chính hãng được chuẩn hóa áp dụng toàn cầu trong ngành dệt may.",
-                "Đầy đủ tài liệu hướng dẫn và quy trình thực hành phòng lab QA/QC."
-            ]
-
-        # BỎ HOÀN TOÀN DÒNG THÔNG BÁO CHÍNH NGẠCH THEO QUY CHUẨN CÔNG TY
-        hl_items = [it for it in hl_items if "chính ngạch" not in it.lower()]
-        if not hl_items:
-            hl_items = [
-                "Tiêu chuẩn thử nghiệm chính hãng được chuẩn hóa áp dụng toàn cầu trong ngành dệt may.",
-                "Đầy đủ tài liệu hướng dẫn và quy trình thực hành phòng lab QA/QC."
-            ]
-        hl_html = "".join([f'<li style="margin-bottom: 6px;">{it}</li>' for it in hl_items])
-
-        # KHỐI 6 & 7: Phạm vi áp dụng & Tài liệu liên quan tùy biến
-        app_scope = record.get("application_scope") or "Phương pháp kiểm nghiệm dệt may quốc tế"
-        doc_title, doc_url = resolve_related_standard_doc(record)
-        block_7_html = ""
-        if doc_title and doc_title.strip():
-            block_7_html = f"""  <!-- KHỐI 7: Tài liệu & Tiêu chuẩn liên quan -->
-  <div style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed #cbd5e1;">
-    <div style="font-weight: 800; font-size: 13px; color: #0f172a !important; margin-bottom: 8px;">
-      🔗 Tài liệu & Tiêu chuẩn liên quan:
-    </div>
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-      <a href="{doc_url}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: space-between; padding: 9px 14px; background: #f8fafc !important; color: #0369a1 !important; border: 1px solid #cbd5e1; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">
-        <span>📄 {doc_title}</span>
-        <span style="font-size: 11px; color: #0284c7; background: #fff; padding: 2px 8px; border-radius: 4px; border: 1px solid #bae6fd;">Mở trang ↗</span>
-      </a>
-    </div>
-  </div>\n"""
-
-        html = f"""<div class="bis-product-card bis-product-description" style="background-color: #ffffff !important; color: #1e293b !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; padding: 24px; border-radius: 12px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 100%; box-sizing: border-box;">
-
-  <!-- KHỐI 1: Tên sản phẩm tiếng Việt Bold 20px -->
-  <h1 style="font-size: 20px; font-weight: 800; color: #0f172a !important; margin: 0 0 6px 0; line-height: 1.3;">
-    {title_vi}
-  </h1>
-
-  <!-- KHỐI 2: Tên sản phẩm tiếng Anh Bold 15px -->
-  <h2 style="font-size: 15px; font-weight: 700; color: #0284c7 !important; margin: 0 0 14px 0; line-height: 1.4;">
-    {title_en}
-  </h2>
-  
-  <!-- KHỐI 3: Hãng ban hành, vai trò, xuất xứ -->
-  <div style="font-size: 13px; color: #1e293b !important; padding: 8px 14px; background: #f0f9ff !important; border-left: 4px solid #0284c7; border-radius: 6px; margin-bottom: 16px; border: 1px solid #bae6fd;">
-    <strong>Tổ chức / Hãng:</strong> <span style="color: #0369a1; font-weight: 700;">{vendor}</span>
-  </div>
-
-  <!-- KHỐI 4: Giới thiệu sản phẩm -->
-  <div style="font-size: 13.5px; color: #334155 !important; margin-bottom: 18px; text-align: justify; line-height: 1.7;">
-    <p style="margin: 0;">{desc}</p>
-  </div>
-
-  <!-- KHỐI 5: Đặc điểm nổi bật -->
-  <div style="margin-bottom: 18px;">
-    <div style="font-weight: 800; font-size: 14px; margin-bottom: 8px; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.02em;">
-      ✨ Đặc điểm nổi bật:
-    </div>
-    <ul style="padding-left: 20px; margin: 0; color: #334155 !important; font-size: 13px; line-height: 1.7;">
-      {hl_html}
-    </ul>
-  </div>
-
-  <!-- KHỐI 6: Bảng thông số kỹ thuật 2 cột chuẩn 39%-61% -->
-  <div style="margin-bottom: 20px;">
-    <div style="font-weight: 800; font-size: 14px; margin-bottom: 8px; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.02em;">
-      ⚙️ Thông số kỹ thuật chính:
-    </div>
-    <table style="width: 100%; border-collapse: collapse; margin-top: 6px; border: 1px solid #cbd5e1;">
-      <tbody>
-        <tr style="border-bottom: 1px solid #e2e8f0;">
-          <td style="width: 39%; background: #f8fafc !important; font-weight: 700; color: #0f172a !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">Mã sản phẩm (SKU)</td>
-          <td style="width: 61%; background: #ffffff !important; font-weight: 700; color: #0284c7 !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px; font-family: monospace;">{sku}</td>
-        </tr>
-        <tr>
-          <td style="width: 39%; background: #f8fafc !important; font-weight: 700; color: #0f172a !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">Phạm vi áp dụng</td>
-          <td style="width: 61%; background: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13px;">{app_scope}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-{block_7_html}</div>"""
-        return html
-
+        from product_quality import render_product
+        return render_product(record)

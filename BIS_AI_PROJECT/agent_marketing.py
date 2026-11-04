@@ -35,84 +35,10 @@ class AgentMarketing:
         - E-commerce Selling Pitch (Lý do chọn mua)
         - Google Search Preview
         """
-        sku = product.get("sku", "")
-        name_vi = product.get("product_name", "")
-        name_en = product.get("product_name_en", "")
-        desc = product.get("description", "")
-        category = product.get("category", "Tài liệu tiêu chuẩn")
-        brand = product.get("brand_evidence", "AATCC (Hoa Kỳ)")
-
-        context = self.memory.context(f"{sku} {name_vi} {brand}", max_chars=7000)
-        revision = hashlib.sha256((context + json.dumps(product, sort_keys=True, ensure_ascii=False)).encode()).hexdigest()
-        cache_path = self.cache_dir / f"seo_{sku}.json"
-        if cache_path.exists():
-            try:
-                with open(cache_path, "r", encoding="utf-8") as f:
-                    cached = json.load(f)
-                    if cached.get("_memory_revision") == revision:
-                        return cached
-            except Exception:
-                pass
-
-        prompt = f"""Bạn là Trưởng phòng SEO & Marketing của BIS Textile Việt Nam (nhà cung cấp thiết bị, tài liệu thử nghiệm dệt may hàng đầu).
-Hãy lập kế hoạch SEO và nội dung bán hàng cho sản phẩm sau:
-
-Mã SKU: {sku}
-Tên tiếng Việt: {name_vi}
-Tên tiếng Anh: {name_en}
-Danh mục: {category}
-Hãng sản xuất / Tổ chức: {brand}
-Mô tả kỹ thuật: {desc}
-
-Yêu cầu xuất ra JSON chính xác theo cấu trúc:
-{{
-  "meta_title": "Tiêu đề SEO ngắn gọn dưới 60 ký tự kèm mã {sku} và thương hiệu BIS Textile",
-  "meta_description": "Mô tả SEO hấp dẫn từ 150-160 ký tự, chứa từ khóa chính, thúc đẩy click xem chi tiết",
-  "url_slug": "slug-than-thien-khong-dau-co-sku",
-  "focus_keywords": ["Từ khóa chính 1", "Từ khóa chính 2", "Từ khóa 3"],
-  "secondary_keywords": ["Từ khóa ngách 1", "Từ khóa ngách 2"],
-  "selling_points": [
-    "Điểm bán hàng nổi bật 1 (Lợi ích cho phòng lab QA/QC)",
-    "Điểm bán hàng nổi bật 2 (Độ tin cậy chính hãng có CO/CQ)",
-    "Điểm bán hàng nổi bật 3 (Hỗ trợ kỹ thuật chuyên sâu từ BIS)"
-  ],
-  "target_audience": "Đối tượng khách hàng mục tiêu (ví dụ: Nhà máy dệt nhuộm, Phòng kiểm nghiệm dệt may, Chuyên viên QA/QC)"
-}}
-Chỉ trả về JSON thuần túy, không có thẻ markdown ```json.
-"""
-        try:
-            response = self.client.models.generate_content(
-                model=GEMINI_MODEL,
-                contents=context + "\n" + prompt
-            )
-            raw = response.text.strip()
-            if raw.startswith("```json"): raw = raw[7:]
-            if raw.startswith("```"): raw = raw[3:]
-            if raw.endswith("```"): raw = raw[:-3]
-            data = json.loads(raw.strip())
-        except Exception as e:
-            # Fallback nếu API bận
-            slug = name_en.lower().replace(" ", "-").replace("/", "-")
-            slug = "".join(c for c in slug if c.isalnum() or c == "-")[:50]
-            data = {
-                "meta_title": f"{name_vi} ({sku}) | BIS Textile Việt Nam",
-                "meta_description": f"Phân phối chính hãng {name_vi} mã {sku} từ {brand}. Tiêu chuẩn kiểm nghiệm dệt may quốc tế, đầy đủ CO/CQ và hỗ trợ kỹ thuật tại BIS Textile.",
-                "url_slug": f"{slug}-{sku.lower()}",
-                "focus_keywords": [name_vi, sku, f"tiêu chuẩn {brand}", "kiểm nghiệm dệt may"],
-                "secondary_keywords": ["AATCC manual", "tài liệu QA dệt may", "BIS Textile"],
-                "selling_points": [
-                    "Ấn bản chính hãng chuẩn hóa quốc tế mới nhất",
-                    "Đầy đủ chứng từ nguồn gốc CO/CQ và hóa đơn VAT",
-                    "Tư vấn kỹ thuật kiểm nghiệm phòng lab chuyên sâu từ BIS Textile"
-                ],
-                "target_audience": "Trưởng phòng QA/QC dệt may, Kỹ thuật viên phòng thí nghiệm, Nhà máy may xuất khẩu"
-            }
-
-        data["_memory_revision"] = revision
-        with open(cache_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-
-        return data
+        from product_quality import seo_draft
+        # Build the structural draft deterministically; user edits remain explicit.
+        # Do not invent certificates/authority claims when an API request fails.
+        return seo_draft(product)
 
     def load_marketing_knowledge(self) -> dict:
         """Đọc tri thức nghiên cứu thị trường & SEO đã học được từ file cache."""
@@ -214,7 +140,7 @@ Hãy phân tích toàn diện và đúc kết thành Bộ Tri Thức Chuẩn Hó
     "block_structure": [
       "Khối 1: Tên tiếng Việt in đậm 20px chuẩn SEO",
       "Khối 2: Tên tiếng Anh 15px chuẩn hóa quốc tế",
-      "Khối 3: Hãng sản xuất, xuất xứ và đơn vị phân phối chính ngạch",
+      "Khối 3: Hãng theo chứng cứ nguồn",
       "Khối 4: Giới thiệu ứng dụng thực tế phòng lab",
       "Khối 5: Đặc điểm nổi bật (3-5 gạch đầu dòng lợi ích)",
       "Khối 6: Bảng thông số kỹ thuật 2 cột chuẩn 39%-61%",
@@ -223,7 +149,7 @@ Hãy phân tích toàn diện và đúc kết thành Bộ Tri Thức Chuẩn Hó
   }},
   "learned_business_rules": [
     "Luôn ghi rõ tổ chức tiêu chuẩn (AATCC, ISO, ASTM, GB, DIN, JIS) trong tiêu đề và mô tả",
-    "Bảng thông số kỹ thuật bắt buộc có đơn vị tính, phạm vi áp dụng và trang nguồn trong Catalogue",
+    "Bảng chỉ chứa thông số có chứng cứ; không đưa đơn vị tính hàng hóa và trang nguồn vào bài",
     "Không đưa giá bán cố định đối với thiết bị nhập khẩu, thay bằng chính sách báo giá chính hãng kèm hỗ trợ kỹ thuật",
     "Đính kèm liên kết tra cứu tài liệu chính thống để nâng cao uy tín thẩm định"
   ]

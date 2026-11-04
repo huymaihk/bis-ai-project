@@ -138,50 +138,6 @@ def push_to_haravan(products: list[dict]) -> list[dict]:
     Returns list of results with haravan_product_id filled in.
     """
     # ── SAFETY GATE ──────────────────────────────────────────────────────────
-    if not HARAVAN_PUSH_ENABLED:
-        raise RuntimeError(
-            "🚫 HARAVAN PUSH BLOCKED: HARAVAN_PUSH_ENABLED = False in config.py\n"
-            "Set HARAVAN_PUSH_ENABLED = True only after manual product review in Google Sheets."
-        )
-
-    approved = [p for p in products if p.get("status") == STATUS_APPROVED]
-    if not approved:
-        print("⚠ No APPROVED products found — nothing to push.")
-        return []
-
-    print(f"\n🚀 Pushing {len(approved)} APPROVED products to Haravan …")
-    results = []
-    
-    for i, product in enumerate(approved):
-        try:
-            payload = _product_to_haravan_payload(product)
-            resp = requests.post(
-                f"{HARAVAN_API_BASE}/products.json",
-                headers=_haravan_headers(),
-                json=payload,
-                timeout=30,
-            )
-            resp.raise_for_status()
-            
-            haravan_id = resp.json()["product"]["id"]
-            product["haravan_product_id"] = haravan_id
-            product["status"] = STATUS_PUSHED
-            product["updated_at"] = datetime.utcnow().isoformat() + "Z"
-            
-            print(f"  [{i+1}/{len(approved)}] ✓ Pushed: {product.get('product_name')} → Haravan ID {haravan_id}")
-            results.append({"success": True, "product": product, "haravan_id": haravan_id})
-            
-            # Rate limit: 2 requests/second
-            time.sleep(0.5)
-            
-        except requests.HTTPError as e:
-            print(f"  [{i+1}/{len(approved)}] ✗ HTTP Error: {e.response.status_code} — {e.response.text[:200]}")
-            results.append({"success": False, "product": product, "error": str(e)})
-        except Exception as e:
-            print(f"  [{i+1}/{len(approved)}] ✗ Error: {e}")
-            results.append({"success": False, "product": product, "error": str(e)})
-    
-    pushed = sum(1 for r in results if r["success"])
-    print(f"\n✅ Haravan push complete: {pushed}/{len(approved)} succeeded")
-    return results
-
+    from pathlib import Path
+    from safe_publish import publish_batch
+    return publish_batch(products, Path(__file__).parent)

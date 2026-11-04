@@ -1,4 +1,3 @@
-from agent_technical import resolve_related_standard_doc
 """
 BIS TEXTILE - MULTI-AGENT AUTONOMOUS SYSTEM & COMMAND CENTER
 Giao diện trung tâm điều hành AI phong cách Cyberpunk / Sci-Fi HUD Canvas
@@ -10,6 +9,8 @@ Bổ sung đầy đủ các phòng ban:
 - Agent_Operations (Haravan Guard & Google Sheets)
 - Learning Engine (Continuous Few-shot Memory)
 """
+from agent_technical import resolve_related_standard_doc
+
 import os
 import sys
 import json
@@ -1034,6 +1035,14 @@ if st.session_state.get("orchestrator"):
     st.session_state.orchestrator.reload_history()
 
 
+
+# Default workflow renders only the selected production view, keeping legacy tools available.
+legacy_mode = st.sidebar.toggle("Mở giao diện nâng cao cũ", value=False, key="legacy_mode")
+if not legacy_mode:
+    from production_workspace import render_workspace
+    render_workspace(PROJECT_DIR, technical_agent, media_agent, knowledge_agent,
+                     translator_agent, bis_memory)
+    st.stop()
 
 # ══════════════════════════════════════════════════════════════════════════════
 # GIAO DIỆN CHÍNH: HUD CANVAS & MULTI-AGENT TOPOLOGY (KHI ĐÃ ĐĂNG NHẬP)
@@ -2875,6 +2884,9 @@ with tab_media:
             with c_src_thumb:
                 if chosen_source_img and chosen_source_img.exists():
                     st.image(str(chosen_source_img), width=130, caption="Ảnh nguồn")
+
+            from pdf_candidates import render_picker
+            render_picker(media_agent, clean_sku, PROJECT_DIR / "catalogue_sample.pdf")
 
             # ── BẢNG ĐIỀU KHIỂN PHỐI CẢNH STUDIO 3D (3D BRANDED BACKDROP CONTROLS) ──
             st.markdown("---")

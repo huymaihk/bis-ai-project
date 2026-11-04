@@ -48,7 +48,7 @@ class AgentKnowledge:
                 "category": "standards",
                 "filename": "AATCC_Technical_Manual_2024.pdf",
                 "scope": "Phương pháp thử nghiệm độ bền màu, co rút và tính chất cơ lý vải dệt.",
-                "verified": True,
+                "verified": False,
                 "added_at": "2026-10-25 10:00:00"
             },
             {
@@ -57,7 +57,7 @@ class AgentKnowledge:
                 "category": "certificates",
                 "filename": "AATCC_Authorized_Distributor_COC.pdf",
                 "scope": "Chứng thư đại lý phân phối chính thức ủy quyền tại Việt Nam.",
-                "verified": True,
+                "verified": False,
                 "added_at": "2026-10-26 14:30:00"
             },
             {
@@ -66,7 +66,7 @@ class AgentKnowledge:
                 "category": "catalogues",
                 "filename": "catalogue_sample.pdf",
                 "scope": "Tổng hợp 17 sản phẩm thiết bị và sách tiêu chuẩn phòng thí nghiệm.",
-                "verified": True,
+                "verified": False,
                 "added_at": "2026-10-28 09:15:00"
             }
         ]
@@ -79,7 +79,8 @@ class AgentKnowledge:
 
     def register_document(self, title: str, category: str, filename: str, scope: str, file_bytes: bytes = None) -> dict:
         """Register a new standard document into knowledge vault."""
-        target_dir = self.subdirs.get(category, self.vault_dir)
+        target_dir = self.subdirs.get(category, self.gdrive_storage)
+        filename = Path(filename).name
         target_path = target_dir / filename
         
         if file_bytes:
@@ -92,16 +93,17 @@ class AgentKnowledge:
             "category": category,
             "filename": filename,
             "scope": scope,
-            "verified": True,
+            "verified": False,
             "added_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
+        self.manifest = self._load_manifest()
         self.manifest.append(doc_entry)
         self._save_manifest(self.manifest)
         return doc_entry
 
     def get_knowledge_summary_for_prompt(self) -> str:
         """Returns consolidated knowledge guidelines to inject into Gemini agents."""
-        lines = ["CƠ SỞ DỮ LIỆU TÀI LIỆU TIÊU CHUẨN ĐÃ THẨM ĐỊNH (KNOWLEDGE VAULT):"]
+        lines = ["DANH MỤC TÀI LIỆU (metadata; chưa xác minh nội dung) (KNOWLEDGE VAULT):"]
         for doc in self.manifest:
             lines.append(f"- [{doc['category'].upper()}] {doc['title']}: {doc['scope']}")
         return "\n".join(lines)
@@ -193,7 +195,7 @@ class AgentKnowledge:
                     "category": "catalogues",
                     "filename": p.name,
                     "scope": f"File Catalogue PDF phát hiện trực tiếp từ Google Drive ({size_mb} MB).",
-                    "verified": True,
+                    "verified": False,
                     "added_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 })
                 existing_filenames.add(p.name)
@@ -212,7 +214,7 @@ class AgentKnowledge:
                     "category": "standards" if any(k in p.name.lower() for k in ["iso", "aatcc", "astm", "din", "g035", "lp1"]) else "manuals",
                     "filename": p.name,
                     "scope": f"Tài liệu / Tiêu chuẩn / Manual máy từ thư mục {p.parent.name}.",
-                    "verified": True,
+                    "verified": False,
                     "added_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 })
                 existing_filenames.add(p.name)
@@ -230,7 +232,7 @@ class AgentKnowledge:
                     "category": "certificates",
                     "filename": p.name,
                     "scope": f"Hồ sơ chứng nhận CO / CQ / COC thẩm định nguồn gốc.",
-                    "verified": True,
+                    "verified": False,
                     "added_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 })
                 existing_filenames.add(p.name)

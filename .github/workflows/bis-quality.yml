@@ -1,0 +1,35 @@
+name: BIS quality checks
+on:
+  push:
+    paths:
+      - 'BIS_AI_PROJECT/**.py'
+      - 'BIS_AI_PROJECT/requirements.txt'
+      - '.github/workflows/bis-quality.yml'
+  pull_request:
+    paths:
+      - 'BIS_AI_PROJECT/**.py'
+      - 'BIS_AI_PROJECT/requirements.txt'
+      - '.github/workflows/bis-quality.yml'
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: BIS_AI_PROJECT
+    env:
+      BIS_MEMORY_SYNC_ENABLED: 'false'
+      GEMINI_API_KEY: 'not-a-live-key'
+      HARAVAN_TOKEN: 'not-a-live-token'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependencies
+        run: pip install streamlit pymupdf pillow requests beautifulsoup4 python-dotenv google-genai gspread google-auth
+      - name: Test workflows without external writes
+        run: python -m unittest test_quality_workflow test_persistent_memory test_production_workspace -v
+      - name: Validate syntax
+        run: python -m compileall -q -x '(_memory_upgrade_backup|\.antigravity_sync)' .
+

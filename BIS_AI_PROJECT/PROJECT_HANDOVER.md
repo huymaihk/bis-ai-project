@@ -221,3 +221,17 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
    * Hiện tại cờ an toàn `HARAVAN_PUSH_ENABLED` đang đặt là `False` (bảo vệ tuyệt đối cho shop). Khi chủ dự án duyệt lệnh xuất bản cho 69 sản phẩm mới, Codex kích hoạt đẩy ở chế độ ẩn (`published: false`) để kiểm tra hiển thị trước khi công khai.
 3. **Mở rộng kho ảnh sản phẩm thực tế:**
    * Tiếp tục tiếp nhận ảnh chụp thật của các thiết bị còn lại đặt vào `Google_Drive_Storage/4_Product_Images/` và chạy `flow_2d_studio.py` để tự động tạo toàn bộ ảnh đạt chuẩn $1254 \times 1254\text{ px}$.
+
+
+## 2026-11-04 — Đánh giá lại theo nghiệm thu người dùng
+- Các phòng ban chưa đạt; kết quả test bộ nhớ không chứng minh nghiệp vụ đạt.
+- Kiểm tra sơ bộ thấy chọn ảnh theo dung lượng/ảnh web đầu tiên và chống trùng token có nguy cơ sai.
+- Nghiên cứu GitHub và tiêu chí nâng cấp ở UPGRADE_REVIEW_2026_11_04.md; chưa sửa/deploy nghiệp vụ trong lượt nghiên cứu này.
+
+- 2026-11-04: Triển khai pdf_candidates.py và nối Media UI: tìm trang theo SKU đầy đủ, liệt kê ảnh gốc có bbox/hash, tải từng ảnh/ZIP, người dùng chọn nguồn. Test catalogue 03026A: 2 ảnh ứng viên trên trang 7; 03026AX không khớp. Chưa nghiệm thu UI/live, scan OCR/crop và tìm web chưa triển khai.
+
+
+## 2026-11-04 — Quality Release 2
+- Chủ dự án cho toàn quyền cải tiến, trừ xóa sản phẩm Haravan. Đã xây UI 5 bước, template có chứng cứ, chọn ảnh PDF/web, studio nguồn + Gemini tham chiếu, tri thức theo trang và cổng tạo nháp có checkpoint/hash/đối soát. Xem QUALITY_RELEASE_2.md.
+- Test nghiệp vụ dùng fake API, không suy ra nghiệm thu ảnh AI thật. Không có thao tác xóa sản phẩm. Google credential local còn lỗi; checkpoint không đồng bộ sẽ chặn đăng.
+- Không tự đổi bộ test để nới tiêu chí: test tái lập phát hiện index bỏ sót trang chữ ngắn; đã sửa để giữ trang có >=10 ký tự và retire chunk cũ sau cập nhật.

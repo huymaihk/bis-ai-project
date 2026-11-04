@@ -168,3 +168,17 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
   * Lịch sử chat BIS giờ lưu tại Google_Drive_Storage/8_AI_Memory/events, không chỉ st.session_state. Sửa/thu hồi có phiên bản; xung đột cần giải quyết. Đọc MEMORY_GUIDE.md và CURRENT_MEMORY.md khi tiếp tục dự án.
   * Chat nhân viên dùng Gemini với ngữ cảnh thật; không còn trả tool giả hay tiến độ ngẫu nhiên. Khung chat tư vấn, chưa tự thực thi Haravan/dịch file/tạo ảnh. Những tuyên bố cũ “15 nhân viên tự vận hành” không phải bằng chứng công việc đã hoàn thành.
   * Sau thay đổi code/tri thức: cập nhật bàn giao, chạy python sync_memory.py --local-only --record-update "nội dung đã kiểm tra". Chủ dự án đã duyệt bảng BIS_Textile_Product_Master. memory_sync_config.json bật đồng bộ vào tab BIS_AI_MEMORY_V1, nhưng khóa service account local hiện lỗi invalid_grant / Invalid JWT Signature. Không đưa kho sự kiện/backup lên Git.
+
+
+## 2026-11-04 — Đánh giá lại theo nghiệm thu người dùng
+- Các phòng ban chưa đạt; kết quả test bộ nhớ không chứng minh nghiệp vụ đạt.
+- Kiểm tra sơ bộ thấy chọn ảnh theo dung lượng/ảnh web đầu tiên và chống trùng token có nguy cơ sai.
+- Nghiên cứu GitHub và tiêu chí nâng cấp ở UPGRADE_REVIEW_2026_11_04.md; chưa sửa/deploy nghiệp vụ trong lượt nghiên cứu này.
+
+- 2026-11-04: Triển khai pdf_candidates.py và nối Media UI: tìm trang theo SKU đầy đủ, liệt kê ảnh gốc có bbox/hash, tải từng ảnh/ZIP, người dùng chọn nguồn. Test catalogue 03026A: 2 ảnh ứng viên trên trang 7; 03026AX không khớp. Chưa nghiệm thu UI/live, scan OCR/crop và tìm web chưa triển khai.
+
+
+## 2026-11-04 — Quality Release 2
+- Chủ dự án cho toàn quyền cải tiến, trừ xóa sản phẩm Haravan. Đã xây UI 5 bước, template có chứng cứ, chọn ảnh PDF/web, studio nguồn + Gemini tham chiếu, tri thức theo trang và cổng tạo nháp có checkpoint/hash/đối soát. Xem QUALITY_RELEASE_2.md.
+- Test nghiệp vụ dùng fake API, không suy ra nghiệm thu ảnh AI thật. Không có thao tác xóa sản phẩm. Google credential local còn lỗi; checkpoint không đồng bộ sẽ chặn đăng.
+- Không tự đổi bộ test để nới tiêu chí: test tái lập phát hiện index bỏ sót trang chữ ngắn; đã sửa để giữ trang có >=10 ký tự và retire chunk cũ sau cập nhật.

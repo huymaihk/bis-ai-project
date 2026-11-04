@@ -20,3 +20,6 @@ extracted_products_cache.json
 Google_Drive_Storage/8_AI_Memory/
 
 _memory_upgrade_backup/
+
+# Local quality previews
+tmp/quality/
