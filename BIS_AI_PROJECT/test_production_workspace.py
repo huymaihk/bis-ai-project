@@ -33,9 +33,47 @@ class Media:
 media=Media()
 render_workspace(root,None,media,None,None,MemoryStore(root))
 '''
+        self.code=code
         self.app=AppTest.from_string(code).run(timeout=30)
     def tearDown(self):
         self.tmp.cleanup()
+    def test_selected_tools_show_only_the_requested_step(self):
+        for step, expected in [(0,'Xem trang'),(1,'Lưu và kiểm tra'),(2,'Tìm ảnh ứng viên'),(3,'Duyệt phiên bản sản phẩm'),(4,'Ghi')]:
+            code=self.code.replace('None,None,MemoryStore(root))',f'None,None,MemoryStore(root),active_step={step})')
+            app=AppTest.from_string(code).run(timeout=30)
+            self.assertFalse(app.exception, str(app.exception))
+            self.assertEqual(len(app.tabs),0)
+            labels=[b.label for b in app.button]
+            if step<4:
+                self.assertIn(expected,labels)
+            if step!=3:
+                self.assertNotIn('Tạo bản nháp trên Haravan',labels)
+
+    def test_react_bridge_opens_selected_tool_and_returns_with_sku(self):
+        code=self.code[:self.code.index('render_workspace(root,None,media')]
+        code+='''
+import streamlit as st
+from unittest.mock import patch
+from streamlit_react_host import render_react_workspace
+import json
+st.session_state.authenticated=True
+req={'id':'open-image','url':'/api/workspace/open','method':'POST','body':json.dumps({'step':2,'sku':'03026A'})}
+(root/'frontend'/'streamlit_dist').mkdir(parents=True,exist_ok=True)
+(root/'frontend'/'streamlit_dist'/'index.html').write_text('test')
+with patch('streamlit_react_host.components.declare_component', return_value=lambda **kwargs:req):
+    render_react_workspace(root,(None,media,None,None,MemoryStore(root)))
+'''
+        app=AppTest.from_string(code).run(timeout=30)
+        self.assertFalse(app.exception,str(app.exception))
+        self.assertEqual(app.session_state['_bis_native_step'],2)
+        self.assertEqual(app.selectbox(key='q_sku').value,'03026A')
+        self.assertIn('Tìm ảnh ứng viên',[b.label for b in app.button])
+        app.button(key='bis_back_react').click().run(timeout=30)
+        self.assertFalse(app.exception,str(app.exception))
+        bridge=app.session_state['_bis_react_bridge']
+        self.assertEqual(bridge.client.get('/api/state').json()['preferred_sku'],'03026A')
+        bridge.client.close()
+
     def test_five_steps(self):
         self.assertFalse(self.app.exception)
         self.assertEqual(len(self.app.tabs),5)

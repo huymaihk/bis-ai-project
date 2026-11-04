@@ -101,6 +101,7 @@ def create_app(workspace=None, pin=None):
         rows = products()
         return {'products':[dict(p, _revision=fingerprint(p)) for p in rows.values()],
                 'jobs':JobRunner(root).list_jobs(),
+                'preferred_sku':getattr(app.state, 'preferred_sku', ''),
                 'sync':{'state':'unverified','detail':'Đã lưu cục bộ; chưa xác minh đồng bộ Google trong phiên này.'},
                 'capabilities':{'publish':False,'extraction':False,'agent_meetings':False}}
 
@@ -227,6 +228,48 @@ def create_app(workspace=None, pin=None):
     @app.get('/api/knowledge/search')
     def knowledge_search(q: str = ''):
         return {'text':memory.context(q,max_chars=12000)}
+
+    class WorkspaceOpen(BaseModel):
+        step: int = Field(ge=0, le=4)
+        sku: str = Field(default='', max_length=100)
+
+    @app.post('/api/workspace/open')
+    def open_workspace(body: WorkspaceOpen):
+        if body.sku and body.sku not in products():
+            raise HTTPException(404, 'Không tìm thấy SKU')
+        app.state.preferred_sku = body.sku
+        return {'step':body.step, 'sku':body.sku}
+
+    class WorkflowCheck(BaseModel):
+        revision: str
+
+    @app.post('/api/workflow/{sku}/check')
+    def check_workflow(sku: str, body: WorkflowCheck):
+        from workflow_review import review_product
+        with lock:
+            product = products().get(sku)
+            if product is None:
+                raise HTTPException(404, 'Không tìm thấy SKU')
+            if fingerprint(product) != body.revision:
+                raise HTTPException(409, 'Dữ liệu đã đổi; tải lại trước khi kiểm tra')
+            result = JobRunner(root).run('workflow_check', {'sku':sku,'revision':body.revision},
+                                         lambda: review_product(root, product))
+            # Diagnostic reports are not approved knowledge or publishing approvals.
+            atomic_json(memory.root/'workflow_checks'/(hashlib.sha256(sku.encode()).hexdigest()+'.json'), result)
+            return result
+
+    @app.get('/api/workflow/{sku}/check')
+    def last_workflow_check(sku: str):
+        product = products().get(sku)
+        if product is None:
+            raise HTTPException(404, 'Không tìm thấy SKU')
+        path = memory.root/'workflow_checks'/(hashlib.sha256(sku.encode()).hexdigest()+'.json')
+        if not path.exists():
+            return {'checks':[], 'state':'NOT_RUN'}
+        report = json.loads(path.read_text(encoding='utf-8'))
+        report['stale'] = report.get('revision') != fingerprint(product)
+        report['detail'] = 'Báo cáo lần kiểm tra trước; chạy lại để xác minh ảnh và nguồn hiện tại.'
+        return report
 
     @app.get('/api/{path:path}')
     def missing_api(path: str):

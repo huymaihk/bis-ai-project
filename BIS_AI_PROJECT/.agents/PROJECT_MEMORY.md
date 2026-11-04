@@ -214,3 +214,10 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
 ## 2026-11-04 — Studio AI/2 applied to live workspace
 - Compared AI/2 export with integrated frontend: actual design source/assets already match except intentional entry/WebGL/Streamlit fixes. Imported design-system reference, applied warm ivory inspection panels to live tabs and added 4-step workflow navigation; preserved real data/auth/memory and direct office overview. Original source folder unchanged.
 - TypeScript and Vite build pass. No backend changes; no claims of live agent execution. Browser visual QA not available.
+
+## 2026-11-04 — Workflow V2 integration
+- Added authenticated React-to-native tool routing for all five business steps. Keeps SKU on round trip, renders only selected step and shares existing drafts/memory. Existing Haravan creation gates and code remain unchanged.
+- Added local workflow review with source/content, SEO, approved-image hash, snapshot duplicate and revision checks. Reports persist separately from approved knowledge; no publish authorization or external API calls. React blocks navigation/check while edits are unsaved.
+- Validation: existing 64 plus 5 new regression cases pass (68 in full run, one additional bridge round-trip test separately); TypeScript and Vite build pass. Public browser rendering not visually verified.
+- Limits: native business tools are opened from the React interface, not rewritten in React. No autonomous/background worker or new AI orchestration; Google sync still unverified. No live Haravan mutations.
+- Lesson: labels and 3D scenes do not prove operations. Reuse guarded business tools through an authenticated route, bind diagnostics to product revision, and identify snapshot checks separately from live checks.

@@ -27,6 +27,48 @@ class BridgeTests(unittest.TestCase):
     def login(self):
         self.assertEqual(self.client.post('/api/login',json={'pin':'test-pin'}).status_code,200)
 
+    def test_workflow_review_is_authenticated_and_never_grants_publish(self):
+        path='/api/workflow/03026A/check'
+        self.assertEqual(self.client.get(path).status_code,401)
+        self.login()
+        row=self.client.get('/api/state').json()['products'][0]
+        from unittest.mock import patch
+        with patch('requests.sessions.Session.request', side_effect=AssertionError('No external calls')):
+            result=self.client.post(path,json={'revision':row['_revision']})
+        self.assertEqual(result.status_code,200,result.text)
+        report=result.json()
+        self.assertFalse(report['publish_allowed'])
+        self.assertIn('BLOCKED',[c['state'] for c in report['checks']])
+        self.assertEqual(self.client.get('/api/state').json()['products'][0]['_revision'],row['_revision'])
+        self.client.put('/api/products/03026A',json={'revision':row['_revision'],'fields':{'description':'changed'}})
+        self.assertTrue(self.client.get(path).json()['stale'])
+        self.assertEqual(self.client.post(path,json={'revision':row['_revision']}).status_code,409)
+
+    def test_workspace_route_validates_step_and_sku(self):
+        self.login()
+        for payload in [{'step':5,'sku':'03026A'},{'step':-1},{'step':2,'sku':'missing'}]:
+            self.assertIn(self.client.post('/api/workspace/open',json=payload).status_code,[422,404])
+        self.assertEqual(self.client.post('/api/workspace/open',json={'step':2,'sku':'03026A'}).json(),{'step':2,'sku':'03026A'})
+        self.assertEqual(self.client.get('/api/state').json()['preferred_sku'],'03026A')
+
+    def test_changed_image_fails_review(self):
+        from PIL import Image
+        import hashlib
+        self.login()
+        folder=self.root/'Google_Drive_Storage'
+        image=folder/'approved.png'
+        Image.new('RGB',(1254,1254),'white').save(image)
+        manifest={'03026A':{'final_image':str(image),'status':'APPROVED','approved_sha256':hashlib.sha256(image.read_bytes()).hexdigest()}}
+        (folder/'image_review_manifest.json').write_text(json.dumps(manifest))
+        row=self.client.get('/api/state').json()['products'][0]
+        path='/api/workflow/03026A/check'
+        def image_state():
+            report=self.client.post(path,json={'revision':row['_revision']}).json()
+            return next(c['state'] for c in report['checks'] if c['key']=='images')
+        self.assertEqual(image_state(),'PASS')
+        Image.new('RGB',(1254,1254),'black').save(image)
+        self.assertEqual(image_state(),'BLOCKED')
+
     def test_login_required_and_logout(self):
         for route in ['state','assets','memory','knowledge/search']:
             self.assertEqual(self.client.get('/api/'+route).status_code,401)

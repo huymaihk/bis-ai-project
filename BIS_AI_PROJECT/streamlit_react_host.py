@@ -1,5 +1,6 @@
 """Streamlit authenticated session -> local ASGI calls. No publicly exposed API port."""
 import base64
+import json
 from pathlib import Path
 import secrets
 from urllib.parse import urlsplit
@@ -49,7 +50,7 @@ class SessionBridge:
         return result
 
 
-def render_react_workspace(root):
+def render_react_workspace(root, services=None):
     if not st.session_state.get('authenticated'):
         st.error('Cần đăng nhập trước khi mở BIS.')
         return
@@ -60,6 +61,16 @@ def render_react_workspace(root):
     if '_bis_react_bridge' not in st.session_state:
         st.session_state['_bis_react_bridge']=SessionBridge(root)
     bridge=st.session_state['_bis_react_bridge']
+    if services and '_bis_native_step' in st.session_state:
+        from production_workspace import render_workspace
+        if st.button('← Quay lại trung tâm BIS', key='bis_back_react'):
+            bridge.client.app.state.preferred_sku = st.session_state.get('q_sku', '')
+            st.session_state.pop('_bis_native_step', None)
+            st.session_state.pop('_bis_react_response', None)
+            st.rerun()
+        st.caption('Công cụ nghiệp vụ BIS · cùng hồ sơ sản phẩm và bộ nhớ · kết quả cần nghiệm thu')
+        render_workspace(root, *services, active_step=st.session_state['_bis_native_step'])
+        return
     component=components.declare_component('bis_workspace',path=str(folder))
     st.markdown('<style>section[data-testid="stMain"] .block-container{max-width:100%;padding:0 0.5rem;} iframe[title="streamlit_react_host.bis_workspace"]{border:0;}</style>',unsafe_allow_html=True)
     request=component(response=st.session_state.get('_bis_react_response'),key='bis_live_workspace',default=None)
@@ -71,5 +82,11 @@ def render_react_workspace(root):
                 st.session_state.pop(key,None)
             st.rerun()
         st.session_state['_bis_react_response']=bridge.dispatch(request)
+        response = st.session_state['_bis_react_response']
+        if services and request.get('url') == '/api/workspace/open' and request.get('method') == 'POST' and response.get('status') == 200:
+            selected = json.loads(base64.b64decode(response['body']))
+            st.session_state['_bis_native_step'] = selected['step']
+            if selected['sku']:
+                st.session_state['q_sku'] = selected['sku']
         st.session_state['_bis_react_last_request']=request.get('id')
         st.rerun()
