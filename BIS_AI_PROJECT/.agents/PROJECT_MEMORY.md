@@ -202,3 +202,6 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
 - Authenticated custom component with request queue, replay guard and PDF/image transport. Default live React after existing login; old UI selectable. 3D remains labelled demo.
 - 64 Python tests passed; 11 bridge/API tests rechecked after thumbnails; TypeScript/build passed. Full authenticated AppTest: zero exceptions. Browser visual check unavailable.
 - Ships compiled frontend/streamlit_dist; no extra API port. Google sync and ephemeral cloud storage unresolved; live agent/image workflow pending. No Haravan mutations.
+
+## 2026-11-04 — Blank 3D viewport mitigation
+- Default office view now uses the concept image; interactive WebGL remains selectable. Added error boundary with explicit fallback and replaced GPU fence polling with bounded timer scheduling; lowered GPU requirements. TypeScript/build passed. Exact browser failure not established; user screenshot was a cropped empty viewport, no console evidence.

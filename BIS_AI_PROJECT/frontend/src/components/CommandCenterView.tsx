@@ -6,6 +6,7 @@ import {
 } from '../types/bisTypes';
 import { AGENT_STATIONS } from '../data/mockBisData';
 import { AgentRobotAvatar } from './AgentRobotAvatar';
+import { SceneBoundary } from './SceneBoundary';
 import { AgentOffice3DCanvas } from './AgentOffice3DCanvas';
 import { RobotEyeStyle, RobotFinishPreset } from '../utils/agentOfficeSim';
 import {
@@ -53,7 +54,7 @@ export const CommandCenterView: React.FC<CommandCenterViewProps> = ({
   onSelectProductAndNavigate,
   onNavigateDepartment,
 }) => {
-  const [viewMode, setViewMode] = useState<'3d_studio_room' | '3d_game_office' | 'compact_tasks'>('3d_game_office');
+  const [viewMode, setViewMode] = useState<'3d_studio_room' | '3d_game_office' | 'compact_tasks'>('3d_studio_room');
   const [compactFloor, setCompactFloor] = useState<boolean>(false);
   const [selectedStation, setSelectedStation] = useState<AgentStationMeta>(AGENT_STATIONS[2]);
   const [activeSpeechToast, setActiveSpeechToast] = useState<string>(
@@ -414,6 +415,7 @@ export const CommandCenterView: React.FC<CommandCenterViewProps> = ({
                 </div>
               </div>
             ) : viewMode === '3d_game_office' ? (
+              <SceneBoundary>
               <AgentOffice3DCanvas
                 activeProduct={activeProduct}
                 reduceMotion={reduceMotion}
@@ -423,6 +425,7 @@ export const CommandCenterView: React.FC<CommandCenterViewProps> = ({
                 onChangeFinishPreset={onChangeFinishPreset}
                 onSelectDepartment={onNavigateDepartment}
               />
+              </SceneBoundary>
             ) : (
               /* Compact Task List Mode */
               <div className="card-8d-dark border border-[#4A3B34] rounded-2xl p-5 space-y-4">

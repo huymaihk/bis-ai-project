@@ -1072,8 +1072,8 @@ export const AgentOffice3DCanvas: React.FC<AgentOffice3DCanvasProps> = ({
 
     const renderer = new THREE.WebGLRenderer({
       antialias: !isSoftwareGl,
-      powerPreference: 'high-performance',
-      preserveDrawingBuffer: true,
+      powerPreference: 'default',
+      preserveDrawingBuffer: false,
     });
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -2840,19 +2840,7 @@ export const AgentOffice3DCanvas: React.FC<AgentOffice3DCanvasProps> = ({
     let autoChatCooldown = 5.0;
 
     function afterDraw(cb: () => void) {
-      const gl = renderer.getContext() as WebGL2RenderingContext;
-      const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
-      gl.flush();
-      const poll = () => {
-        const state = sync && gl.getSyncParameter(sync, gl.SYNC_STATUS);
-        if (state === gl.UNSIGNALED) {
-          frameId = window.setTimeout(poll, 5);
-        } else {
-          if (sync) gl.deleteSync(sync);
-          frameId = window.setTimeout(cb, 80);
-        }
-      };
-      frameId = window.setTimeout(poll, 5);
+      frameId = window.setTimeout(() => requestAnimationFrame(cb), 80);
     }
 
     function tick() {
@@ -3228,6 +3216,7 @@ export const AgentOffice3DCanvas: React.FC<AgentOffice3DCanvasProps> = ({
     }
 
     renderer.render(scene, camera);
+    container.dataset.rendered = "true";
     tick();
 
     return () => {
