@@ -35,6 +35,7 @@ import { ImageStudioView } from './components/ImageStudioView';
 import { OperationsView } from './components/OperationsView';
 import { KnowledgeMemoryView } from './components/KnowledgeMemoryView';
 import { VideoAnalysisModal } from './components/VideoAnalysisModal';
+import { AuthenticatedStaffUser, LoginView } from './components/LoginView';
 import { RobotEyeStyle, RobotFinishPreset } from './utils/agentOfficeSim';
 import {
   Home,
@@ -155,6 +156,20 @@ const BOTTOM_PIPELINE_STEPS: {
 ];
 
 export default function App() {
+  const [currentUser, setCurrentUser] = useState<AuthenticatedStaffUser | null>(() => {
+    if (
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('autostart') === '1'
+    ) {
+      return {
+        fullName: 'Nguyễn Minh Anh',
+        email: 'minhanh.nguyen@bistextile.vn',
+        roleLabel: 'Điều hành viên · BIS Textile',
+        department: 'overview',
+      };
+    }
+    return null;
+  });
   const [products, setProducts] = useState<ProductRecord[]>(INITIAL_PRODUCTS);
   const [activeSku, setActiveSku] = useState<string>(INITIAL_PRODUCTS[0].sku);
   const [activeDepartment, setActiveDepartment] = useState<DepartmentId>('overview');
@@ -435,6 +450,20 @@ export default function App() {
     );
   };
 
+  if (!currentUser) {
+    return (
+      <LoginView
+        onLoginSuccess={(user) => {
+          setCurrentUser(user);
+          setActiveDepartment(user.department);
+          if (typeof document !== 'undefined') {
+            document.body.dataset.state = 'playing';
+          }
+        }}
+      />
+    );
+  }
+
   return (
     <div
       className={`min-h-screen bg-[#161210] text-[#FAF6F0] flex flex-col lg:flex-row ${
@@ -476,13 +505,13 @@ export default function App() {
         aria-label="Điều hướng các bộ phận BIS TEXTILE AI"
         className={`${
           mobileNavOpen ? 'block' : 'hidden'
-        } lg:flex lg:flex-col lg:w-56 xl:w-60 bg-[#191412] border-r border-[#332924] shrink-0 justify-between`}
+        } lg:flex lg:flex-col lg:w-56 xl:w-60 bg-gradient-to-b from-[#1D1714] via-[#181311] to-[#130F0D] border-r border-[#3A2E28] shadow-[6px_0_28px_-6px_rgba(0,0,0,0.65)] shrink-0 justify-between z-20`}
       >
         <div>
           {/* BIS TEXTILE AI Brand Lockup */}
-          <div className="hidden lg:flex items-center justify-between px-5 py-4 border-b border-[#2E2520]">
+          <div className="hidden lg:flex items-center justify-between px-5 py-4 border-b border-[#332823] bg-gradient-to-r from-[#241C18]/70 to-transparent">
             <div className="flex items-center gap-2.5">
-              <span className="text-2xl font-black italic tracking-tighter text-[#E03B2F] leading-none">
+              <span className="text-2xl font-black italic tracking-tighter text-[#E03B2F] leading-none drop-shadow-[0_2px_6px_rgba(224,59,47,0.35)]">
                 BIS
               </span>
               <div className="leading-tight">
@@ -510,8 +539,8 @@ export default function App() {
                   onClick={() => handleNavigateDepartment(item.id)}
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                     isActive
-                      ? 'bg-gradient-to-r from-[#D9382C] to-[#B82D22] text-white shadow-md'
-                      : 'text-[#D5C7BC] hover:text-white hover:bg-[#261F1C]'
+                      ? 'btn-8d-crimson text-white border border-[#F26B60]/40'
+                      : 'text-[#D5C7BC] hover:text-white hover:bg-[#261F1C]/90 hover:shadow-[inset_0_1px_0_rgba(255,248,235,0.08),0_4px_10px_rgba(0,0,0,0.35)]'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
@@ -538,8 +567,8 @@ export default function App() {
                     <span
                       className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full ${
                         isActive
-                          ? 'bg-white/20 text-white'
-                          : 'bg-[#2E2520] text-[#FBBF24]'
+                          ? 'bg-white/20 text-white shadow-inner'
+                          : 'bg-[#2E2520] text-[#FBBF24] border border-[#4A3B34]'
                       }`}
                     >
                       {stationMeta.alertCount}
@@ -552,13 +581,13 @@ export default function App() {
         </div>
 
         {/* Bottom Sidebar: Textile Fabric Rolls Accent & Project Path (Matches Storyboard Bottom-Left) */}
-        <div className="p-3 m-2.5 rounded-2xl bg-[#221B18] border border-[#382E29] space-y-2.5">
+        <div className="p-3.5 m-2.5 rounded-2xl card-8d-dark border border-[#463831] space-y-2.5">
           {/* Colorful Textile Rolls Visual Accent */}
           <div className="flex items-center gap-1.5 pt-0.5">
-            <span className="h-3.5 flex-1 rounded-full bg-[#B91C1C]" title="Cuộn vải đỏ Crimson" />
-            <span className="h-3.5 flex-1 rounded-full bg-[#D97706]" title="Cuộn vải vàng Ochre" />
-            <span className="h-3.5 flex-1 rounded-full bg-[#D6D3D1]" title="Cuộn vải trắng Kem" />
-            <span className="h-3.5 flex-1 rounded-full bg-[#475569]" title="Cuộn vải xám Slate" />
+            <span className="h-3.5 flex-1 rounded-full bg-gradient-to-b from-[#DC2626] to-[#991B1B] shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_2px_4px_rgba(0,0,0,0.4)]" title="Cuộn vải đỏ Crimson" />
+            <span className="h-3.5 flex-1 rounded-full bg-gradient-to-b from-[#F59E0B] to-[#B45309] shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_2px_4px_rgba(0,0,0,0.4)]" title="Cuộn vải vàng Ochre" />
+            <span className="h-3.5 flex-1 rounded-full bg-gradient-to-b from-[#F5F5F4] to-[#C7C2BC] shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.4)]" title="Cuộn vải trắng Kem" />
+            <span className="h-3.5 flex-1 rounded-full bg-gradient-to-b from-[#64748B] to-[#334155] shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_2px_4px_rgba(0,0,0,0.4)]" title="Cuộn vải xám Slate" />
           </div>
 
           <div className="text-[11px] font-mono text-[#E5D9CE] truncate">
@@ -572,7 +601,7 @@ export default function App() {
           <button
             type="button"
             onClick={() => setIsAnalysisModalOpen(true)}
-            className="w-full py-1.5 px-2.5 rounded-lg bg-[#2E2520] hover:bg-[#3D312B] text-[11px] font-semibold text-[#FAF6F0] border border-[#4A3B34] flex items-center justify-center gap-1.5"
+            className="w-full py-1.5 px-2.5 rounded-lg bg-gradient-to-b from-[#352A24] to-[#261E1A] hover:from-[#42352E] hover:to-[#2E241F] text-[11px] font-semibold text-[#FAF6F0] border border-[#524139] shadow-[inset_0_1px_0_rgba(255,248,235,0.12),0_3px_8px_rgba(0,0,0,0.4)] flex items-center justify-center gap-1.5 transition-all"
           >
             <Info className="w-3.5 h-3.5 text-[#E03B2F]" />
             <span>Xem Phân tích &amp; Adapter</span>
@@ -586,12 +615,19 @@ export default function App() {
           products={products}
           activeProduct={activeProduct}
           activeDepartment={activeDepartment}
+          currentUser={currentUser}
           onSelectProduct={(sku) => setActiveSku(sku)}
           onNavigateDepartment={handleNavigateDepartment}
           onOpenDesignRationale={() => setIsAnalysisModalOpen(true)}
+          onLogout={() => {
+            setCurrentUser(null);
+            if (typeof document !== 'undefined') {
+              document.body.dataset.state = 'title';
+            }
+          }}
         />
 
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto agent-floor-grid">
           {activeDepartment === 'overview' && (
             <CommandCenterView
               products={products}
@@ -663,7 +699,7 @@ export default function App() {
         </main>
 
         {/* Bottom Persistent Cream-Ivory Pipeline Dock (Matches Image 1 & Image 2 Footer Bar) */}
-        <footer className="bg-[#F5EFE6] text-[#1E1916] border-t border-[#D8CEC2] px-4 lg:px-6 py-2.5">
+        <footer className="dock-8d-ivory text-[#1E1916] border-t border-[#D8CEC2] px-4 lg:px-6 py-2.5 relative z-10">
           <div className="max-w-[1520px] mx-auto flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="text-xs sm:text-sm font-extrabold text-[#1E1916] leading-tight">
@@ -699,15 +735,15 @@ export default function App() {
                       }
                       className={`px-3 py-1.5 rounded-2xl border transition-all flex items-center gap-2.5 text-left ${
                         isCurrent
-                          ? 'bg-[#FADCD9] border-[#D9382C] text-[#B91C1C] shadow-xs'
-                          : 'bg-[#EBE3D7] border-[#D5C8B8] text-[#2B221E] hover:bg-white'
+                          ? 'bg-gradient-to-b from-[#FFEFEB] to-[#FADCD9] border-[#D9382C] text-[#B91C1C] shadow-[inset_0_1px_0_#FFFFFF,0_4px_12px_-2px_rgba(217,56,44,0.28),0_2px_4px_rgba(0,0,0,0.08)]'
+                          : 'card-8d-interactive border-[#D5C8B8] text-[#2B221E]'
                       }`}
                     >
                       <div
-                        className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
+                        className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold shadow-xs ${
                           isCurrent
-                            ? 'bg-[#D9382C] text-white'
-                            : 'bg-[#DED4C8] text-[#3B302B]'
+                            ? 'btn-8d-crimson text-white'
+                            : 'bg-gradient-to-b from-[#EAE1D5] to-[#D8CEC0] text-[#3B302B] shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]'
                         }`}
                       >
                         <StepIcon className="w-3.5 h-3.5" />
@@ -737,7 +773,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => handleNavigateDepartment('operations')}
-              className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#E03B2F] to-[#C82D22] hover:from-[#C82D22] hover:to-[#A82218] text-white text-xs sm:text-sm font-extrabold shadow-md inline-flex items-center gap-2 transition-all shrink-0"
+              className="px-5 py-2.5 rounded-2xl btn-8d-crimson text-white text-xs sm:text-sm font-extrabold inline-flex items-center gap-2 transition-all shrink-0 cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
               <span>Tạo bản nháp</span>

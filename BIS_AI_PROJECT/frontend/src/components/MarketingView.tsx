@@ -114,7 +114,7 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
   return (
     <div className="p-3 lg:p-5 max-w-[1500px] mx-auto space-y-4">
       {/* Top Department Banner */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#231D1A] border border-[#3E322C] rounded-2xl px-5 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 card-8d-dark border border-[#4E3E36] rounded-2xl px-5 py-3">
         <div className="flex items-center gap-3">
           <AgentRobotAvatar
             department="marketing"
@@ -133,13 +133,13 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2 text-xs">
-          <span className="px-2.5 py-1 rounded-full bg-[#332924] text-[#F59E0B] font-mono border border-[#4D3D35]">
+          <span className="px-2.5 py-1 rounded-full card-8d-dark-recessed text-[#F59E0B] font-mono border border-[#4D3D35]">
             Phiên bản hiện tại: {product.marketingVersions[0]?.versionId || 'v1.2'}
           </span>
           <button
             type="button"
             onClick={onProceedToImageStudio}
-            className="px-3.5 py-1.5 rounded-lg bg-[#D9382C] hover:bg-[#B82D22] text-white font-semibold inline-flex items-center gap-1.5 transition-colors"
+            className="px-3.5 py-1.5 rounded-lg btn-8d-crimson text-white font-semibold inline-flex items-center gap-1.5 transition-all"
           >
             <span>Sang bước Ảnh (Image Studio)</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -148,7 +148,7 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
       </div>
 
       {savedToast && (
-        <div className="bg-[#DCFCE7] border border-[#86EFAC] text-[#14532D] px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between">
+        <div className="bg-gradient-to-r from-[#DCFCE7] to-[#CCFBF1] border border-[#86EFAC] text-[#14532D] px-4 py-2.5 rounded-xl text-xs font-semibold shadow-md flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-[#16A34A]" />
             <span>{savedToast}</span>
@@ -164,9 +164,9 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
       )}
 
       {/* MAIN STORYBOARD CARD: WARM IVORY WORKSPACE */}
-      <div className="bg-[#F6F1EA] text-[#1F1916] border border-[#D8CEC2] rounded-2xl shadow-xl overflow-hidden">
+      <div className="card-8d-ivory text-[#1F1916] border border-[#D8CEC2] rounded-2xl overflow-hidden">
         {/* Sub-Tabs Bar & SKU Indicator */}
-        <div className="px-5 pt-3 bg-[#EFE8DE] border-b border-[#D8CEC2] flex flex-wrap items-center justify-between gap-3">
+        <div className="px-5 pt-3 surface-8d-warm border-b border-[#D8CEC2] flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-6">
             <button
               type="button"
@@ -241,7 +241,7 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
             {subTab === 'content' ? (
               <>
                 {/* 1. Tiêu đề sản phẩm / Product Title */}
-                <div className="space-y-2 bg-white p-3.5 rounded-xl border border-[#DED4C8]">
+                <div className="space-y-2 card-8d-light p-3.5 rounded-xl border border-[#DED4C8]">
                   <div className="text-xs font-extrabold text-[#1E1916]">
                     1. Tiêu đề sản phẩm / Product Title <span className="text-[#D9382C]">*</span>
                   </div>
@@ -254,7 +254,7 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
                       value={titleVi}
                       onChange={(e) => setTitleVi(e.target.value)}
                       aria-label="Tiêu đề sản phẩm tiếng Việt"
-                      className="w-full px-3 py-1.5 rounded-lg bg-[#FAF6F0] border border-[#D5C8B8] text-xs sm:text-sm font-semibold text-[#1E1916]"
+                      className="w-full px-3 py-1.5 rounded-lg bg-[#FAF6F0] border border-[#D5C8B8] text-xs sm:text-sm font-semibold text-[#1E1916] shadow-inner"
                     />
                   </div>
                   <div className="flex items-center gap-2">
@@ -266,13 +266,13 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
                       value={titleEn}
                       onChange={(e) => setTitleEn(e.target.value)}
                       aria-label="Tiêu đề sản phẩm tiếng Anh"
-                      className="w-full px-3 py-1.5 rounded-lg bg-[#FAF6F0] border border-[#D5C8B8] text-xs sm:text-sm font-medium text-[#1E1916]"
+                      className="w-full px-3 py-1.5 rounded-lg bg-[#FAF6F0] border border-[#D5C8B8] text-xs sm:text-sm font-medium text-[#1E1916] shadow-inner"
                     />
                   </div>
                 </div>
 
                 {/* 2. Mô tả ngắn / Short Description */}
-                <div className="space-y-2 bg-white p-3.5 rounded-xl border border-[#DED4C8]">
+                <div className="space-y-2 card-8d-light p-3.5 rounded-xl border border-[#DED4C8]">
                   <div className="text-xs font-extrabold text-[#1E1916]">
                     2. Mô tả ngắn / Short Description <span className="text-[#D9382C]">*</span>
                   </div>
@@ -285,7 +285,7 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
                       value={shortDescVi}
                       onChange={(e) => setShortDescVi(e.target.value)}
                       aria-label="Mô tả ngắn tiếng Việt"
-                      className="w-full px-3 py-1.5 rounded-lg bg-[#FAF6F0] border border-[#D5C8B8] text-xs text-[#1E1916] leading-relaxed"
+                      className="w-full px-3 py-1.5 rounded-lg bg-[#FAF6F0] border border-[#D5C8B8] text-xs text-[#1E1916] leading-relaxed shadow-inner"
                     />
                   </div>
                   <div className="flex items-start gap-2">
@@ -297,13 +297,13 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
                       value={shortDescEn}
                       onChange={(e) => setShortDescEn(e.target.value)}
                       aria-label="Mô tả ngắn tiếng Anh"
-                      className="w-full px-3 py-1.5 rounded-lg bg-[#FAF6F0] border border-[#D5C8B8] text-xs text-[#1E1916] leading-relaxed"
+                      className="w-full px-3 py-1.5 rounded-lg bg-[#FAF6F0] border border-[#D5C8B8] text-xs text-[#1E1916] leading-relaxed shadow-inner"
                     />
                   </div>
                 </div>
 
                 {/* 3. Đặc điểm nổi bật / Key Features */}
-                <div className="space-y-2 bg-white p-3.5 rounded-xl border border-[#DED4C8]">
+                <div className="space-y-2 card-8d-light p-3.5 rounded-xl border border-[#DED4C8]">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-extrabold text-[#1E1916]">
                       3. Đặc điểm nổi bật / Key Features
@@ -372,7 +372,7 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
             )}
 
             {/* Mô tả SEO (140 – 160 ký tự) + Character Counter */}
-            <div className="p-3.5 rounded-xl bg-[#EFE8DE] border border-[#D5C8B8] space-y-2">
+            <div className="p-3.5 rounded-xl surface-8d-warm border border-[#D5C8B8] space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-extrabold text-[#1E1916]">
                   Mô tả SEO (140 – 160 ký tự)
@@ -392,9 +392,9 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
                   value={seoDescVi}
                   onChange={(e) => setSeoDescVi(e.target.value)}
                   aria-label="Mô tả SEO tiếng Việt"
-                  className="flex-1 px-3 py-2 rounded-lg bg-white border border-[#C9BBAE] text-xs text-[#1E1916] leading-relaxed"
+                  className="flex-1 px-3 py-2 rounded-lg bg-white border border-[#C9BBAE] text-xs text-[#1E1916] leading-relaxed shadow-inner"
                 />
-                <div className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#DCFCE7] border border-[#86EFAC] text-xs font-bold text-[#15803D]">
+                <div className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#DCFCE7] border border-[#86EFAC] text-xs font-bold text-[#15803D] shadow-xs">
                   {isSeoOptimal ? (
                     <>
                       <CheckCircle2 className="w-4 h-4 text-[#16A34A]" />
@@ -446,9 +446,9 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
               </div>
 
               {/* Storefront Card */}
-              <div className="bg-white rounded-2xl border border-[#DED4C8] p-4 shadow-sm space-y-3">
+              <div className="card-8d-light rounded-2xl border border-[#DED4C8] p-4 space-y-3">
                 {/* Main Carousel Image */}
-                <div className="relative h-52 rounded-xl bg-[#F4EFE6] border border-[#E5DEC9] overflow-hidden">
+                <div className="relative h-52 rounded-xl bg-[#F4EFE6] border border-[#E5DEC9] overflow-hidden shadow-inner">
                   <ProductVisualCanvas
                     sku={product.sku}
                     variant={previewSlides[previewSlideIndex].variant}
@@ -518,7 +518,7 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
                 <button
                   type="button"
                   onClick={() => handleSaveAndUpdate(true)}
-                  className="w-full py-2 rounded-xl bg-[#E04F44] hover:bg-[#C83E33] text-white text-xs font-bold shadow-xs transition-colors"
+                  className="w-full py-2 rounded-xl btn-8d-crimson text-white text-xs font-bold transition-all"
                 >
                   Thêm vào dự thảo
                 </button>
@@ -530,7 +530,7 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
               <button
                 type="button"
                 onClick={() => handleSaveAndUpdate(true)}
-                className="px-4 py-2 rounded-xl bg-white hover:bg-[#EFE8DE] text-[#3B302B] border border-[#C9BBAE] text-xs font-bold inline-flex items-center gap-1.5 transition-colors"
+                className="px-4 py-2 rounded-xl card-8d-interactive text-[#3B302B] border border-[#C9BBAE] text-xs font-bold inline-flex items-center gap-1.5"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>Lưu nháp</span>
@@ -539,7 +539,7 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
               <button
                 type="button"
                 onClick={() => handleSaveAndUpdate(false)}
-                className="px-5 py-2.5 rounded-xl bg-[#D9382C] hover:bg-[#B82D22] text-white text-xs sm:text-sm font-bold shadow-md inline-flex items-center gap-1.5 transition-colors"
+                className="px-5 py-2.5 rounded-xl btn-8d-crimson text-white text-xs sm:text-sm font-bold inline-flex items-center gap-1.5 transition-all"
               >
                 <Check className="w-4 h-4" />
                 <span>Cập nhật nội dung</span>

@@ -91,7 +91,7 @@ export const KnowledgeMemoryView: React.FC<KnowledgeMemoryViewProps> = ({
   return (
     <div className="p-3 lg:p-5 max-w-[1500px] mx-auto space-y-4">
       {/* Top Department Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#231D1A] border border-[#3E322C] rounded-2xl px-5 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 card-8d-dark border border-[#4E3E36] rounded-2xl px-5 py-3">
         <div className="flex items-center gap-3">
           <AgentRobotAvatar
             department={mode}
@@ -114,13 +114,13 @@ export const KnowledgeMemoryView: React.FC<KnowledgeMemoryViewProps> = ({
         </div>
 
         {/* Quick Switcher between Knowledge and Memory */}
-        <div className="inline-flex rounded-lg bg-[#14110F] p-1 border border-[#382E29] text-xs">
+        <div className="inline-flex rounded-xl card-8d-dark-recessed p-1 border border-[#3E322C] text-xs">
           <button
             type="button"
             onClick={() => onSwitchMode('knowledge')}
-            className={`px-3 py-1.5 rounded-md font-semibold transition-colors ${
+            className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
               mode === 'knowledge'
-                ? 'bg-[#D9382C] text-white'
+                ? 'btn-8d-crimson text-white'
                 : 'text-[#B8AAA0] hover:text-white'
             }`}
           >
@@ -129,9 +129,9 @@ export const KnowledgeMemoryView: React.FC<KnowledgeMemoryViewProps> = ({
           <button
             type="button"
             onClick={() => onSwitchMode('memory')}
-            className={`px-3 py-1.5 rounded-md font-semibold transition-colors ${
+            className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
               mode === 'memory'
-                ? 'bg-[#D9382C] text-white'
+                ? 'btn-8d-crimson text-white'
                 : 'text-[#B8AAA0] hover:text-white'
             }`}
           >
@@ -144,9 +144,9 @@ export const KnowledgeMemoryView: React.FC<KnowledgeMemoryViewProps> = ({
         /* =========================================================
            TAB 5: TRI THỨC (KNOWLEDGE) — STORYBOARD BOTTOM-CENTER
            ========================================================= */
-        <div className="bg-[#F6F1EA] text-[#1F1916] border border-[#D8CEC2] rounded-2xl shadow-xl overflow-hidden">
+        <div className="card-8d-ivory text-[#1F1916] border border-[#D8CEC2] rounded-2xl overflow-hidden">
           {/* Top Search & Upload Bar */}
-          <div className="p-4 bg-[#EFE8DE] border-b border-[#D8CEC2] flex flex-wrap items-center gap-2.5">
+          <div className="p-4 surface-8d-warm border-b border-[#D8CEC2] flex flex-wrap items-center gap-2.5">
             <div className="relative flex-1 min-w-[240px]">
               <Search className="w-4 h-4 text-[#786B62] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
@@ -155,14 +155,14 @@ export const KnowledgeMemoryView: React.FC<KnowledgeMemoryViewProps> = ({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Tìm kiếm tài liệu, tiêu chuẩn, quy trình... (ví dụ: ISO 13934-1, độ bền kéo)"
                 aria-label="Tìm kiếm tài liệu tri thức"
-                className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-[#C9BBAE] text-xs sm:text-sm text-[#1E1916]"
+                className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-[#C9BBAE] text-xs sm:text-sm text-[#1E1916] shadow-inner"
               />
             </div>
 
             <button
               type="button"
               onClick={() => setSearchQuery(searchQuery || 'ISO 13934-1')}
-              className="px-5 py-2 rounded-xl bg-[#D9382C] hover:bg-[#B82D22] text-white text-xs sm:text-sm font-bold shadow-xs transition-colors"
+              className="px-5 py-2 rounded-xl btn-8d-crimson text-white text-xs sm:text-sm font-bold transition-all"
             >
               Tìm kiếm
             </button>
@@ -174,7 +174,7 @@ export const KnowledgeMemoryView: React.FC<KnowledgeMemoryViewProps> = ({
                   'Đã tiếp nhận yêu cầu tải tài liệu mới vào thư mục Tiêu chuẩn quốc tế (Chế độ Demo).'
                 )
               }
-              className="px-4 py-2 rounded-xl bg-white hover:bg-[#FAF6F0] text-[#2B221E] border border-[#C9BBAE] text-xs sm:text-sm font-bold inline-flex items-center gap-1.5 transition-colors"
+              className="px-4 py-2 rounded-xl card-8d-interactive text-[#2B221E] border border-[#C9BBAE] text-xs sm:text-sm font-bold inline-flex items-center gap-1.5"
             >
               <Upload className="w-4 h-4 text-[#574B43]" />
               <span>Tải lên</span>
@@ -250,12 +250,12 @@ export const KnowledgeMemoryView: React.FC<KnowledgeMemoryViewProps> = ({
                   return (
                     <div
                       key={doc.id}
-                      className="bg-white rounded-2xl border border-[#DED4C8] p-4 shadow-xs space-y-3"
+                      className="card-8d-light rounded-2xl border border-[#DED4C8] p-4 space-y-3"
                     >
                       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
                         {/* Left 7 Cols: PDF Icon + Title + Metadata + Summary */}
                         <div className="md:col-span-7 flex items-start gap-3">
-                          <div className="w-10 h-11 rounded-lg bg-[#D9382C] text-white font-mono font-extrabold text-[11px] flex items-center justify-center shrink-0 shadow-xs">
+                          <div className="w-10 h-11 rounded-lg btn-8d-crimson text-white font-mono font-extrabold text-[11px] flex items-center justify-center shrink-0">
                             PDF
                           </div>
                           <div className="space-y-1 min-w-0">
@@ -272,7 +272,7 @@ export const KnowledgeMemoryView: React.FC<KnowledgeMemoryViewProps> = ({
                         </div>
 
                         {/* Right 5 Cols: Trích dẫn (Page Citations Box matching Storyboard) */}
-                        <div className="md:col-span-5 bg-[#FAF6F0] rounded-xl border border-[#E5DEC9] p-3 space-y-1.5">
+                        <div className="md:col-span-5 surface-8d-warm rounded-xl border border-[#E5DEC9] p-3 space-y-1.5">
                           <div className="flex items-center justify-between text-xs font-extrabold text-[#1E1916]">
                             <span>Trích dẫn</span>
                             <button
@@ -333,9 +333,9 @@ export const KnowledgeMemoryView: React.FC<KnowledgeMemoryViewProps> = ({
         /* =========================================================
            TAB 6: BỘ NHỚ (MEMORY) — STORYBOARD BOTTOM-RIGHT
            ========================================================= */
-        <div className="bg-[#F6F1EA] text-[#1F1916] border border-[#D8CEC2] rounded-2xl shadow-xl overflow-hidden">
+        <div className="card-8d-ivory text-[#1F1916] border border-[#D8CEC2] rounded-2xl overflow-hidden">
           {/* Top Sub-Tabs Bar */}
-          <div className="px-5 bg-[#EFE8DE] border-b border-[#D8CEC2] flex flex-wrap items-center gap-6">
+          <div className="px-5 surface-8d-warm border-b border-[#D8CEC2] flex flex-wrap items-center gap-6">
             {[
               { id: 'timeline', label: 'Lịch sử trao đổi' },
               { id: 'notes', label: 'Ghi chú tri thức' },
@@ -360,7 +360,7 @@ export const KnowledgeMemoryView: React.FC<KnowledgeMemoryViewProps> = ({
           {/* 2-COLUMN COMPREHENSIVE STORYBOARD BODY */}
           <div className="p-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
             {/* LEFT 5 COLS: Lịch sử trao đổi (Timeline Hôm nay & Hôm qua) */}
-            <div className="lg:col-span-5 bg-white rounded-2xl border border-[#DED4C8] p-4 space-y-4 shadow-xs">
+            <div className="lg:col-span-5 card-8d-light rounded-2xl border border-[#DED4C8] p-4 space-y-4">
               <div>
                 <h2 className="text-sm font-extrabold text-[#1E1916] border-b border-[#EFE8DE] pb-2">
                   Hôm nay, 15/01/2025
@@ -437,7 +437,7 @@ export const KnowledgeMemoryView: React.FC<KnowledgeMemoryViewProps> = ({
             {/* RIGHT 7 COLS: 3 STACKED CARDS (Ghi chú tri thức + Phiên bản chỉnh sửa + Trạng thái đồng bộ) */}
             <div className="lg:col-span-7 space-y-4">
               {/* CARD 1: Ghi chú tri thức (03026A) */}
-              <div className="bg-white rounded-2xl border border-[#DED4C8] p-4 space-y-3 shadow-xs">
+              <div className="card-8d-light rounded-2xl border border-[#DED4C8] p-4 space-y-3">
                 <div className="flex items-center justify-between border-b border-[#EFE8DE] pb-2.5">
                   <h2 className="text-sm font-extrabold text-[#1E1916]">
                     Ghi chú tri thức (03026A)
@@ -449,14 +449,14 @@ export const KnowledgeMemoryView: React.FC<KnowledgeMemoryViewProps> = ({
                         ? handleSaveKnowledgeNote()
                         : setIsEditingNote(true)
                     }
-                    className="px-3 py-1 rounded-lg bg-[#FAF6F0] hover:bg-[#EFE8DE] text-[#1E1916] border border-[#C9BBAE] text-xs font-bold inline-flex items-center gap-1"
+                    className="px-3 py-1 rounded-lg card-8d-interactive text-[#1E1916] border border-[#C9BBAE] text-xs font-bold inline-flex items-center gap-1"
                   >
                     <Edit3 className="w-3.5 h-3.5 text-[#D9382C]" />
                     <span>{isEditingNote ? 'Lưu ghi chú' : 'Sửa'}</span>
                   </button>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-[#FAF6F0] border border-[#E5DEC9] space-y-1.5">
+                <div className="p-3.5 rounded-xl surface-8d-warm border border-[#E5DEC9] space-y-1.5">
                   <div className="text-xs font-extrabold text-[#1E1916]">
                     Máy thử độ bền kéo vải 03026A:
                   </div>
@@ -466,7 +466,7 @@ export const KnowledgeMemoryView: React.FC<KnowledgeMemoryViewProps> = ({
                       value={knowledgeNoteText}
                       onChange={(e) => setKnowledgeNoteText(e.target.value)}
                       aria-label="Nội dung ghi chú tri thức"
-                      className="w-full p-2 rounded-lg bg-white border border-[#C9BBAE] text-xs text-[#1E1916]"
+                      className="w-full p-2 rounded-lg bg-white border border-[#C9BBAE] text-xs text-[#1E1916] shadow-inner"
                     />
                   ) : (
                     <div className="text-xs text-[#3B302B] whitespace-pre-line leading-relaxed">
@@ -477,7 +477,7 @@ export const KnowledgeMemoryView: React.FC<KnowledgeMemoryViewProps> = ({
               </div>
 
               {/* CARD 2: Phiên bản chỉnh sửa */}
-              <div className="bg-white rounded-2xl border border-[#DED4C8] p-4 space-y-3 shadow-xs">
+              <div className="card-8d-light rounded-2xl border border-[#DED4C8] p-4 space-y-3">
                 <h2 className="text-sm font-extrabold text-[#1E1916] border-b border-[#EFE8DE] pb-2">
                   Phiên bản chỉnh sửa
                 </h2>
@@ -538,7 +538,7 @@ export const KnowledgeMemoryView: React.FC<KnowledgeMemoryViewProps> = ({
               </div>
 
               {/* CARD 3: Trạng thái đồng bộ (Honest Multi-System Sync Status Table) */}
-              <div className="bg-white rounded-2xl border border-[#DED4C8] p-4 space-y-3 shadow-xs">
+              <div className="card-8d-light rounded-2xl border border-[#DED4C8] p-4 space-y-3">
                 <div className="flex items-center justify-between border-b border-[#EFE8DE] pb-2">
                   <h2 className="text-sm font-extrabold text-[#1E1916]">
                     Trạng thái đồng bộ

@@ -5,6 +5,7 @@ import {
   VerificationStatus,
 } from '../types/bisTypes';
 import { AgentRobotAvatar } from './AgentRobotAvatar';
+import { AuthenticatedStaffUser } from './LoginView';
 import {
   Briefcase,
   Bell,
@@ -14,15 +15,18 @@ import {
   Clock,
   SlidersHorizontal,
   Share2,
+  LogOut,
 } from 'lucide-react';
 
 interface ProductContextHeaderProps {
   products: ProductRecord[];
   activeProduct: ProductRecord;
   activeDepartment: DepartmentId;
+  currentUser: AuthenticatedStaffUser;
   onSelectProduct: (sku: string) => void;
   onNavigateDepartment: (dept: DepartmentId) => void;
   onOpenDesignRationale: () => void;
+  onLogout: () => void;
 }
 
 export function renderStatusLabel(status: VerificationStatus) {
@@ -69,13 +73,15 @@ export const ProductContextHeader: React.FC<ProductContextHeaderProps> = ({
   products,
   activeProduct,
   activeDepartment,
+  currentUser,
   onSelectProduct,
   onOpenDesignRationale,
+  onLogout,
 }) => {
   const statusInfo = renderStatusLabel(activeProduct.overallStatus);
 
   return (
-    <header className="bg-[#1C1715] border-b border-[#382E29] px-4 lg:px-6 py-2.5">
+    <header className="bg-gradient-to-b from-[#231C19] via-[#1C1614] to-[#171210] border-b border-[#3E322C] shadow-[inset_0_1px_0_rgba(255,248,235,0.08),0_8px_24px_-6px_rgba(0,0,0,0.65)] px-4 lg:px-6 py-2.5 relative z-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
         {/* Left: BIS TEXTILE AI · Department | Phiên làm việc · SKU Selector */}
         <div className="flex flex-wrap items-center gap-3 min-w-0">
@@ -91,7 +97,7 @@ export const ProductContextHeader: React.FC<ProductContextHeaderProps> = ({
           </span>
 
           {/* Active Session SKU Selector matching Image 1 & Image 2 */}
-          <div className="flex items-center gap-2 bg-[#261F1C] px-3 py-1 rounded-xl border border-[#433630]">
+          <div className="flex items-center gap-2 card-8d-dark-recessed px-3 py-1.5 rounded-xl border border-[#4A3B34]">
             <Briefcase className="w-3.5 h-3.5 text-[#D5C7BC] shrink-0" />
             <label
               htmlFor="sku-context-select"
@@ -123,15 +129,15 @@ export const ProductContextHeader: React.FC<ProductContextHeaderProps> = ({
           </span>
         </div>
 
-        {/* Right: Status Pill + Robot Assistant + Bell + Nguyễn Minh Anh Profile + Design Rationale */}
+        {/* Right: Status Pill + Robot Assistant + Bell + Operator Profile + Logout */}
         <div className="flex items-center gap-2.5">
           {/* Status Dropdown Pill ("● Đang biên tập") */}
-          <div className="px-3 py-1 rounded-full bg-[#2C231F] border border-[#4A3B34] flex items-center gap-2 text-xs font-semibold text-[#FAF6F0]">
+          <div className="px-3 py-1 rounded-full bg-gradient-to-b from-[#332924] to-[#241C19] border border-[#524139] shadow-[inset_0_1px_0_rgba(255,248,235,0.12),0_4px_10px_rgba(0,0,0,0.45)] flex items-center gap-2 text-xs font-semibold text-[#FAF6F0]">
             <span
               className={`w-2 h-2 rounded-full ${
                 activeProduct.overallStatus === 'approved'
-                  ? 'bg-[#22C55E]'
-                  : 'bg-[#E03B2F]'
+                  ? 'bg-[#22C55E] shadow-[0_0_6px_#22C55E]'
+                  : 'bg-[#E03B2F] shadow-[0_0_6px_#E03B2F]'
               }`}
             />
             <span>{statusInfo.text}</span>
@@ -152,31 +158,33 @@ export const ProductContextHeader: React.FC<ProductContextHeaderProps> = ({
             type="button"
             onClick={onOpenDesignRationale}
             aria-label="Thông báo & Phân tích thiết kế"
-            className="relative p-2 rounded-full bg-[#261F1C] hover:bg-[#332924] text-[#E5D9CE] border border-[#3E322C]"
+            className="relative p-2 rounded-full bg-gradient-to-b from-[#312722] to-[#221B18] hover:from-[#3D312B] hover:to-[#2B221E] text-[#E5D9CE] border border-[#4A3B34] shadow-[inset_0_1px_0_rgba(255,248,235,0.12),0_4px_10px_rgba(0,0,0,0.45)] transition-all"
           >
             <Bell className="w-4 h-4" />
             <span className="w-2 h-2 rounded-full bg-[#E03B2F] absolute top-1.5 right-1.5" />
           </button>
 
           {/* Operator Profile ("Nguyễn Minh Anh · BIS Textile") */}
-          <div className="hidden md:flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full bg-[#261F1C] border border-[#3E322C]">
-            <div className="w-6 h-6 rounded-full bg-[#4A3B34] text-[#FAF6F0] flex items-center justify-center">
+          <div className="hidden md:flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-gradient-to-b from-[#302621] to-[#211A17] border border-[#4A3B34] shadow-[inset_0_1px_0_rgba(255,248,235,0.12),0_4px_12px_rgba(0,0,0,0.45)]">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-b from-[#57463E] to-[#3B2F29] text-[#FAF6F0] flex items-center justify-center shadow-inner">
               <User className="w-3.5 h-3.5" />
             </div>
             <div className="text-left leading-tight">
               <div className="text-[11px] font-bold text-[#FAF6F0]">
-                Nguyễn Minh Anh
+                {currentUser.fullName}
               </div>
-              <div className="text-[10px] text-[#B8AAA0]">BIS Textile</div>
+              <div className="text-[10px] text-[#B8AAA0]">{currentUser.roleLabel}</div>
             </div>
           </div>
 
           <button
             type="button"
-            onClick={onOpenDesignRationale}
-            className="px-2.5 py-1.5 text-xs font-semibold text-[#FAF6F0] bg-[#2C231F] hover:bg-[#D9382C] border border-[#4A3B34] rounded-lg transition-colors whitespace-nowrap"
+            onClick={onLogout}
+            aria-label="Đăng xuất khỏi phiên làm việc"
+            className="px-2.5 py-1.5 text-xs font-semibold text-[#FAF6F0] bg-gradient-to-b from-[#332924] to-[#241C19] hover:from-[#E03B2F] hover:to-[#B82D22] border border-[#4A3B34] rounded-lg shadow-[inset_0_1px_0_rgba(255,248,235,0.12),0_4px_10px_rgba(0,0,0,0.4)] transition-all inline-flex items-center gap-1.5 whitespace-nowrap"
           >
-            Thiết kế &amp; Adapter
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Đăng xuất</span>
           </button>
         </div>
       </div>

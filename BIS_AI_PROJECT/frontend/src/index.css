@@ -51,12 +51,49 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Isometric Agent Floor Grid */
+/* UI/UX Pro Max Global Interaction & Accessibility Rules */
+button:not(:disabled),
+[role="button"]:not(:disabled),
+a[href],
+select:not(:disabled),
+summary {
+  cursor: pointer;
+}
+
+button:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #F59E0B;
+  outline-offset: 2px;
+}
+
+/* Physical Brushed-Metallic 3D Workspace Floor Grid */
 .agent-floor-grid {
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 32px 32px;
+  background-color: #161210;
+  background-image:
+    radial-gradient(110% 80% at 50% 0%, rgba(251, 191, 36, 0.065) 0%, rgba(217, 119, 6, 0.025) 45%, transparent 80%),
+    linear-gradient(to right, rgba(253, 230, 138, 0.085) 1px, rgba(12, 8, 6, 0.55) 2px, transparent 2px),
+    linear-gradient(to bottom, rgba(253, 230, 138, 0.085) 1px, rgba(12, 8, 6, 0.55) 2px, transparent 2px),
+    linear-gradient(to right, rgba(255, 245, 232, 0.028) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 245, 232, 0.028) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(42, 33, 29, 0.45) 0%, rgba(20, 15, 13, 0.75) 100%);
+  background-size:
+    100% 100%,
+    48px 48px,
+    48px 48px,
+    16px 16px,
+    16px 16px,
+    100% 100%;
+  background-position:
+    0 0,
+    0 0,
+    0 0,
+    0 0,
+    0 0,
+    0 0;
 }
 
 /* Studio Checkerboard for 1254x1254 Transparency Inspection */
@@ -69,6 +106,135 @@ body {
   background-size: 20px 20px;
   background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
   background-color: #14171E;
+}
+
+/* ============================================================================
+   8D-INSPIRED TACTILE DEPTH SYSTEM (Multi-Layered Drop Shadows & Gradients)
+   ============================================================================ */
+
+/* Dark Espresso & Anodized Bronze 8D Card (Command Center Panels & Headers) */
+.card-8d-dark {
+  background-image:
+    radial-gradient(120% 100% at 12% 0%, rgba(251, 191, 36, 0.07) 0%, rgba(224, 59, 47, 0.035) 45%, transparent 80%),
+    linear-gradient(165deg, #2B221E 0%, #221B18 52%, #191412 100%);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 248, 235, 0.14),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.5),
+    0 4px 10px -2px rgba(8, 5, 4, 0.48),
+    0 14px 28px -6px rgba(8, 5, 4, 0.64),
+    0 28px 56px -12px rgba(0, 0, 0, 0.74);
+}
+
+/* Recessed Dark Control Strip / Sub-Panel */
+.card-8d-dark-recessed {
+  background-image:
+    radial-gradient(90% 120% at 50% 0%, rgba(255, 245, 235, 0.04) 0%, transparent 75%),
+    linear-gradient(180deg, #171311 0%, #120E0D 100%);
+  box-shadow:
+    inset 0 2px 5px 0 rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
+    0 1px 0 0 rgba(255, 248, 235, 0.07);
+}
+
+/* 8D Stage Frame for 3D Viewport & Showcase */
+.frame-8d-stage {
+  background-image:
+    radial-gradient(110% 90% at 50% 0%, rgba(245, 158, 11, 0.09) 0%, transparent 70%),
+    linear-gradient(170deg, #281F1B 0%, #1D1613 60%, #15100E 100%);
+  box-shadow:
+    inset 0 1.5px 0 0 rgba(253, 230, 138, 0.22),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.6),
+    0 8px 18px -4px rgba(6, 4, 3, 0.55),
+    0 22px 48px -10px rgba(6, 4, 3, 0.72),
+    0 40px 80px -18px rgba(0, 0, 0, 0.85);
+}
+
+/* Warm Ivory 8D Primary Workspace Card */
+.card-8d-ivory {
+  background-image:
+    radial-gradient(120% 90% at 10% 0%, rgba(255, 255, 255, 0.75) 0%, transparent 65%),
+    linear-gradient(172deg, #FDFBF7 0%, #F6F1EA 55%, #EFE7DC 100%);
+  box-shadow:
+    inset 0 1.5px 0 0 rgba(255, 255, 255, 0.92),
+    inset 0 -1px 0 0 rgba(180, 160, 140, 0.26),
+    0 6px 14px -3px rgba(15, 10, 8, 0.36),
+    0 18px 38px -8px rgba(12, 8, 6, 0.54),
+    0 34px 68px -16px rgba(0, 0, 0, 0.68);
+}
+
+/* Porcelain White 8D Inner Card (Inside Ivory Workspaces & Meeting List) */
+.card-8d-light {
+  background-image:
+    linear-gradient(176deg, #FFFFFF 0%, #FCF9F4 62%, #F4EDE2 100%);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.96),
+    0 2px 5px -1px rgba(43, 34, 30, 0.07),
+    0 10px 22px -5px rgba(43, 34, 30, 0.12),
+    0 20px 38px -12px rgba(43, 34, 30, 0.14);
+}
+
+/* Interactive Tactile 8D Card (Meeting Items, Candidate Cards, Spec Boxes) */
+.card-8d-interactive {
+  background-image:
+    linear-gradient(174deg, #FFFDF9 0%, #F6EFE6 65%, #EDE3D5 100%);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 0 rgba(196, 179, 162, 0.32),
+    0 3px 7px -2px rgba(24, 17, 14, 0.16),
+    0 10px 22px -5px rgba(24, 17, 14, 0.24),
+    0 18px 36px -10px rgba(15, 10, 8, 0.22);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease;
+}
+
+.card-8d-interactive:hover {
+  transform: translateY(-1.5px);
+  background-image:
+    linear-gradient(174deg, #FFFFFF 0%, #FAF5ED 65%, #F2E9DC 100%);
+  box-shadow:
+    inset 0 1.5px 0 0 #FFFFFF,
+    0 6px 12px -2px rgba(24, 17, 14, 0.22),
+    0 16px 32px -6px rgba(24, 17, 14, 0.32),
+    0 26px 48px -12px rgba(15, 10, 8, 0.28);
+}
+
+/* Warm Cream 8D Sub-Surface (Citation Boxes, SEO Counters, Sub-Headers) */
+.surface-8d-warm {
+  background-image:
+    linear-gradient(175deg, #F5EFE6 0%, #EDE4D7 100%);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.72),
+    0 2px 6px -1px rgba(43, 34, 30, 0.08),
+    0 6px 14px -4px rgba(43, 34, 30, 0.1);
+}
+
+/* Bottom Persistent Dock 8D Surface */
+.dock-8d-ivory {
+  background-image:
+    linear-gradient(180deg, #FAF5EE 0%, #F2EAE0 55%, #E8DFD1 100%);
+  box-shadow:
+    inset 0 1.5px 0 0 rgba(255, 255, 255, 0.9),
+    0 -6px 20px -4px rgba(10, 7, 5, 0.38),
+    0 -16px 40px -8px rgba(0, 0, 0, 0.45);
+}
+
+/* Crimson Primary 8D CTA Button */
+.btn-8d-crimson {
+  background-image:
+    linear-gradient(170deg, #EE463A 0%, #D9382C 52%, #B5281E 100%);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 0 rgba(80, 12, 8, 0.45),
+    0 4px 10px -2px rgba(217, 56, 44, 0.45),
+    0 10px 22px -4px rgba(18, 10, 8, 0.5);
+}
+
+.btn-8d-crimson:hover {
+  background-image:
+    linear-gradient(170deg, #F45246 0%, #E03B2F 52%, #C22C21 100%);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.45),
+    0 6px 14px -2px rgba(217, 56, 44, 0.58),
+    0 14px 28px -6px rgba(18, 10, 8, 0.6);
 }
 
 /* Reduced Motion Compliance */
@@ -86,3 +252,4 @@ body {
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
 }
+

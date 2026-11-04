@@ -11,6 +11,15 @@ import {
   triggerActorJump,
   stepActorPhysics,
   findNearestAgentToPosition,
+  setCommanderWalkTarget,
+  rallyAllAgentsToTable,
+  isPointInsideObstacle,
+  resolvePositionAgainstObstacles,
+  stepActorMovementWithCollision,
+  resolveActorToActorCollisions,
+  getFloorElevationAt,
+  CONFERENCE_TABLE_SPEC,
+  getConferenceTableSeats,
 } from './agentOfficeSim';
 import { INITIAL_PRODUCTS } from '../data/mockBisData';
 
@@ -95,7 +104,7 @@ test('evaluateHaravanDraftReadiness blocks Haravan draft until human approves 12
   assert.equal(approvedReadiness.blockingReasons.length, 0);
 });
 
-test('3D agent office jump physics and nearest neighbor detection work accurately', () => {
+test('3D agent office walk target, rally to table, jump physics, floor elevation, and nearest neighbor detection work accurately', () => {
   const actors = createInitialAgentActors();
   assert.equal(actors.length, 7);
 
@@ -116,6 +125,117 @@ test('3D agent office jump physics and nearest neighbor detection work accuratel
   assert.equal(commander.pos.y, 0);
   assert.equal(commander.isJumping, false);
 
-  const nearestCheck = findNearestAgentToPosition({ x: 9.0, z: -5.0 }, actors);
+  // Verify floor elevation helper never returns negative height
+  assert.ok(getFloorElevationAt(0, -0.2) >= 0.02);
+  assert.equal(getFloorElevationAt(7.0, 0.8), 0);
+
+  const walkedActors = setCommanderWalkTarget(actors, 5.5, 0.8, true);
+  assert.deepEqual(walkedActors[0].customTargetPos, { x: 5.5, z: 0.8 });
+  assert.equal(walkedActors[0].isRunning, true);
+
+  const ralliedActors = rallyAllAgentsToTable(actors, '03026A');
+  assert.equal(ralliedActors.every((a) => a.isTalking && a.customTargetPos !== null), true);
+  for (const r of ralliedActors) {
+    assert.equal(
+      isPointInsideObstacle(r.customTargetPos!.x, r.customTargetPos!.z, 0.55),
+      false,
+      `Rally target for ${r.id} must be outside all obstacles`
+    );
+  }
+
+  const nearestCheck = findNearestAgentToPosition({ x: 5.6, z: 0.8 }, actors);
   assert.equal(nearestCheck.nearest?.id, 'imagestudio');
 });
+
+test('3D collision avoidance prevents robots from walking through tables, desks, or each other', () => {
+  const actors = createInitialAgentActors();
+
+  // Every initial robot position and waypoint must be outside all furniture obstacles
+  for (const actor of actors) {
+    assert.equal(
+      isPointInsideObstacle(actor.pos.x, actor.pos.z, 0.55),
+      false,
+      `Initial pos for ${actor.id} should not intersect any obstacle`
+    );
+    for (const wp of actor.waypoints) {
+      assert.equal(
+        isPointInsideObstacle(wp.x, wp.z, 0.55),
+        false,
+        `Waypoint (${wp.x}, ${wp.z}) for ${actor.id} should not intersect any obstacle`
+      );
+    }
+  }
+
+  // Center of oval conference table (0, -0.2) is inside obstacle and gets pushed outside
+  assert.equal(isPointInsideObstacle(0, -0.2, 0.55), true);
+  const resolvedTableClick = resolvePositionAgainstObstacles(0, -0.2, 0.58);
+  assert.equal(resolvedTableClick.collided, true);
+  assert.equal(isPointInsideObstacle(resolvedTableClick.x, resolvedTableClick.z, 0.55), false);
+
+  // Moving straight toward the central table from (0, -3.85) toward (0, 3.8) steers tangentially outside the table
+  let cx = 0;
+  let cz = -3.85;
+  for (let step = 0; step < 60; step++) {
+    const dx = 0 - cx;
+    const dz = 3.8 - cz;
+    const len = Math.hypot(dx, dz) || 1;
+    const moved = stepActorMovementWithCollision(cx, cz, dx / len, dz / len, 4.5, 0.05, 0.55);
+    cx = moved.x;
+    cz = moved.z;
+    assert.equal(
+      isPointInsideObstacle(cx, cz, 0.5),
+      false,
+      `Step ${step}: robot at (${cx.toFixed(2)}, ${cz.toFixed(2)}) must never enter the table`
+    );
+  }
+
+  // Overlapping robots are pushed apart by resolveActorToActorCollisions
+  const overlapping = actors.map((a, idx) =>
+    idx < 2 ? { ...a, pos: { x: 5.5 + idx * 0.1, y: 0, z: 0.8 } } : a
+  );
+  const separated = resolveActorToActorCollisions(overlapping, 1.25);
+  const sepDist = Math.hypot(
+    separated[1].pos.x - separated[0].pos.x,
+    separated[1].pos.z - separated[0].pos.z
+  );
+  assert.ok(sepDist >= 1.2, `Expected separated distance >= 1.2, got ${sepDist}`);
+});
+
+test('Conference table chairs and seated robots are strictly outside the oval tabletop rim (zero table clipping)', () => {
+  const seats = getConferenceTableSeats(CONFERENCE_TABLE_SPEC, 0.58);
+  assert.equal(seats.length, 5);
+
+  const ellipseValue = (x: number, z: number) => {
+    const nx = (x - CONFERENCE_TABLE_SPEC.centerX) / CONFERENCE_TABLE_SPEC.rx;
+    const nz = (z - CONFERENCE_TABLE_SPEC.centerZ) / CONFERENCE_TABLE_SPEC.rz;
+    return nx * nx + nz * nz;
+  };
+
+  for (const seat of seats) {
+    // 1. Chair center must be strictly outside the oval tabletop (ellipseValue > 1.25)
+    const chairEv = ellipseValue(seat.chairX, seat.chairZ);
+    assert.ok(
+      chairEv > 1.25,
+      `Chair ${seat.id} at (${seat.chairX.toFixed(2)}, ${seat.chairZ.toFixed(2)}) must be outside table (got ${chairEv.toFixed(3)})`
+    );
+
+    // 2. Seated robot's forward-most knee/boot (+0.27 * 0.80 = 0.216m inward along chairRotY) must also be strictly outside the tabletop!
+    const forwardX = seat.chairX + Math.sin(seat.chairRotY) * (0.27 * 0.8);
+    const forwardZ = seat.chairZ + Math.cos(seat.chairRotY) * (0.27 * 0.8);
+    const kneeEv = ellipseValue(forwardX, forwardZ);
+    assert.ok(
+      kneeEv > 1.08,
+      `Seated robot knee/boot at ${seat.id} must not clip into conference table (got ${kneeEv.toFixed(3)})`
+    );
+
+    // 3. Corresponding laptop must sit cleanly inside the oval tabletop (ellipseValue < 0.85)
+    const laptopEv = ellipseValue(seat.laptopX, seat.laptopZ);
+    assert.ok(
+      laptopEv < 0.85,
+      `Laptop at ${seat.id} must sit inside the conference tabletop (got ${laptopEv.toFixed(3)})`
+    );
+  }
+});
+
+
+

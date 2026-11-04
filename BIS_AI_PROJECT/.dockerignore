@@ -1,0 +1,16 @@
+*
+!Dockerfile
+!bis_api.py
+!persistent_memory.py
+!product_quality.py
+!media_quality.py
+!quality_jobs.py
+!sheets_manager.py
+!deployment/
+!deployment/config.py
+!frontend/
+!frontend/**
+frontend/node_modules
+frontend/dist
+frontend/.env*
+frontend/public/**/*.mp4

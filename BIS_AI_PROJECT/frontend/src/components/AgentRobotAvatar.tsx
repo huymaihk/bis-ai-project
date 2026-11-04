@@ -17,77 +17,53 @@ interface AgentRobotAvatarProps {
 const DEPT_PALETTES: Record<
   DepartmentId,
   {
-    primary: string;
-    highlight: string;
-    midtone: string;
-    shadow: string;
-    rimLight: string;
+    accentColor: string;
+    earCupColor: string;
     eyeColor: string;
     visorBorder: string;
   }
 > = {
   overview: {
-    primary: '#E11D48',
-    highlight: '#FFE4E6',
-    midtone: '#F43F5E',
-    shadow: '#4C0519',
-    rimLight: '#FB7185',
-    eyeColor: '#FFFFFF',
-    visorBorder: '#FDA4AF',
+    accentColor: '#D9382C',
+    earCupColor: '#B91C1C',
+    eyeColor: '#FF9E44',
+    visorBorder: '#D4B89E',
   },
   technical: {
-    primary: '#F59E0B',
-    highlight: '#FEF3C7',
-    midtone: '#FBBF24',
-    shadow: '#451A03',
-    rimLight: '#FDE68A',
-    eyeColor: '#FEF08A',
-    visorBorder: '#FBBF24',
-  },
-  marketing: {
-    primary: '#E2E8F0',
-    highlight: '#FFFFFF',
-    midtone: '#94A3B8',
-    shadow: '#1E293B',
-    rimLight: '#F8FAFC',
-    eyeColor: '#38BDF8',
-    visorBorder: '#CBD5E1',
-  },
-  imagestudio: {
-    primary: '#0EA5E9',
-    highlight: '#E0F2FE',
-    midtone: '#38BDF8',
-    shadow: '#082F49',
-    rimLight: '#7DD3FC',
-    eyeColor: '#7DD3FC',
+    accentColor: '#0EA5E9',
+    earCupColor: '#0284C7',
+    eyeColor: '#67E8F9',
     visorBorder: '#38BDF8',
   },
-  operations: {
-    primary: '#EF4444',
-    highlight: '#FEE2E2',
-    midtone: '#F87171',
-    shadow: '#450A0A',
-    rimLight: '#FCA5A5',
-    eyeColor: '#FECACA',
+  marketing: {
+    accentColor: '#B91C1C',
+    earCupColor: '#991B1B',
+    eyeColor: '#FF9E44',
+    visorBorder: '#E5B49A',
+  },
+  imagestudio: {
+    accentColor: '#E03B2F',
+    earCupColor: '#B91C1C',
+    eyeColor: '#FF9E44',
     visorBorder: '#F87171',
   },
+  operations: {
+    accentColor: '#10B981',
+    earCupColor: '#B91C1C',
+    eyeColor: '#67E8F9',
+    visorBorder: '#6EE7B7',
+  },
   knowledge: {
-    primary: '#10B981',
-    highlight: '#D1FAE5',
-    midtone: '#34D399',
-    shadow: '#022C22',
-    rimLight: '#6EE7B7',
-    eyeColor: '#A7F3D0',
-    visorBorder: '#34D399',
+    accentColor: '#D97706',
+    earCupColor: '#92400E',
+    eyeColor: '#FF9E44',
+    visorBorder: '#F59E0B',
   },
   memory: {
-    primary: '#A855F7',
-    highlight: '#F3E8FF',
-    midtone: '#C084FC',
-    shadow: '#3B0764',
-    rimLight: '#D8B4FE',
-    eyeColor: '#E9D5FF',
-    visorBorder: '#C084FC',
+    accentColor: '#F59E0B',
+    earCupColor: '#B45309',
+    eyeColor: '#FF9E44',
+    visorBorder: '#FBBF24',
   },
 };
 
@@ -97,16 +73,16 @@ export const AgentRobotAvatar: React.FC<AgentRobotAvatarProps> = ({
   isActive = false,
   hasAlert = false,
   reduceMotion = false,
-  showDesk = false,
   eyeStyle = 'rounded',
   finishPreset = 'anodized-metal',
 }) => {
-  const palette = DEPT_PALETTES[department] || DEPT_PALETTES.technical;
+  const palette = DEPT_PALETTES[department] || DEPT_PALETTES.overview;
   const uid = React.useId().replace(/:/g, '');
-  const bodyGradId = `robot3d-body-${uid}`;
-  const headGradId = `robot3d-head-${uid}`;
-  const clearcoatId = `robot3d-coat-${uid}`;
-  const visorGlowId = `robot3d-visor-${uid}`;
+  const bodyGradId = `bisrobot-body-${uid}`;
+  const headGradId = `bisrobot-head-${uid}`;
+  const chromeGradId = `bisrobot-chrome-${uid}`;
+  const gunmetalGradId = `bisrobot-gunmetal-${uid}`;
+  const visorGlowId = `bisrobot-visor-${uid}`;
 
   const dimensions =
     size === 'sm'
@@ -119,8 +95,8 @@ export const AgentRobotAvatar: React.FC<AgentRobotAvatarProps> = ({
     finishPreset === 'mirror-chrome'
       ? 0.95
       : finishPreset === 'matte-ceramic'
-      ? 0.35
-      : 0.78;
+      ? 0.45
+      : 0.85;
 
   const activeEyeColor = hasAlert ? '#FBBF24' : palette.eyeColor;
 
@@ -134,209 +110,312 @@ export const AgentRobotAvatar: React.FC<AgentRobotAvatarProps> = ({
       aria-hidden="true"
     >
       <svg
-        viewBox="0 0 110 116"
+        viewBox="0 0 110 118"
         className="w-full h-full overflow-visible"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          {/* 3D Spherical/Anodized Metallic Gradient for Helmet */}
-          <radialGradient id={headGradId} cx="32%" cy="24%" r="72%">
-            <stop offset="0%" stopColor={palette.highlight} />
-            <stop offset="28%" stopColor={palette.midtone} />
-            <stop offset="68%" stopColor={palette.primary} />
-            <stop offset="100%" stopColor={palette.shadow} />
-          </radialGradient>
-
-          {/* 3D Torso Metallic Gradient */}
-          <linearGradient id={bodyGradId} x1="18%" y1="8%" x2="84%" y2="94%">
-            <stop offset="0%" stopColor={palette.highlight} />
-            <stop offset="35%" stopColor={palette.primary} />
-            <stop offset="100%" stopColor={palette.shadow} />
+          {/* Brushed Titanium-Alloy Metallic Helmet Gradient */}
+          <linearGradient id={headGradId} x1="12%" y1="8%" x2="88%" y2="92%">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="22%" stopColor="#E6E1DA" />
+            <stop offset="52%" stopColor="#C4B8AC" />
+            <stop offset="78%" stopColor="#8B7C70" />
+            <stop offset="100%" stopColor="#4A3F37" />
           </linearGradient>
 
-          {/* Glossy Clearcoat Studio Softbox Highlight */}
-          <linearGradient id={clearcoatId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop
-              offset="0%"
-              stopColor="#FFFFFF"
-              stopOpacity={specularOpacity}
-            />
-            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+          {/* Machined Titanium Torso Armor Gradient */}
+          <linearGradient id={bodyGradId} x1="15%" y1="5%" x2="85%" y2="95%">
+            <stop offset="0%" stopColor="#F8F6F2" />
+            <stop offset="30%" stopColor="#D6CCC0" />
+            <stop offset="68%" stopColor="#9C8D7E" />
+            <stop offset="100%" stopColor="#52453C" />
           </linearGradient>
 
-          {/* Visor Inner Glow */}
-          <radialGradient id={visorGlowId} cx="50%" cy="50%" r="55%">
-            <stop offset="0%" stopColor="#1E293B" />
-            <stop offset="100%" stopColor="#05070B" />
+          {/* Mirror-Chrome Hydraulic Joint Gradient */}
+          <linearGradient id={chromeGradId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="40%" stopColor="#CBD5E1" />
+            <stop offset="65%" stopColor="#475569" />
+            <stop offset="100%" stopColor="#F1F5F9" />
+          </linearGradient>
+
+          {/* CNC Dark Gunmetal Endoskeleton Gradient */}
+          <linearGradient id={gunmetalGradId} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#475569" />
+            <stop offset="50%" stopColor="#1E293B" />
+            <stop offset="100%" stopColor="#0F172A" />
+          </linearGradient>
+
+          {/* Deep Optical Smoked Glass Visor */}
+          <radialGradient id={visorGlowId} cx="50%" cy="50%" r="58%">
+            <stop offset="0%" stopColor="#1F1916" />
+            <stop offset="100%" stopColor="#080605" />
           </radialGradient>
         </defs>
 
         {/* Ground Contact Shadow */}
         <ellipse
           cx="55"
-          cy="106"
+          cy="109"
           rx="32"
-          ry="7"
+          ry="5.5"
           fill="#000000"
-          fillOpacity="0.65"
+          fillOpacity="0.58"
         />
-        {isActive && (
-          <ellipse
-            cx="55"
-            cy="106"
-            rx="26"
-            ry="4.5"
-            fill={palette.primary}
-            fillOpacity="0.35"
-          />
-        )}
 
-        {/* Articulated Left & Right Feet / Legs */}
+        {/* Articulated Gunmetal Hip Pistons & Magnetic-Clamp Metallic Boots */}
         <rect
-          x="37"
-          y="86"
-          width="14"
-          height="16"
-          rx="7"
+          x="39"
+          y="85"
+          width="9"
+          height="10"
+          rx="2"
+          fill={`url(#${gunmetalGradId})`}
+          stroke="#94A3B8"
+          strokeWidth="0.9"
+        />
+        <rect
+          x="62"
+          y="85"
+          width="9"
+          height="10"
+          rx="2"
+          fill={`url(#${gunmetalGradId})`}
+          stroke="#94A3B8"
+          strokeWidth="0.9"
+        />
+        <rect
+          x="35"
+          y="93"
+          width="16"
+          height="13"
+          rx="4"
           fill={`url(#${bodyGradId})`}
-          stroke="#090B10"
+          stroke="#27201C"
           strokeWidth="1.5"
         />
         <rect
           x="59"
-          y="86"
-          width="14"
-          height="16"
-          rx="7"
+          y="93"
+          width="16"
+          height="13"
+          rx="4"
           fill={`url(#${bodyGradId})`}
-          stroke="#090B10"
+          stroke="#27201C"
           strokeWidth="1.5"
         />
+        {/* Crimson Anodized Boot Toe Caps */}
+        <rect x="37" y="101" width="12" height="4" rx="1.5" fill={palette.accentColor} />
+        <rect x="61" y="101" width="12" height="4" rx="1.5" fill={palette.accentColor} />
 
-        {/* Articulated Rounded Arms (Chubby SAMS 3D Proportions) */}
+        {/* Gunmetal Ribbed Neck & Waist Spine */}
         <rect
-          x="16"
-          y="58"
-          width="13"
-          height="26"
-          rx="6.5"
-          transform="rotate(8 22 70)"
-          fill={`url(#${bodyGradId})`}
-          stroke="#090B10"
-          strokeWidth="1.5"
-        />
-        <rect
-          x="81"
-          y="58"
-          width="13"
-          height="26"
-          rx="6.5"
-          transform="rotate(-8 87 70)"
-          fill={`url(#${bodyGradId})`}
-          stroke="#090B10"
-          strokeWidth="1.5"
+          x="45"
+          y="53"
+          width="20"
+          height="9"
+          rx="3"
+          fill={`url(#${gunmetalGradId})`}
+          stroke="#94A3B8"
+          strokeWidth="1"
         />
 
-        {/* Chubby 3D Torso */}
-        <rect
-          x="28"
-          y="54"
-          width="54"
-          height="38"
-          rx="18"
-          fill={`url(#${bodyGradId})`}
-          stroke="#090B10"
-          strokeWidth="1.6"
-        />
-        {/* Torso Clearcoat Top Reflection */}
-        <ellipse
-          cx="55"
-          cy="61"
-          rx="20"
-          ry="6"
-          fill={`url(#${clearcoatId})`}
-        />
-
-        {/* Chest Core Telemetry Pill */}
-        <rect
-          x="44"
-          y="68"
-          width="22"
-          height="10"
-          rx="5"
-          fill="#07090E"
-          stroke={palette.visorBorder}
+        {/* Articulated Shoulder Ball-Joints & Metallic Arms */}
+        <circle
+          cx="25"
+          cy="64"
+          r="6"
+          fill={`url(#${chromeGradId})`}
+          stroke="#1E293B"
           strokeWidth="1.2"
         />
-        <circle cx="50" cy="73" r="2" fill={activeEyeColor} />
+        <circle
+          cx="85"
+          cy="64"
+          r="6"
+          fill={`url(#${chromeGradId})`}
+          stroke="#1E293B"
+          strokeWidth="1.2"
+        />
         <rect
-          x="55"
-          y="71.5"
-          width="7"
-          height="3"
-          rx="1.5"
-          fill={palette.primary}
+          x="15"
+          y="63"
+          width="12"
+          height="23"
+          rx="5"
+          transform="rotate(7 21 73)"
+          fill={`url(#${bodyGradId})`}
+          stroke="#27201C"
+          strokeWidth="1.5"
+        />
+        <rect
+          x="83"
+          y="63"
+          width="12"
+          height="23"
+          rx="5"
+          transform="rotate(-7 89 73)"
+          fill={`url(#${bodyGradId})`}
+          stroke="#27201C"
+          strokeWidth="1.5"
         />
 
-        {/* 3D SAMS-Style Rounded Squircle Helmet Head */}
+        {/* CNC-Machined Titanium Chest Cuirass */}
         <rect
-          x="20"
-          y="10"
-          width="70"
-          height="50"
-          rx="20"
+          x="28"
+          y="58"
+          width="54"
+          height="32"
+          rx="11"
+          fill={`url(#${bodyGradId})`}
+          stroke="#27201C"
+          strokeWidth="1.6"
+        />
+        {/* Metallic Chest Panel Seam & Specular Bevel */}
+        <rect
+          x="33"
+          y="62"
+          width="44"
+          height="24"
+          rx="7"
+          fill="none"
+          stroke="#FFFFFF"
+          strokeOpacity="0.45"
+          strokeWidth="1"
+        />
+
+        {/* Anodized Department Chest V-Trim & Core */}
+        <path
+          d="M 39 60 L 55 74 L 71 60"
+          stroke={palette.accentColor}
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <circle
+          cx="55"
+          cy="79"
+          r="4.5"
+          fill={activeEyeColor}
+          stroke={`url(#${chromeGradId})`}
+          strokeWidth="1.5"
+        />
+
+        {/* Acoustic Side Servo Ear-Pods with Chrome Bezels */}
+        <rect
+          x="12"
+          y="26"
+          width="9"
+          height="21"
+          rx="4"
+          fill={palette.earCupColor}
+          stroke={`url(#${chromeGradId})`}
+          strokeWidth="1.5"
+        />
+        <rect
+          x="89"
+          y="26"
+          width="9"
+          height="21"
+          rx="4"
+          fill={palette.earCupColor}
+          stroke={`url(#${chromeGradId})`}
+          strokeWidth="1.5"
+        />
+
+        {/* Image Studio Red Headphone Arc */}
+        {department === 'imagestudio' && (
+          <path
+            d="M 17 29 C 17 3, 93 3, 93 29"
+            stroke="#D9382C"
+            strokeWidth="4.5"
+            strokeLinecap="round"
+            fill="none"
+          />
+        )}
+
+        {/* Chamfered Brushed-Titanium Helmet Shell */}
+        <rect
+          x="19"
+          y="11"
+          width="72"
+          height="48"
+          rx="18"
           fill={`url(#${headGradId})`}
-          stroke={isActive ? '#FFFFFF' : '#090B10'}
+          stroke={isActive ? '#F59E0B' : '#27201C'}
           strokeWidth={isActive ? '2.2' : '1.6'}
         />
 
-        {/* Studio Softbox Clearcoat Highlight on Crown */}
-        <path
-          d="M 33 15 Q 55 11 77 15 Q 68 23 42 23 Z"
-          fill={`url(#${clearcoatId})`}
+        {/* Machined Panel Seam Lines & Hex Rivets on Helmet */}
+        <line
+          x1="32"
+          y1="12"
+          x2="36"
+          y2="22"
+          stroke="#3E332B"
+          strokeOpacity="0.55"
+          strokeWidth="1.1"
         />
+        <line
+          x1="78"
+          y1="12"
+          x2="74"
+          y2="22"
+          stroke="#3E332B"
+          strokeOpacity="0.55"
+          strokeWidth="1.1"
+        />
+        <circle cx="26" cy="19" r="1.4" fill="#475569" />
+        <circle cx="84" cy="19" r="1.4" fill="#475569" />
+
+        {/* Anisotropic Metallic Crown Specular Highlight */}
         <ellipse
-          cx="36"
-          cy="20"
-          rx="12"
-          ry="4.5"
-          transform="rotate(-12 36 20)"
+          cx="44"
+          cy="17.5"
+          rx="16"
+          ry="3.5"
           fill="#FFFFFF"
-          fillOpacity={specularOpacity * 0.75}
+          fillOpacity={specularOpacity}
         />
 
-        {/* Recessed Black Glass Visor */}
+        {/* Red Anodized "BIS" Forehead Badge */}
         <rect
-          x="28"
-          y="21"
-          width="54"
+          x="44"
+          y="14.5"
+          width="22"
+          height="5.5"
+          rx="2.5"
+          fill="#D9382C"
+          stroke="#FDE68A"
+          strokeWidth="0.7"
+        />
+
+        {/* Recessed Smoked Optical Visor with Chrome Outer Bezel */}
+        <rect
+          x="25.5"
+          y="22"
+          width="59"
           height="30"
           rx="12"
           fill={`url(#${visorGlowId})`}
-          stroke={palette.visorBorder}
-          strokeWidth="1.6"
+          stroke={`url(#${chromeGradId})`}
+          strokeWidth="2.2"
         />
 
-        {/* Visor Diagonal Glass Sheen */}
-        <path
-          d="M 33 24 L 58 24 L 46 47 L 31 47 Z"
-          fill="#FFFFFF"
-          fillOpacity="0.09"
-        />
-
-        {/* Expressive Luminous Eyes (Supports Rounded, Focused, Happy, Wink) */}
+        {/* Precision Optical LED Eye Lenses with Metallic Aperture Rings */}
         {eyeStyle === 'happy' ? (
           <>
             <path
-              d="M 37 38 Q 43 29 49 38"
+              d="M 36 39 Q 42 30 48 39"
               stroke={activeEyeColor}
               strokeWidth="4"
               strokeLinecap="round"
               fill="none"
             />
             <path
-              d="M 61 38 Q 67 29 73 38"
+              d="M 62 39 Q 68 30 74 39"
               stroke={activeEyeColor}
               strokeWidth="4"
               strokeLinecap="round"
@@ -346,35 +425,40 @@ export const AgentRobotAvatar: React.FC<AgentRobotAvatarProps> = ({
         ) : eyeStyle === 'focused' ? (
           <>
             <rect
-              x="36"
-              y="32"
-              width="13"
-              height="7"
-              rx="3"
+              x="35"
+              y="33.5"
+              width="14"
+              height="7.5"
+              rx="3.5"
               fill={activeEyeColor}
+              stroke="#FFFFFF"
+              strokeWidth="0.8"
             />
             <rect
               x="61"
-              y="32"
-              width="13"
-              height="7"
-              rx="3"
+              y="33.5"
+              width="14"
+              height="7.5"
+              rx="3.5"
               fill={activeEyeColor}
+              stroke="#FFFFFF"
+              strokeWidth="0.8"
             />
           </>
         ) : eyeStyle === 'wink' ? (
           <>
-            <rect
-              x="37"
-              y="29"
-              width="11"
-              height="14"
-              rx="5.5"
-              fill={activeEyeColor}
+            <circle
+              cx="42"
+              cy="37"
+              r="7.5"
+              fill="none"
+              stroke="#64748B"
+              strokeWidth="1.4"
             />
-            <circle cx="40.5" cy="33" r="2" fill="#FFFFFF" />
+            <circle cx="42" cy="37" r="6" fill={activeEyeColor} />
+            <circle cx="40" cy="35" r="2" fill="#FFFFFF" />
             <path
-              d="M 61 36 Q 67 30 73 36"
+              d="M 62 37 Q 68 31 74 37"
               stroke={activeEyeColor}
               strokeWidth="3.5"
               strokeLinecap="round"
@@ -383,47 +467,89 @@ export const AgentRobotAvatar: React.FC<AgentRobotAvatarProps> = ({
           </>
         ) : (
           <>
-            <rect
-              x="37"
-              y="29"
-              width="11"
-              height="14"
-              rx="5.5"
-              fill={activeEyeColor}
+            <circle
+              cx="42"
+              cy="37"
+              r="7.8"
+              fill="none"
+              stroke="#64748B"
+              strokeWidth="1.4"
             />
-            <rect
-              x="62"
-              y="29"
-              width="11"
-              height="14"
-              rx="5.5"
-              fill={activeEyeColor}
+            <circle
+              cx="68"
+              cy="37"
+              r="7.8"
+              fill="none"
+              stroke="#64748B"
+              strokeWidth="1.4"
             />
-            <circle cx="40.5" cy="33" r="2" fill="#FFFFFF" />
-            <circle cx="65.5" cy="33" r="2" fill="#FFFFFF" />
+            <circle cx="42" cy="37" r="6" fill={activeEyeColor} />
+            <circle cx="68" cy="37" r="6" fill={activeEyeColor} />
+            <circle cx="40" cy="34.8" r="2" fill="#FFFFFF" />
+            <circle cx="66" cy="34.8" r="2" fill="#FFFFFF" />
           </>
         )}
 
-        {/* Optional Workstation Holo-Desk */}
-        {showDesk && (
-          <g>
-            <path
-              d="M 16 95 L 55 87 L 94 95 L 55 103 Z"
-              fill="#181C26"
-              stroke={palette.primary}
-              strokeWidth="1.4"
+        {/* Role Accessories: Marketing Red Beret, Knowledge Graduation Cap & Gold Glasses, Operations Cap */}
+        {department === 'marketing' && (
+          <path
+            d="M 24 16 C 26 3, 70 3, 78 14 C 62 11, 36 12, 24 16 Z"
+            fill="#B91C1C"
+            stroke="#FDE68A"
+            strokeWidth="1.1"
+          />
+        )}
+
+        {department === 'knowledge' && (
+          <>
+            <polygon
+              points="55,1 90,10 55,18 20,10"
+              fill="#1E293B"
+              stroke="#F59E0B"
+              strokeWidth="1.3"
             />
-            <rect
-              x="41"
-              y="81"
-              width="28"
-              height="12"
-              rx="3"
-              fill="#0B0C0F"
-              stroke={palette.visorBorder}
-              strokeWidth="1.2"
+            <line
+              x1="78"
+              y1="13"
+              x2="82"
+              y2="25"
+              stroke="#F59E0B"
+              strokeWidth="2"
             />
-          </g>
+            <circle
+              cx="42"
+              cy="37"
+              r="9.8"
+              stroke="#F59E0B"
+              strokeWidth="1.8"
+              fill="none"
+            />
+            <circle
+              cx="68"
+              cy="37"
+              r="9.8"
+              stroke="#F59E0B"
+              strokeWidth="1.8"
+              fill="none"
+            />
+            <line
+              x1="51.8"
+              y1="37"
+              x2="58.2"
+              y2="37"
+              stroke="#F59E0B"
+              strokeWidth="1.8"
+            />
+          </>
+        )}
+
+        {department === 'operations' && (
+          <path
+            d="M 26 15 Q 55 6 84 15 L 89 20 Q 55 14 21 20 Z"
+            fill="#1E293B"
+            stroke="#D9382C"
+            strokeWidth="1.3"
+          />
         )}
       </svg>
     </div>

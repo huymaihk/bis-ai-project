@@ -119,7 +119,7 @@ export const OperationsView: React.FC<OperationsViewProps> = ({
   return (
     <div className="p-3 lg:p-5 max-w-[1500px] mx-auto space-y-4">
       {/* Top Department Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#231D1A] border border-[#3E322C] rounded-2xl px-5 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 card-8d-dark border border-[#4E3E36] rounded-2xl px-5 py-3">
         <div className="flex items-center gap-3">
           <AgentRobotAvatar
             department="operations"
@@ -138,7 +138,7 @@ export const OperationsView: React.FC<OperationsViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2 text-xs">
-          <span className="px-2.5 py-1 rounded-full bg-[#332924] text-[#4ADE80] font-mono border border-[#4D3D35] inline-flex items-center gap-1">
+          <span className="px-2.5 py-1 rounded-full card-8d-dark-recessed text-[#4ADE80] font-mono border border-[#4D3D35] inline-flex items-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Chế độ An toàn: Chỉ Tạo Bản Nháp</span>
           </span>
@@ -146,7 +146,7 @@ export const OperationsView: React.FC<OperationsViewProps> = ({
       </div>
 
       {draftFeedback && (
-        <div className="bg-[#DCFCE7] border border-[#86EFAC] text-[#14532D] px-4 py-3 rounded-xl text-xs font-bold flex flex-wrap items-center justify-between gap-2">
+        <div className="bg-gradient-to-r from-[#DCFCE7] to-[#CCFBF1] border border-[#86EFAC] text-[#14532D] px-4 py-3 rounded-xl text-xs font-bold shadow-md flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0" />
             <span>{draftFeedback}</span>
@@ -160,9 +160,9 @@ export const OperationsView: React.FC<OperationsViewProps> = ({
       )}
 
       {/* MAIN STORYBOARD CARD: WARM IVORY WORKSPACE */}
-      <div className="bg-[#F6F1EA] text-[#1F1916] border border-[#D8CEC2] rounded-2xl shadow-xl overflow-hidden">
+      <div className="card-8d-ivory text-[#1F1916] border border-[#D8CEC2] rounded-2xl overflow-hidden">
         {/* Top Breadcrumb Bar */}
-        <div className="px-5 py-2.5 bg-[#EFE8DE] border-b border-[#D8CEC2] flex items-center justify-between text-xs text-[#574B43]">
+        <div className="px-5 py-2.5 surface-8d-warm border-b border-[#D8CEC2] flex items-center justify-between text-xs text-[#574B43]">
           <div className="flex items-center gap-1.5 font-medium">
             <span>Danh sách sản phẩm</span>
             <span>&gt;</span>
@@ -174,7 +174,7 @@ export const OperationsView: React.FC<OperationsViewProps> = ({
         </div>
 
         {/* Product Summary Banner inside Card */}
-        <div className="p-4 sm:px-5 bg-white border-b border-[#DED4C8] flex flex-wrap items-center justify-between gap-4">
+        <div className="p-4 sm:px-5 card-8d-light border-b border-[#DED4C8] flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-16 h-16 rounded-xl border border-[#DED4C8] overflow-hidden bg-[#F8F5F0] shrink-0">
               <ProductVisualCanvas
@@ -236,7 +236,7 @@ export const OperationsView: React.FC<OperationsViewProps> = ({
         {/* 2-COLUMN MAIN CONTENT: LEFT CHECKLIST + RIGHT DUPLICATE MATCH EVIDENCE */}
         <div className="p-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* LEFT 6 COLS: Danh sách kiểm tra phê duyệt */}
-          <div className="lg:col-span-6 bg-white rounded-2xl border border-[#DED4C8] p-4 space-y-3 shadow-xs">
+          <div className="lg:col-span-6 card-8d-light rounded-2xl border border-[#DED4C8] p-4 space-y-3">
             <div className="flex items-center justify-between border-b border-[#EFE8DE] pb-2.5">
               <div className="flex items-center gap-2 text-sm font-extrabold text-[#1E1916]">
                 <CheckSquare className="w-4 h-4 text-[#D9382C]" />
@@ -299,7 +299,7 @@ export const OperationsView: React.FC<OperationsViewProps> = ({
           </div>
 
           {/* RIGHT 6 COLS: Kết quả kiểm tra trùng lặp & Bằng chứng so khớp */}
-          <div className="lg:col-span-6 bg-white rounded-2xl border border-[#DED4C8] p-4 space-y-3.5 shadow-xs">
+          <div className="lg:col-span-6 card-8d-light rounded-2xl border border-[#DED4C8] p-4 space-y-3.5">
             <div className="flex items-center justify-between border-b border-[#EFE8DE] pb-2.5">
               <div className="flex items-center gap-2 text-sm font-extrabold text-[#1E1916]">
                 <CheckCircle2 className="w-4 h-4 text-[#16A34A]" />
@@ -327,7 +327,7 @@ export const OperationsView: React.FC<OperationsViewProps> = ({
               <div className="text-xs font-extrabold text-[#1E1916]">
                 Sản phẩm tương tự
               </div>
-              <div className="p-3 rounded-xl bg-[#FAF6F0] border border-[#DED4C8] flex items-center justify-between gap-3">
+              <div className="p-3 rounded-xl surface-8d-warm border border-[#DED4C8] flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-14 h-14 rounded-lg border border-[#DED4C8] bg-white overflow-hidden shrink-0">
                     <ProductVisualCanvas
@@ -432,7 +432,7 @@ export const OperationsView: React.FC<OperationsViewProps> = ({
         </div>
 
         {/* BOTTOM BAR: Ghi chú phê duyệt (tùy chọn) + Tạo bản nháp trên Haravan */}
-        <div className="px-5 py-4 bg-[#EFE8DE] border-t border-[#D8CEC2] flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+        <div className="px-5 py-4 surface-8d-warm border-t border-[#D8CEC2] flex flex-col lg:flex-row lg:items-end justify-between gap-4">
           <div className="flex-1 space-y-1">
             <div className="flex items-center justify-between text-xs">
               <label
@@ -451,7 +451,7 @@ export const OperationsView: React.FC<OperationsViewProps> = ({
               maxLength={300}
               value={approvalNote}
               onChange={(e) => setApprovalNote(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-white border border-[#C9BBAE] text-xs text-[#1E1916] leading-relaxed"
+              className="w-full px-3 py-2 rounded-xl bg-white border border-[#C9BBAE] text-xs text-[#1E1916] leading-relaxed shadow-inner"
             />
           </div>
 
@@ -461,7 +461,7 @@ export const OperationsView: React.FC<OperationsViewProps> = ({
               onClick={() =>
                 setDraftFeedback('Đã lưu nháp ghi chú phê duyệt tại trạm Operations.')
               }
-              className="px-4 py-2.5 rounded-xl bg-white hover:bg-[#FAF6F0] text-[#3B302B] border border-[#C9BBAE] text-xs font-bold inline-flex items-center justify-center gap-1.5"
+              className="px-4 py-2.5 rounded-xl card-8d-interactive text-[#3B302B] border border-[#C9BBAE] text-xs font-bold inline-flex items-center justify-center gap-1.5"
             >
               <Save className="w-3.5 h-3.5" />
               <span>Lưu nháp</span>
@@ -472,7 +472,7 @@ export const OperationsView: React.FC<OperationsViewProps> = ({
                 type="button"
                 disabled={isSubmittingDraft}
                 onClick={handleCreateHaravanDraftClick}
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#D9382C] hover:bg-[#B82D22] disabled:opacity-60 text-white text-xs sm:text-sm font-extrabold shadow-lg inline-flex items-center justify-center gap-2 transition-colors"
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl btn-8d-crimson disabled:opacity-60 text-white text-xs sm:text-sm font-extrabold inline-flex items-center justify-center gap-2 transition-all"
               >
                 <Send className="w-4 h-4" />
                 <span>

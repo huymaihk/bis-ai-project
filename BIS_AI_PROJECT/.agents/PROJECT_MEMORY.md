@@ -192,3 +192,7 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
 - Thêm frontend/ từ bản AI Studio (giữ nguyên thư mục gốc), bis_api.py và giao diện kết nối thật: 97 sản phẩm, 476 PDF/ảnh qua HTTP, sửa sản phẩm có revision + memory event, ghi chú sửa/thu hồi/phiên bản. Chi tiết REACT_BRIDGE_RELEASE.md.
 - 61 test Python, TypeScript lint và Vite build đạt. Sửa 2 lỗi TS có sẵn; npm build trên C vì Google Drive gây lỗi ghi file. Browser visual chưa nghiệm thu.
 - Bài học: địa chỉ API trong mock adapter không phải kết nối thật; không bật Haravan hay trạng thái agent từ mô phỏng. React đang chạy local; cloud/worker/agent/ảnh nghiệp vụ và Google sync còn cần triển khai.
+
+## 2026-11-04 — AI Studio folder 1 update
+- Imported 17 updated frontend files, preserved live workspace/auth/API and explicit demo boundary; production Vite build passed. Container deployment recipe added without secrets/private data. Public hosting not provisioned; requires container host with durable storage. No Haravan mutations.
+

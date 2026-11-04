@@ -136,6 +136,35 @@ export const VideoAnalysisModal: React.FC<VideoAnalysisModalProps> = ({
           </div>
         </div>
 
+        {/* 4. Trạng thái khởi tạo UI/UX Pro Max CLI (npx uipro-cli init) */}
+        <div className="p-4 rounded-xl bg-[#0B0C0F] border border-[#0EA5E9]/40 space-y-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-sm font-bold text-[#F3F4F6]">
+              <Sparkles className="w-4 h-4 text-[#F59E0B]" />
+              <span>UI/UX Pro Max Design System (Đã khởi tạo qua CLI)</span>
+            </div>
+            <span className="px-2 py-0.5 rounded bg-[#16A34A]/20 text-[#4ADE80] font-mono text-[10px] border border-[#16A34A]/40">
+              ACTIVE · v2.x
+            </span>
+          </div>
+          <p className="text-[#9CA3AF]">
+            Bộ quy chuẩn <code className="font-mono text-[#F59E0B]">ui-ux-pro-max</code> đã được cài đặt vào dự án tại{' '}
+            <code className="font-mono text-[#E2E8F0]">.gemini/skills/ui-ux-pro-max</code>,{' '}
+            <code className="font-mono text-[#E2E8F0]">.agent/skills/ui-ux-pro-max</code> và lưu trữ cấu hình chuẩn tại{' '}
+            <code className="font-mono text-[#38BDF8]">design-system/bis-textile-ai/MASTER.md</code>:
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-[#D1D5DB]">
+            <div className="p-2.5 rounded bg-[#12141A] border border-[#222631]">
+              <strong className="text-white block mb-0.5">8D Tactile Depth & Metallic Grid</strong>
+              Đổ bóng đa tầng (<code className="font-mono text-[#F59E0B]">.card-8d-*</code>) và mặt sàn kim loại phay xước 2 cấp (<code className="font-mono text-[#F59E0B]">.agent-floor-grid</code> 48px/16px).
+            </div>
+            <div className="p-2.5 rounded bg-[#12141A] border border-[#222631]">
+              <strong className="text-white block mb-0.5">Chuẩn Pre-Delivery Checklist</strong>
+              100% Lucide SVG icons, <code className="font-mono text-[#38BDF8]">cursor-pointer</code>, vòng focus bàn phím rõ nét, tương phản &gt; 4.5:1 và hỗ trợ <code className="font-mono text-[#38BDF8]">prefers-reduced-motion</code>.
+            </div>
+          </div>
+        </div>
+
         <div className="flex justify-end pt-2">
           <button
             type="button"

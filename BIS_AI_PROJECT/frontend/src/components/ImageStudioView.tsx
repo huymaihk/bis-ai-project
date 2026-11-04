@@ -145,7 +145,7 @@ export const ImageStudioView: React.FC<ImageStudioViewProps> = ({
   return (
     <div className="p-3 lg:p-5 max-w-[1520px] mx-auto space-y-4">
       {/* Top Department Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#231D1A] border border-[#3E322C] rounded-2xl px-5 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 card-8d-dark border border-[#4E3E36] rounded-2xl px-5 py-3">
         <div className="flex items-center gap-3">
           <AgentRobotAvatar
             department="imagestudio"
@@ -167,14 +167,14 @@ export const ImageStudioView: React.FC<ImageStudioViewProps> = ({
           <div
             role="group"
             aria-label="Chế độ hiển thị Image Studio"
-            className="inline-flex rounded-lg bg-[#14110F] p-1 border border-[#382E29] text-xs"
+            className="inline-flex rounded-xl card-8d-dark-recessed p-1 border border-[#3E322C] text-xs"
           >
             <button
               type="button"
               onClick={() => setStudioLayout('storyboard_3col')}
-              className={`px-3 py-1.5 rounded-md font-semibold transition-colors ${
+              className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
                 studioLayout === 'storyboard_3col'
-                  ? 'bg-[#D9382C] text-white'
+                  ? 'btn-8d-crimson text-white'
                   : 'text-[#B8AAA0] hover:text-white'
               }`}
             >
@@ -183,9 +183,9 @@ export const ImageStudioView: React.FC<ImageStudioViewProps> = ({
             <button
               type="button"
               onClick={() => setStudioLayout('aatcc_3d_concept')}
-              className={`px-3 py-1.5 rounded-md font-semibold transition-colors ${
+              className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
                 studioLayout === 'aatcc_3d_concept'
-                  ? 'bg-[#D9382C] text-white'
+                  ? 'btn-8d-crimson text-white'
                   : 'text-[#B8AAA0] hover:text-white'
               }`}
             >
@@ -194,9 +194,9 @@ export const ImageStudioView: React.FC<ImageStudioViewProps> = ({
             <button
               type="button"
               onClick={() => setStudioLayout('compare_multi')}
-              className={`px-3 py-1.5 rounded-md font-semibold transition-colors inline-flex items-center gap-1 ${
+              className={`px-3 py-1.5 rounded-lg font-semibold transition-all inline-flex items-center gap-1 ${
                 studioLayout === 'compare_multi'
-                  ? 'bg-[#D9382C] text-white'
+                  ? 'btn-8d-crimson text-white'
                   : 'text-[#B8AAA0] hover:text-white'
               }`}
             >
@@ -208,7 +208,7 @@ export const ImageStudioView: React.FC<ImageStudioViewProps> = ({
           <button
             type="button"
             onClick={onProceedToOperations}
-            className="px-3.5 py-1.5 rounded-lg bg-[#D9382C] hover:bg-[#B82D22] text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
+            className="px-3.5 py-1.5 rounded-lg btn-8d-crimson text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-all"
           >
             <span>Sang bước Duyệt (Operations)</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -218,9 +218,9 @@ export const ImageStudioView: React.FC<ImageStudioViewProps> = ({
 
       {studioLayout === 'storyboard_3col' ? (
         /* STORYBOARD 3-COLUMN BENCHMARK EDITOR (Matches Image 3 Top-Right Panel) */
-        <div className="bg-[#F6F1EA] text-[#1F1916] border border-[#D8CEC2] rounded-2xl shadow-xl overflow-hidden">
+        <div className="card-8d-ivory text-[#1F1916] border border-[#D8CEC2] rounded-2xl overflow-hidden">
           {/* Sub-Header Bar inside Ivory Card */}
-          <div className="px-5 py-2.5 bg-[#EFE8DE] border-b border-[#D8CEC2] flex flex-wrap items-center justify-between gap-2">
+          <div className="px-5 py-2.5 surface-8d-warm border-b border-[#D8CEC2] flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-xs sm:text-sm">
               <span className="font-bold text-[#574B43]">SKU:</span>
               <span className="font-mono font-extrabold text-[#1E1916]">
@@ -239,7 +239,7 @@ export const ImageStudioView: React.FC<ImageStudioViewProps> = ({
               <button
                 type="button"
                 onClick={handleSimulateUpload}
-                className="px-2.5 py-1 rounded-lg bg-white hover:bg-[#FAF6F0] text-[#2B221E] border border-[#C9BBAE] font-semibold inline-flex items-center gap-1"
+                className="px-2.5 py-1 rounded-lg card-8d-interactive text-[#2B221E] border border-[#C9BBAE] font-semibold inline-flex items-center gap-1"
               >
                 <Upload className="w-3.5 h-3.5 text-[#D9382C]" />
                 <span>Tải ảnh lên</span>
@@ -252,7 +252,7 @@ export const ImageStudioView: React.FC<ImageStudioViewProps> = ({
             {/* COLUMN 1 (LEFT 3 COLS): Nguồn tài liệu (PDF) & Ảnh đề xuất */}
             <div className="lg:col-span-3 p-4 space-y-4 bg-[#FAF6F0]">
               {/* Top Card: Nguồn tài liệu (PDF) */}
-              <div className="bg-white rounded-xl border border-[#DED4C8] p-3 space-y-2 shadow-xs">
+              <div className="card-8d-light rounded-xl border border-[#DED4C8] p-3 space-y-2">
                 <div className="text-xs font-extrabold text-[#1E1916]">
                   Nguồn tài liệu (PDF)
                 </div>
@@ -512,7 +512,7 @@ export const ImageStudioView: React.FC<ImageStudioViewProps> = ({
             <div className="lg:col-span-3 p-4 flex flex-col justify-between bg-[#FAF6F0] space-y-4">
               <div className="space-y-4">
                 {/* Benchmark Card */}
-                <div className="bg-white rounded-xl border border-[#DED4C8] p-3.5 space-y-3 shadow-xs">
+                <div className="card-8d-light rounded-xl border border-[#DED4C8] p-3.5 space-y-3">
                   <h2 className="text-xs font-extrabold text-[#1E1916]">
                     Chuẩn tham chiếu (Benchmark)
                   </h2>
@@ -542,7 +542,7 @@ export const ImageStudioView: React.FC<ImageStudioViewProps> = ({
                 </div>
 
                 {/* Image Approval Status Box (Human-in-the-loop) */}
-                <div className="bg-white rounded-xl border border-[#DED4C8] p-3.5 space-y-2 shadow-xs">
+                <div className="card-8d-light rounded-xl border border-[#DED4C8] p-3.5 space-y-2">
                   <div className="text-xs font-extrabold text-[#1E1916]">
                     Trạng thái ảnh
                   </div>
@@ -576,7 +576,7 @@ export const ImageStudioView: React.FC<ImageStudioViewProps> = ({
                 <button
                   type="button"
                   onClick={handleApproveCurrentImage}
-                  className="w-full py-2.5 px-4 rounded-xl bg-[#D9382C] hover:bg-[#B82D22] text-white text-xs sm:text-sm font-bold shadow-md transition-colors"
+                  className="w-full py-2.5 px-4 rounded-xl btn-8d-crimson text-white text-xs sm:text-sm font-bold transition-all"
                 >
                   Phê duyệt ảnh
                 </button>
@@ -595,7 +595,7 @@ export const ImageStudioView: React.FC<ImageStudioViewProps> = ({
                       handleChooseCandidate(product.candidateImages[nextIdx]);
                     }
                   }}
-                  className="w-full py-2 px-4 rounded-xl bg-white hover:bg-[#EFE8DE] text-[#3B302B] border border-[#C9BBAE] text-xs font-bold transition-colors"
+                  className="w-full py-2 px-4 rounded-xl card-8d-interactive text-[#3B302B] border border-[#C9BBAE] text-xs font-bold"
                 >
                   Chọn ảnh khác
                 </button>
