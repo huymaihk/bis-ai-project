@@ -1120,6 +1120,9 @@ export const AgentOffice3DCanvas: React.FC<AgentOffice3DCanvasProps> = ({
 
     // 4. OrbitControls
     const controls = new OrbitControls(camera, renderer.domElement);
+    // Let the surrounding page own wheel/touch scrolling over the office.
+    controls.enableZoom = false;
+    renderer.domElement.style.touchAction = 'pan-y';
     controls.enableDamping = !isSoftwareGl;
     controls.dampingFactor = 0.06;
     controls.maxPolarAngle = Math.PI / 2 - 0.06;

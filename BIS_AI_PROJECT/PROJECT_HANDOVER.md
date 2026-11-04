@@ -288,3 +288,7 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - Browser tool reports local browser use disabled in Work settings; no visual acceptance claimed.
 - Fixed embedded load failures being silently replaced by a second PIN screen; show loading/error/retry using existing Streamlit auth. Scoped live form styles away from Studio 3D controls; added wrapping/min-width protection. Robot eye/material selectors now update state.
 - Loader also reloads a stale native workspace signature before routing. 22 API/bridge/workspace tests pass; TypeScript and production build pass. Haravan unchanged.
+
+## 2026-11-04 — Scroll reachability fix
+- Disabled OrbitControls wheel zoom and enabled vertical touch pan so the office does not consume page scrolling. Frame sizing includes root overflow and image/DOM updates with bottom clearance. Embedded memory list no longer uses a nested height-limited scroll box.
+- TypeScript and production build passed. Browser use remains disabled, so actual deployed scrolling awaits visual verification. Haravan unchanged.

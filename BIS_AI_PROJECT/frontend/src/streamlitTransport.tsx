@@ -15,7 +15,7 @@ function fitFrame(){
     framePending=false;
     const root=document.getElementById('root');
     if(!root)return;
-    const height=Math.max(720,Math.ceil(root.getBoundingClientRect().height));
+    const height=Math.max(720,Math.ceil(Math.max(root.getBoundingClientRect().height,root.scrollHeight))+24);
     if(height!==lastHeight){lastHeight=height;Streamlit.setFrameHeight(height);}
   });
 }
@@ -29,6 +29,9 @@ if(embedded){
   document.documentElement.classList.add('bis-embedded');
   const root=document.getElementById('root');
   if(root)new ResizeObserver(fitFrame).observe(root);
+  // Images and expanded content can overflow without changing the root box.
+  if(root)new MutationObserver(fitFrame).observe(root,{childList:true,subtree:true});
+  document.addEventListener('load',fitFrame,true);
   window.addEventListener('resize',fitFrame);
   document.fonts.ready.then(fitFrame);
   Streamlit.events.addEventListener(Streamlit.RENDER_EVENT,(event:any)=>{

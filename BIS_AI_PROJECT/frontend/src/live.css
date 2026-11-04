@@ -21,3 +21,4 @@ html,body,#root{width:100%;margin:0;padding:0}
 
 .live-panel,.live-grid>*,.live-gallery>*,.live-list article>*{min-width:0}.live-main :is(h1,h2,h3,p,strong,small){overflow-wrap:anywhere}.live-toolbar{flex-wrap:wrap;gap:10px}.live-search{flex-wrap:wrap}.live-search input{flex:1;min-width:180px}
 
+.bis-embedded .live-memory{max-height:none;overflow:visible}.bis-embedded .live-main main{padding-bottom:48px}
