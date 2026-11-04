@@ -22,3 +22,5 @@ html,body,#root{width:100%;margin:0;padding:0}
 .live-panel,.live-grid>*,.live-gallery>*,.live-list article>*{min-width:0}.live-main :is(h1,h2,h3,p,strong,small){overflow-wrap:anywhere}.live-toolbar{flex-wrap:wrap;gap:10px}.live-search{flex-wrap:wrap}.live-search input{flex:1;min-width:180px}
 
 .bis-embedded .live-memory{max-height:none;overflow:visible}.bis-embedded .live-main main{padding-bottom:48px}
+
+.technical-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;list-style:none;padding:0;margin:20px 0}.technical-steps li{padding:16px;border:1px solid #bda48e;border-radius:10px}.technical-steps strong{display:block;margin-bottom:8px}@media(max-width:700px){.technical-steps{grid-template-columns:1fr}}

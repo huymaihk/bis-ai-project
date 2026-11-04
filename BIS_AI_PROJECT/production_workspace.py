@@ -35,6 +35,7 @@ def render_workspace(root,technical,media,knowledge,translator,memory,active_ste
     sources+=list(source_dir.rglob("*.pdf"))
     if active_step is None or active_step == 0:
         with tabs[0]:
+            st.markdown('### 1 · Kho tài liệu Catalogue')
             st.caption('Quét thư mục 1_Catalogues trên máy đang chạy BIS. Web Cloud không tự đọc ổ G của máy cá nhân; cần tải PDF lên hoặc đồng bộ file lên máy chủ.')
             if st.button('Quét thư mục Catalogue',key='q_scan_catalogues'):
                 st.session_state['q_catalogue_files'] = sorted(str(p.relative_to(root)) for p in source_dir.rglob('*') if p.is_file() and p.suffix.lower()=='.pdf')
@@ -58,9 +59,14 @@ def render_workspace(root,technical,media,knowledge,translator,memory,active_ste
                                 raise ValueError("PDF cần mật khẩu")
                         target=source_dir/(hashlib.sha256(data).hexdigest()[:12]+"_"+Path(upload.name).name)
                         target.write_bytes(data)
+                        st.session_state['q_catalogue_files']=sorted(str(p.relative_to(root)) for p in source_dir.rglob('*') if p.is_file() and p.suffix.lower()=='.pdf')
                         st.rerun()
                     except Exception as exc:
                         st.error("Không đọc được tài liệu: "+type(exc).__name__)
+            st.caption(f'{len(sources)} tài liệu · 🟢 Đã phân tích · ⚪ Chưa phân tích hoặc đã thay đổi')
+            if not sources:
+                st.info('Chưa có tài liệu. Quét thư mục hoặc tải một PDF lên để bắt đầu.')
+            st.markdown('### 2 · Chọn tài liệu và phân tích')
             chosen=st.selectbox("Tài liệu đang làm việc",sources,
                                 format_func=lambda p:('🟢 ' if analysis.get(str(p.relative_to(root)),{}).get('state')=='COMPLETED' and analysis.get(str(p.relative_to(root)),{}).get('sha256')==hashlib.sha256(p.read_bytes()).hexdigest() else '⚪ ')+p.relative_to(root).as_posix(),key="q_pdf") if sources else None
             if chosen:
@@ -105,6 +111,8 @@ def render_workspace(root,technical,media,knowledge,translator,memory,active_ste
                         analysis[key]={'sha256':file_hash,'state':'FAILED'}
                         atomic_json(ledger_path,analysis)
                         st.error('Phân tích chưa hoàn tất: '+str(exc))
+            st.markdown("### 3 · Kiểm tra từng trang")
+            st.caption("Dùng khi cần xem nguồn hoặc thử trích một trang trước khi phân tích toàn bộ.")
             page=st.number_input("Trang cần trích xuất",min_value=1,value=1,step=1,key="q_source_page")
             if chosen:
                 if st.button("Xem trang",key="q_render_page"):

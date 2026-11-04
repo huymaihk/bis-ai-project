@@ -297,3 +297,8 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - Added explicit catalogue folder scan, persistent hash-bound completion state, green completed-file labels and confirmation checkbox before reanalysis in native PDF tool.
 - Full-document extraction records page jobs, preserves existing drafts, fails closed on empty/unconfirmed page results. Six workspace regression tests pass; real AI extraction not validated.
 - Cloud scans its own filesystem, not desktop G drive. Upload or separate file sync required. Haravan unchanged.
+
+## Technical layout clarification
+- Reorganized Technical entry around document intake and three visible steps; renamed product edit section to distinguish selected-SKU edits from catalogue analysis.
+- Native PDF tool has numbered source/select/page sections, file count/legend/empty state. Upload refreshes scanned file list immediately.
+- TypeScript/build pass. Visual browser verification unavailable. Haravan unchanged.

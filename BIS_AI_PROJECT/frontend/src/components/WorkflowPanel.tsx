@@ -3,7 +3,7 @@ import {bisFetch, embedded} from '../streamlitTransport';
 
 const sections:Record<string,[number,string,string]> = {
   overview:[0,'Bắt đầu từ tài liệu','Chọn PDF → trích trang → kiểm tra → duyệt'],
-  technical:[0,'Mở công cụ PDF','Xem trang và trích dữ liệu từ PDF vào bản làm việc'],
+  technical:[0,'Quét và phân tích Catalogue','Quét thư mục → chọn tài liệu → phân tích → kiểm tra dữ liệu'],
   marketing:[1,'Mở bàn biên tập và HTML','Kiểm tra chứng cứ, biên tập SEO và xem trước bài viết'],
   images:[2,'Mở studio xử lý ảnh','Chọn ảnh PDF/web, ghép nền, tạo bản AI và duyệt ảnh'],
   operations:[3,'Mở bàn kiểm duyệt','Đối soát bản lưu, duyệt phiên bản và xem cổng tạo nháp có bảo vệ'],
@@ -31,8 +31,9 @@ export default function WorkflowPanel({tab, product, dirty, reload}:{tab:string;
     catch(e){setError((e as Error).message);}finally{setBusy(false);}
   }
   return <section className="live-panel bis-workflow" aria-label="Quy trình nghiệp vụ">
-    <h2>Hồ sơ công việc {product?.sku||''}</h2>
+    <h2>{tab==='technical'?'Tiếp nhận và phân tích tài liệu':`Hồ sơ công việc ${product?.sku||''}`}</h2>
     <p>{section[2]}. Công cụ sử dụng cùng bản làm việc và bộ nhớ của BIS.</p>
+    {tab==='technical'&&<ol className="technical-steps"><li><strong>01 · Tài liệu</strong><small>Quét thư mục hoặc tải PDF lên</small></li><li><strong>02 · Phân tích</strong><small>Chọn file và xác nhận chạy</small></li><li><strong>03 · Kiểm tra</strong><small>Đối chiếu SKU và chứng cứ</small></li></ol>}
     <div className="bis-workflow-actions">
       <button className="primary" disabled={busy||dirty||!embedded} onClick={async()=>{
         setBusy(true);setError('');
