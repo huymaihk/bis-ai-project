@@ -230,3 +230,8 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
 ## 2026-11-04 — Full width embedded workspace
 - Removed React main width cap and Streamlit horizontal padding; iframe now follows root content height with ResizeObserver instead of fixed 1100px. Embedded intrinsic minimums avoid viewport-height feedback loops. Host protocol bumped for hot deployment refresh.
 - TypeScript/build and 5 bridge tests pass. Browser layout not visually confirmed; this changes layout only, not Haravan business rules.
+
+## 2026-11-04 — UI audit with browser access blocked
+- Browser tool reports local browser use disabled in Work settings; no visual acceptance claimed.
+- Fixed embedded load failures being silently replaced by a second PIN screen; show loading/error/retry using existing Streamlit auth. Scoped live form styles away from Studio 3D controls; added wrapping/min-width protection. Robot eye/material selectors now update state.
+- Loader also reloads a stale native workspace signature before routing. 22 API/bridge/workspace tests pass; TypeScript and production build pass. Haravan unchanged.

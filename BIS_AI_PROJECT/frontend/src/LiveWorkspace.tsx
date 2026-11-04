@@ -17,6 +17,7 @@ async function api(path:string, method='GET', data?:unknown) {
 const nav=[['overview','Tổng quan',Home],['technical','Technical',FlaskConical],['marketing','Marketing',Megaphone],['images','Image Studio',Image],['operations','Operations',Settings],['knowledge','Knowledge',BookOpen],['memory','Memory',Cpu]] as const;
 
 export default function LiveWorkspace(){
+  const [loading,setLoading]=useState(true);
   const [ready,setReady]=useState(false),[pin,setPin]=useState(''),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
   const [state,setState]=useState<any>(null),[assets,setAssets]=useState<Asset[]>([]),[mem,setMem]=useState<MemoryRow[]>([]);
   const [tab,setTab]=useState('overview'),[sku,setSku]=useState(''),[query,setQuery]=useState('');
@@ -29,7 +30,7 @@ export default function LiveWorkspace(){
     const [s,a,m]=await Promise.all([api('state'),api('assets'),api('memory')]);
     setState(s);setAssets(a);setMem(m);setSku(old=>s.products.some((p:Product)=>p.sku===old)?old:(s.preferred_sku||s.products[0]?.sku||''));setReady(true);
   }
-  useEffect(()=>{load().catch(()=>setReady(false));},[]);
+  useEffect(()=>{load().catch(e=>{setReady(false);setError(e.message);}).finally(()=>setLoading(false));},[]);
   useEffect(()=>{
     if(product){setFields(Object.fromEntries(['product_name','product_name_en','brand','description','evidence_quote','source_page','source_file','meta_description'].map(k=>[k,product[k]??''])));setSpecs(JSON.stringify(product.specifications||{},null,2));}
   },[sku,product?._revision]);
@@ -43,6 +44,7 @@ export default function LiveWorkspace(){
   }
   const dirty=!!product && (Object.keys(fields).some(k=>String(fields[k]??'')!==String(product[k]??'')) || specs!==JSON.stringify(product.specifications||{},null,2));
   function field(name:string,label:string,multiline=false){return <label className="live-field" key={name}>{label}{multiline?<textarea value={fields[name]??''} onChange={e=>setFields({...fields,[name]:e.target.value})}/>:<input value={fields[name]??''} onChange={e=>setFields({...fields,[name]:e.target.value})}/>}</label>;}
+  if(!ready&&(embedded||loading))return <main className="live-login"><section role="status"><h1>{loading?'Đang tải không gian BIS…':'Chưa tải được dữ liệu BIS'}</h1><p>{error||'Đang kết nối phiên đăng nhập hiện tại.'}</p>{!loading&&<button disabled={busy} onClick={()=>action(load)}>Thử tải lại</button>}<p>Phiên Streamlit đã quản lý đăng nhập. Nếu phiên hết hạn, tải lại trang để đăng nhập.</p></section></main>;
   if(!ready)return <main className="live-login"><form onSubmit={e=>{e.preventDefault();action(async()=>{await api('login','POST',{pin});setPin('');await load();});}}><div className="live-brand">BIS <span>TEXTILE AI</span></div><h1>Mở không gian làm việc</h1><p>Giao diện React · Kho dữ liệu BIS hiện có</p><label>PIN đăng nhập<input type="password" autoComplete="current-password" value={pin} onChange={e=>setPin(e.target.value)} required/></label><button disabled={busy}>Đăng nhập</button>{error&&<p role="alert">{error}</p>}</form></main>;
 
   return <div className="live-app" data-department={tab}><aside className="live-sidebar"><div className="live-brand">BIS <span>TEXTILE AI</span></div><p className="live-caption">PRODUCT WORKSPACE</p><nav>{nav.map(([id,label,Icon])=><button className={tab===id?'active':''} key={id} onClick={()=>{setTab(id);setQuery('');setError('');setNotice('');}}><Icon size={19}/>{label}</button>)}</nav><div className="live-sidebar-bottom"><label>Sản phẩm đang làm<select value={sku} onChange={e=>setSku(e.target.value)}>{products.map(p=><option key={p.sku} value={p.sku}>{p.sku}</option>)}</select></label><p>{products.length} sản phẩm từ kho BIS</p><button onClick={()=>action(async()=>{await api('logout','POST',{});setReady(false);setState(null);setMem([]);setAssets([]);})}><LogOut size={16}/> Đăng xuất</button></div></aside>
