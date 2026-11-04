@@ -15,7 +15,7 @@ from persistent_memory import MemoryStore, atomic_json
 from product_quality import fingerprint, render_product
 from quality_jobs import JobRunner
 
-API_PROTOCOL = 'workflow-v2-4'
+API_PROTOCOL = 'workflow-v2-5'
 
 
 def create_app(workspace=None, pin=None):
@@ -267,6 +267,9 @@ def create_app(workspace=None, pin=None):
     class CatalogueRun(BaseModel):
         sha256: str
         confirm: bool = False
+        start_page: int = Field(default=1,ge=1)
+        end_page: int | None = Field(default=None,ge=1)
+        sku: str = Field(default='',max_length=100)
 
     @app.post('/api/catalogues/{ident}/start')
     def start_catalogue(ident: str, body: CatalogueRun):
@@ -286,8 +289,13 @@ def create_app(workspace=None, pin=None):
                 if document.needs_pass:
                     raise HTTPException(422,'PDF cần mật khẩu')
                 pages=len(document)
+            end=body.end_page or pages
+            if not body.start_page<=end<=pages:
+                raise HTTPException(422,'Khoảng trang vượt tài liệu hoặc không hợp lệ')
+            if body.sku and not body.confirm:
+                raise HTTPException(409,'Cần xác nhận phân tích lại sản phẩm')
             run=secrets.token_hex(16)
-            record=dict(sha256=digest,state='RUNNING',run=run,pages=pages,completed_pages=0,products=0)
+            record=dict(sha256=digest,state='RUNNING',run=run,pages=pages,start_page=body.start_page,end_page=end,sku=body.sku,completed_pages=body.start_page-1,products=0)
             records[str(path.relative_to(root))]=record
             atomic_json(catalogue_ledger,records)
             return record
@@ -309,7 +317,7 @@ def create_app(workspace=None, pin=None):
             record=records.get(key,{})
             if record.get('run')!=body.run or record.get('state')!='RUNNING':
                 raise HTTPException(409,'Lần phân tích không còn hiệu lực')
-            if body.page!=record.get('completed_pages',0)+1 or body.page>record['pages']:
+            if body.page!=record.get('completed_pages',0)+1 or body.page>record.get('end_page',record['pages']):
                 raise HTTPException(409,'Thứ tự trang không hợp lệ')
             try:
                 if hashlib.sha256(path.read_bytes()).hexdigest()!=record['sha256']:
@@ -327,16 +335,22 @@ def create_app(workspace=None, pin=None):
                 record['empty_pages']=record.get('empty_pages',[])
                 if not rows:
                     record['empty_pages'].append(body.page)
+                if record.get('sku'):
+                    rows=[row for row in rows if str(row.get('sku','')).upper()==record['sku'].upper()]
+                    if not rows:
+                        raise ValueError('Không tìm thấy SKU được yêu cầu trên trang nguồn')
                 for row in rows:
                     row.update(source_file=key,source_page=body.page,status='EXTRACTED_UNVERIFIED')
                     row['custom_html']=render_product(row)
+                    result_path=memory.root/'catalogue_results'/ident/(safe_name(row['sku'])+'.json')
+                    atomic_json(result_path,dict(row,_source_sha256=record['sha256']))
                     target=drafts/(safe_name(row['sku'])+'.json')
                     if not target.exists():
                         atomic_json(target,row)
                 record['completed_pages']=body.page
                 record['products']+=len(rows)
-                if body.page==record['pages']:
-                    record['state']='COMPLETED' if record['products'] else 'NEEDS_REVIEW'
+                if body.page==record.get('end_page',record['pages']):
+                    record['state']=('COMPLETED' if record.get('start_page',1)==1 and body.page==record['pages'] and not record.get('sku') else 'PARTIAL') if record['products'] else 'NEEDS_REVIEW'
                 atomic_json(catalogue_ledger,records)
                 return record
             except Exception as exc:
@@ -346,6 +360,15 @@ def create_app(workspace=None, pin=None):
                 record['error']=reason
                 atomic_json(catalogue_ledger,records)
                 raise HTTPException(422,f'Trang {body.page}/{record["pages"]}: {reason}. Các bản làm việc đã lưu được giữ lại.')
+
+    @app.get('/api/catalogues/{ident}/results')
+    def catalogue_results(ident: str):
+        if ident not in catalogue_files():
+            raise HTTPException(404,'Không tìm thấy tài liệu')
+        rows=[]
+        for path in (memory.root/'catalogue_results'/ident).glob('*.json'):
+            rows.append(json.loads(path.read_text(encoding='utf-8')))
+        return {'products':sorted(rows,key=lambda x:str(x.get('sku','')))}
 
     class WorkspaceOpen(BaseModel):
         step: int = Field(ge=0, le=4)

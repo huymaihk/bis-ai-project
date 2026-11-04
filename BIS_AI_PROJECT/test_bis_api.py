@@ -122,6 +122,27 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(result.json()['empty_pages'],[1])
         self.assertEqual(result.json()['state'],'NEEDS_REVIEW')
 
+    def test_catalogue_range_results_and_sku_reanalysis(self):
+        from types import SimpleNamespace
+        folder=self.root/'Google_Drive_Storage'/'1_Catalogues'
+        folder.mkdir(parents=True)
+        with pymupdf.open() as doc:
+            for _ in range(3): doc.new_page().insert_text((40,40),'03026A Manual')
+            doc.save(folder/'range.pdf')
+        self.login()
+        row=self.client.get('/api/catalogues').json()['files'][0]
+        base='/api/catalogues/'+row['id']
+        self.client.app.state.catalogue_agent=SimpleNamespace(extract_page=lambda *a:[dict(self.row)])
+        self.assertEqual(self.client.post(base+'/start',json={'sha256':row['sha256'],'start_page':3,'end_page':2}).status_code,422)
+        run=self.client.post(base+'/start',json={'sha256':row['sha256'],'start_page':2,'end_page':2}).json()
+        self.assertEqual(self.client.post(base+'/page',json={'run':run['run'],'page':1}).status_code,409)
+        result=self.client.post(base+'/page',json={'run':run['run'],'page':2}).json()
+        self.assertEqual(result['state'],'PARTIAL')
+        products=self.client.get(base+'/results').json()['products']
+        self.assertEqual(products[0]['sku'],'03026A')
+        self.assertEqual(products[0]['source_page'],2)
+        self.assertEqual(self.client.post(base+'/start',json={'sha256':row['sha256'],'start_page':2,'end_page':2,'sku':'03026A'}).status_code,409)
+
     def test_login_required_and_logout(self):
         for route in ['state','assets','memory','knowledge/search']:
             self.assertEqual(self.client.get('/api/'+route).status_code,401)

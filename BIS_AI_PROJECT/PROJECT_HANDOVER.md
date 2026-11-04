@@ -316,3 +316,9 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - Distinguish valid parsed empty product arrays from blank/malformed/API failures in Technical extractor. Valid non-product pages continue; all-empty documents require review instead of green completion.
 - API persists failed page and safe error category (quota, permissions, unavailable model, format). Reports page number rather than generic ValueError.
 - 19 API/bridge tests, TypeScript/build pass. No real Gemini call or deployed browser confirmation; screenshot alone does not prove precise original API failure. Haravan unchanged.
+
+## 2026-11-05 Technical ranges and per-file results
+- Added full/range/single-page analysis with server bounds and sequential run validation. Partial runs are labelled PARTIAL, not full green.
+- Persist per-file SKU extraction results separately from edited drafts; UI selects SKU, displays evidence and can confirm rerun on its source page filtered to that SKU. Compact panels.
+- Authentication failures 401/403 stop retries and provide Streamlit Secrets/Gemini permission guidance. Screenshot confirms auth rejection; live credential remediation unresolved.
+- 20 API/bridge tests including ranges/results/confirmation pass; TypeScript/build pass. Haravan unchanged; browser/real AI acceptance pending.

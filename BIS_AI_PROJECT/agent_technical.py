@@ -340,10 +340,12 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
                 self.last_extraction_error = (
                     'Hết hạn mức API hoặc giới hạn tốc độ (429)' if '429' in err_str or 'quota' in err_str.lower()
                     else 'Model không khả dụng hoặc quá tải (503)' if '503' in err_str
-                    else 'Không có quyền API (401/403)' if '401' in err_str or '403' in err_str
+                    else 'Gemini từ chối khóa API (401/403). Kiểm tra GEMINI_API_KEY trong Streamlit Secrets, quyền và dự án AI Studio' if '401' in err_str or '403' in err_str
                     else 'Model không tồn tại (404)' if '404' in err_str
                     else 'Phản hồi AI trống hoặc không đúng cấu trúc' if isinstance(e, (ValueError, TypeError))
                     else 'Không gọi được AI: '+type(e).__name__)
+                if '401' in err_str or '403' in err_str:
+                    return []
                 if "429" in err_str or "quota" in err_str.lower():
                     wait = 3 * (attempt + 1)
                     print(f"  ⚠ Quota limit on page {page_num} — waiting {wait}s…")
