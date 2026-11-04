@@ -18,18 +18,13 @@ def render_workspace(root,technical,media,knowledge,translator,memory):
     runner=JobRunner(root)
     folder=memory.root/"product_drafts"
     folder.mkdir(exist_ok=True)
-    st.markdown("""<style>
-    .stApp {background:#f5f7fb;}
-    section[data-testid="stMain"] .block-container {max-width:1180px;padding-top:2rem;}
-    [data-testid="stSidebar"] {background:#edf2f7;}
-    section[data-testid="stMain"] p,section[data-testid="stMain"] label,
-    section[data-testid="stMain"] h1,section[data-testid="stMain"] h2,
-    section[data-testid="stMain"] h3 {color:#172b4d;}
-    button[data-baseweb="tab"] {color:#334155;}
-    [data-testid="stForm"] {background:#fff;border:1px solid #dce3ed;border-radius:12px;}
-    </style>""",unsafe_allow_html=True)
-    st.title("BIS Textile · Xưởng sản phẩm")
-    st.caption("Nguồn rõ ràng · Nội dung có chứng cứ · Ảnh được duyệt · Xuất bản nháp có đối soát")
+    from workspace_design import apply_theme, render_overview, product_context
+    st.sidebar.markdown('<div class="bis-brand">BIS<span> / </span>AI</div>',unsafe_allow_html=True)
+    st.sidebar.caption("TEXTILE · PRODUCT WORKSPACE")
+    light=st.sidebar.toggle("Giao diện sáng",value=False,key="bis_light_theme")
+    apply_theme(light)
+    overview=st.empty()
+    st.sidebar.markdown('<div class="bis-side-label">KHÔNG GIAN LÀM VIỆC</div>',unsafe_allow_html=True)
     tabs=st.tabs(["1 · Nguồn & dữ liệu","2 · Nội dung","3 · Ảnh","4 · Duyệt & xuất","5 · Tri thức & lịch sử"])
     source_dir=root/"Google_Drive_Storage"/"1_Catalogues"
     source_dir.mkdir(exist_ok=True)
@@ -105,10 +100,18 @@ def render_workspace(root,technical,media,knowledge,translator,memory):
             continue
     if not products:
         st.info("Nhập catalogue và trích một trang để bắt đầu.")
-    selection=st.selectbox("Sản phẩm đang làm việc",list(products),key="q_sku") if products else None
+    selection=st.sidebar.selectbox("Sản phẩm đang làm việc",list(products),key="q_sku") if products else None
+    render_overview(overview,products,sources,media.manifest)
+    with st.sidebar:
+        st.divider()
+        st.caption("QUY TRÌNH PHỐI HỢP")
+        st.markdown("**01** Technical · Tài liệu & dữ liệu\n\n**02** Marketing · Nội dung & SEO\n\n**03** Studio · Hình ảnh sản phẩm\n\n**04** Operations · Duyệt & xuất\n\n**05** Knowledge · Tri thức & lịch sử")
+        st.divider()
+        st.caption("Bộ nhớ lưu cục bộ. Kiểm tra trạng thái đồng bộ trong mục Tri thức & lịch sử.")
     product=dict(products[selection]) if selection else None
 
     with tabs[1]:
+        product_context(product)
         if product:
             st.subheader("Biên tập dữ liệu có chứng cứ")
             # A form version tied to content prevents stale widget values after selecting another SKU.
@@ -165,6 +168,7 @@ def render_workspace(root,technical,media,knowledge,translator,memory):
                 st.rerun()
 
     with tabs[2]:
+        product_context(product)
         if product:
             st.subheader("Chọn ảnh đúng sản phẩm")
             pdf=root/(product.get("source_file") or "catalogue_sample.pdf")
@@ -251,6 +255,7 @@ def render_workspace(root,technical,media,knowledge,translator,memory):
                 st.success("Có ảnh đã duyệt; thay ảnh thành phẩm cần duyệt lại.")
 
     with tabs[3]:
+        product_context(product)
         if product:
             st.subheader("Duyệt và xuất bản nháp")
             storefile=root/"bistextile_existing_products.json"

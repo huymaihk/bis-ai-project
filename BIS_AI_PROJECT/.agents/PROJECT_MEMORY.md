@@ -182,3 +182,8 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
 - Chủ dự án cho toàn quyền cải tiến, trừ xóa sản phẩm Haravan. Đã xây UI 5 bước, template có chứng cứ, chọn ảnh PDF/web, studio nguồn + Gemini tham chiếu, tri thức theo trang và cổng tạo nháp có checkpoint/hash/đối soát. Xem QUALITY_RELEASE_2.md.
 - Test nghiệp vụ dùng fake API, không suy ra nghiệm thu ảnh AI thật. Không có thao tác xóa sản phẩm. Google credential local còn lỗi; checkpoint không đồng bộ sẽ chặn đăng.
 - Không tự đổi bộ test để nới tiêu chí: test tái lập phát hiện index bỏ sót trang chữ ngắn; đã sửa để giữ trang có >=10 ký tự và retire chunk cũ sau cập nhật.
+
+## 2026-11-04 — Workspace visual refresh
+- Tham khảo hai video của chủ dự án và GitHub Langflow/Open WebUI/Agent Chat UI; thêm nền tối/sáng, hero agent CSS, số liệu thật, chọn SKU bên trái và thẻ ngữ cảnh. Xem UI_DESIGN_RELEASE.md.
+- 53 kiểm thử offline đạt, gồm chuyển theme vẫn giữ SKU và chặn đăng khi chưa duyệt. Chưa nghiệm thu hình ảnh trình duyệt/cloud; preview localhost trước đó bị từ chối nên không tìm cách vượt quyền.
+- Bài học: giao diện agent chỉ mô tả vai trò; không trình bày agent chạy nền hoặc kết nối khỏe khi chưa có bằng chứng. Không thay PIN hay thao tác Haravan. Đồng bộ Google vẫn chưa xác minh hoạt động.

@@ -54,5 +54,12 @@ render_workspace(root,None,media,None,None,MemoryStore(root))
     def test_publish_disabled_without_approval(self):
         self.assertTrue(next(x for x in self.app.button if x.label=="Tạo bản nháp trên Haravan").disabled)
 
+    def test_theme_change_keeps_product_and_review_gate(self):
+        self.app.toggle(key="bis_light_theme").set_value(True).run(timeout=30)
+        self.assertFalse(self.app.exception)
+        self.assertEqual(self.app.selectbox(key="q_sku").value,"03026A")
+        self.assertEqual(len(self.app.tabs),5)
+        self.assertTrue(next(x for x in self.app.button if x.label=="Tạo bản nháp trên Haravan").disabled)
+
 if __name__=="__main__":
     unittest.main()
