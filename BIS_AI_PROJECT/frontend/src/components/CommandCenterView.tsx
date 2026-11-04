@@ -318,7 +318,7 @@ export const CommandCenterView: React.FC<CommandCenterViewProps> = ({
                 {/* Cleanly Cropped Central 3D BIS Command Room Scene + Interactive Hotspots */}
                 <div className="relative w-full aspect-[16/12] min-h-[460px] overflow-hidden select-none">
                   <img
-                    src="/assets/aistudio/image_bff76a11.png"
+                    src="assets/aistudio/image_bff76a11.png"
                     alt="Phòng điều hành 3D BIS TEXTILE AI"
                     className="absolute max-w-none pointer-events-none"
                     style={{

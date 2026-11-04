@@ -25,3 +25,7 @@ deepeval>=4.3.0
 pytest>=8.0.0
 
 opencv-python-headless>=4.8.0
+
+# React embedded Streamlit bridge
+fastapi>=0.115,<1
+httpx>=0.27,<1

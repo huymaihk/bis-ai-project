@@ -83,6 +83,14 @@ def create_app(workspace=None, pin=None):
             for row in json.loads(cache.read_text(encoding='utf-8')):
                 if row.get('sku'):
                     result[str(row['sku'])] = row
+        elif (root/'catalog_master_data.py').exists():
+            from catalog_master_data import CATALOG_MASTER
+            for sku, item in CATALOG_MASTER.items():
+                result[sku] = dict(sku=sku,product_name=item.get('vi',''),
+                    product_name_en=item.get('en',''),description=item.get('desc',''),
+                    source_file='catalogue_sample.pdf',source_page=int(item.get('page') or 1),
+                    status='EXTRACTED_UNVERIFIED',evidence_quote='',
+                    provenance='Danh mục có trong mã nguồn; cần đối chiếu PDF, chưa nghiệm thu')
         for path in drafts.glob('*.json'):
             row = json.loads(path.read_text(encoding='utf-8'))
             result[str(row['sku'])] = row
@@ -173,6 +181,19 @@ def create_app(workspace=None, pin=None):
             if page < 1 or page > len(doc):
                 raise HTTPException(422,'Số trang không hợp lệ')
             return Response(doc[page-1].get_pixmap(matrix=pymupdf.Matrix(1.3,1.3)).tobytes('png'), media_type='image/png')
+
+    @app.get('/api/assets/{ident}/thumbnail')
+    def thumbnail(ident: str):
+        import io
+        from PIL import Image
+        row=assets().get(ident)
+        if not row or row[0].suffix.lower()=='.pdf':
+            raise HTTPException(404,'Không tìm thấy ảnh')
+        with Image.open(row[0]) as image:
+            image.thumbnail((400,400))
+            output=io.BytesIO()
+            image.convert('RGB').save(output,format='JPEG',quality=80)
+            return Response(output.getvalue(),media_type='image/jpeg')
 
     @app.get('/api/memory')
     def get_memory():
