@@ -302,3 +302,7 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - Reorganized Technical entry around document intake and three visible steps; renamed product edit section to distinguish selected-SKU edits from catalogue analysis.
 - Native PDF tool has numbered source/select/page sections, file count/legend/empty state. Upload refreshes scanned file list immediately.
 - TypeScript/build pass. Visual browser verification unavailable. Haravan unchanged.
+
+## Technical full document workspace
+- Removed selected-product edit and comparison panels from React Technical. Selecting Technical now opens the complete existing document workspace directly, including the “Từ tài liệu gốc. Đến sản phẩm chuẩn.” overview, scan/upload, selection, analysis and page tools.
+- TypeScript and production build pass. Browser rendering unverified; Haravan unchanged.
