@@ -274,3 +274,8 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - Validation: existing 64 plus 5 new regression cases pass (68 in full run, one additional bridge round-trip test separately); TypeScript and Vite build pass. Public browser rendering not visually verified.
 - Limits: native business tools are opened from the React interface, not rewritten in React. No autonomous/background worker or new AI orchestration; Google sync still unverified. No live Haravan mutations.
 - Lesson: labels and 3D scenes do not prove operations. Reuse guarded business tools through an authenticated route, bind diagnostics to product revision, and identify snapshot checks separately from live checks.
+
+## 2026-11-04 — Hot deployment compatibility fix
+- User screenshot shows a TypeError at app_ui.py calling render_react_workspace with services; full cloud exception message is redacted. Reproduced old cached one-argument renderer incompatibility locally.
+- Added protocol-aware module loader and session bridge reset for incompatible hot deployments. Reload API first, then renderer; preserve persistent product/memory stores. Haravan code/config unchanged.
+- 16 API/bridge tests passed, including cached old-signature reproduction and stale session reset. Cloud visual result remains unverified.

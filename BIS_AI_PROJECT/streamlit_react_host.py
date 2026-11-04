@@ -9,9 +9,12 @@ import streamlit.components.v1 as components
 from fastapi.testclient import TestClient
 from bis_api import create_app
 
+BRIDGE_PROTOCOL = 'workflow-v2-1'
+
 
 class SessionBridge:
     def __init__(self,root):
+        self.protocol = BRIDGE_PROTOCOL
         pin=secrets.token_urlsafe(32)
         self.client=TestClient(create_app(root,pin=pin))
         self.client.headers['X-BIS-Request']='1'
@@ -58,6 +61,11 @@ def render_react_workspace(root, services=None):
     if not (folder/'index.html').exists():
         st.error('Thiếu bản build giao diện React.')
         return
+    existing = st.session_state.get('_bis_react_bridge')
+    if existing is not None and getattr(existing, 'protocol', None) != BRIDGE_PROTOCOL:
+        existing.client.close()
+        for key in ['_bis_react_bridge', '_bis_react_response', '_bis_react_last_request', '_bis_native_step']:
+            st.session_state.pop(key, None)
     if '_bis_react_bridge' not in st.session_state:
         st.session_state['_bis_react_bridge']=SessionBridge(root)
     bridge=st.session_state['_bis_react_bridge']

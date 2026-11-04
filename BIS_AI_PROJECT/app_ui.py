@@ -1039,8 +1039,8 @@ if st.session_state.get("orchestrator"):
 # Default workflow renders only the selected production view, keeping legacy tools available.
 legacy_mode = st.sidebar.toggle("Mở giao diện nâng cao cũ", value=False, key="legacy_mode")
 if not legacy_mode and st.sidebar.toggle("Giao diện React mới",value=True,key="bis_react_enabled"):
-    from streamlit_react_host import render_react_workspace
-    render_react_workspace(PROJECT_DIR, (technical_agent, media_agent, knowledge_agent, translator_agent, bis_memory))
+    from workspace_loader import render_current_workspace
+    render_current_workspace(PROJECT_DIR, (technical_agent, media_agent, knowledge_agent, translator_agent, bis_memory))
     st.stop()
 if not legacy_mode:
     from production_workspace import render_workspace
