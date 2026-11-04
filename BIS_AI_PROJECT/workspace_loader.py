@@ -1,7 +1,7 @@
 """Refresh incompatible cached modules during Streamlit hot deployment."""
 import importlib
 
-PROTOCOL = 'workflow-v2-3'
+PROTOCOL = 'workflow-v2-4'
 
 
 def render_current_workspace(root, services):

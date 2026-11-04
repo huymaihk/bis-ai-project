@@ -7,7 +7,7 @@ async function request(path:string,body?:unknown){
   if(!response.ok)throw Error(typeof result.detail==='string'?result.detail:'Không xử lý được yêu cầu');
   return result;
 }
-const states:Record<string,string>={NEW:'Chưa phân tích',RUNNING:'Chưa hoàn tất',FAILED:'Cần kiểm tra lại',COMPLETED:'Đã phân tích'};
+const states:Record<string,string>={NEEDS_REVIEW:'Không tìm thấy sản phẩm · cần đối chiếu',NEW:'Chưa phân tích',RUNNING:'Chưa hoàn tất',FAILED:'Cần kiểm tra lại',COMPLETED:'Đã phân tích'};
 export default function CatalogueTechnical(){
   const [files,setFiles]=useState<Catalogue[]>([]),[selected,setSelected]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[scanned,setScanned]=useState(false),[confirm,setConfirm]=useState(false),[dialog,setDialog]=useState(false),[progress,setProgress]=useState(''),[detail,setDetail]=useState('');
   const file=files.find(f=>f.id===selected);
@@ -26,7 +26,7 @@ export default function CatalogueTechnical(){
       for(let page=1;page<=run.pages;page++){
         setProgress(`Đang phân tích trang ${page}/${run.pages} · ${file.name}`);
         const result=await request(`catalogues/${file.id}/page`,{run:run.run,page});
-        if(page===run.pages)setProgress(`Đã phân tích ${result.completed_pages} trang · ${result.products} kết quả. Dữ liệu cần được nghiệm thu.`);
+        if(page===run.pages)setProgress(result.state==='COMPLETED'?`Đã xử lý ${result.completed_pages} trang · ${result.products} kết quả. Dữ liệu cần được nghiệm thu.`:'Đã đọc hết tài liệu nhưng không có sản phẩm. Cần đối chiếu, chưa đánh dấu xanh.');
       }
     }catch(e){setError((e as Error).message);setProgress('Phân tích chưa hoàn tất.');}
     finally{await scan().catch(()=>{});setBusy(false);setConfirm(false);}

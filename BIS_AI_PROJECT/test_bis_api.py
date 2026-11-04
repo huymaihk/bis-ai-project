@@ -106,6 +106,22 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(self.client.post(base+'/page',json={'run':run['run'],'page':1}).status_code,422)
         self.assertEqual(self.client.get('/api/catalogues').json()['files'][0]['state'],'FAILED')
 
+    def test_valid_empty_cover_is_processed_without_false_green(self):
+        from types import SimpleNamespace
+        import shutil
+        folder=self.root/'Google_Drive_Storage'/'1_Catalogues'
+        folder.mkdir(parents=True)
+        shutil.copyfile(self.root/'catalogue_sample.pdf',folder/'cover.pdf')
+        self.login()
+        row=self.client.get('/api/catalogues').json()['files'][0]
+        self.client.app.state.catalogue_agent=SimpleNamespace(extract_page=lambda *a:[],last_extraction_status='EMPTY_VALID')
+        base='/api/catalogues/'+row['id']
+        run=self.client.post(base+'/start',json={'sha256':row['sha256']}).json()
+        result=self.client.post(base+'/page',json={'run':run['run'],'page':1})
+        self.assertEqual(result.status_code,200,result.text)
+        self.assertEqual(result.json()['empty_pages'],[1])
+        self.assertEqual(result.json()['state'],'NEEDS_REVIEW')
+
     def test_login_required_and_logout(self):
         for route in ['state','assets','memory','knowledge/search']:
             self.assertEqual(self.client.get('/api/'+route).status_code,401)

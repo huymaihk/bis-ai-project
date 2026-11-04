@@ -15,7 +15,7 @@ from persistent_memory import MemoryStore, atomic_json
 from product_quality import fingerprint, render_product
 from quality_jobs import JobRunner
 
-API_PROTOCOL = 'workflow-v2-3'
+API_PROTOCOL = 'workflow-v2-4'
 
 
 def create_app(workspace=None, pin=None):
@@ -321,8 +321,12 @@ def create_app(workspace=None, pin=None):
                     image=document[body.page-1].get_pixmap(matrix=pymupdf.Matrix(1.5,1.5)).tobytes('jpeg')
                 rows=JobRunner(root).run('catalogue_page',{'file':key,'page':body.page,'sha256':record['sha256']},
                     lambda:app.state.catalogue_agent.extract_page(image,body.page,record['pages']))
-                if not isinstance(rows,list) or not rows:
-                    raise ValueError('Trang chưa có kết quả; cần kiểm tra trang không có sản phẩm hoặc lỗi AI. Chưa đánh dấu tài liệu hoàn tất.')
+                if not isinstance(rows,list) or (not rows and getattr(app.state.catalogue_agent,'last_extraction_status','')!='EMPTY_VALID'):
+                    reason=getattr(app.state.catalogue_agent,'last_extraction_error','') or 'Chưa xác định được trang không có sản phẩm hay lỗi AI'
+                    raise ValueError(reason)
+                record['empty_pages']=record.get('empty_pages',[])
+                if not rows:
+                    record['empty_pages'].append(body.page)
                 for row in rows:
                     row.update(source_file=key,source_page=body.page,status='EXTRACTED_UNVERIFIED')
                     row['custom_html']=render_product(row)
@@ -332,13 +336,16 @@ def create_app(workspace=None, pin=None):
                 record['completed_pages']=body.page
                 record['products']+=len(rows)
                 if body.page==record['pages']:
-                    record['state']='COMPLETED'
+                    record['state']='COMPLETED' if record['products'] else 'NEEDS_REVIEW'
                 atomic_json(catalogue_ledger,records)
                 return record
             except Exception as exc:
                 record['state']='FAILED'
+                reason=str(exc) if isinstance(exc,ValueError) else 'Lỗi xử lý '+type(exc).__name__
+                record['failed_page']=body.page
+                record['error']=reason
                 atomic_json(catalogue_ledger,records)
-                raise HTTPException(422,'Phân tích chưa hoàn tất: '+type(exc).__name__+'; kiểm tra nguồn và kết nối AI.')
+                raise HTTPException(422,f'Trang {body.page}/{record["pages"]}: {reason}. Các bản làm việc đã lưu được giữ lại.')
 
     class WorkspaceOpen(BaseModel):
         step: int = Field(ge=0, le=4)

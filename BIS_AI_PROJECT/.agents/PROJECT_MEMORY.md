@@ -258,3 +258,8 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
 - Removed automatic native navigation which made Technical disappear. Added inline React document inventory, explicit scan, selection, per-file green completion and reanalysis confirmation.
 - Authenticated API scans only catalogue PDFs and validates SHA256. Analysis runs page by page in-session with progress, version/run guards, preserves existing drafts and marks failures conservatively. Empty AI pages stop for review, not green completion.
 - 13 API tests pass (fake extractor for lifecycle; no real AI call), TypeScript/build pass. Module protocol bumped. Cloud still cannot read desktop G without file synchronization; UI explicitly states limitation. Browser visual acceptance unavailable. Haravan unchanged.
+
+## 2026-11-05 Catalogue empty-page diagnosis
+- Distinguish valid parsed empty product arrays from blank/malformed/API failures in Technical extractor. Valid non-product pages continue; all-empty documents require review instead of green completion.
+- API persists failed page and safe error category (quota, permissions, unavailable model, format). Reports page number rather than generic ValueError.
+- 19 API/bridge tests, TypeScript/build pass. No real Gemini call or deployed browser confirmation; screenshot alone does not prove precise original API failure. Haravan unchanged.

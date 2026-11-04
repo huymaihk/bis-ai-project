@@ -244,6 +244,8 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
         return base_prompt.strip()
 
     def extract_page(self, img_bytes: bytes, page_num: int, total_pages: int, brand: str = "AATCC") -> List[dict]:
+        self.last_extraction_status = 'RUNNING'
+        self.last_extraction_error = ''
         prompt = self._build_prompt(page_num, total_pages, brand=brand)
         max_retries = 2
 
@@ -263,12 +265,15 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
                 )
                 text = response.text.strip()
                 if not text:
-                    return []
+                    raise ValueError('Empty model response')
 
                 raw_list = json.loads(text)
                 if isinstance(raw_list, dict):
                     raw_list = [raw_list]
 
+                if not isinstance(raw_list, list):
+                    raise ValueError('Invalid model response')
+                self.last_extraction_status = 'EMPTY_VALID' if not raw_list else 'PARSED'
                 validated_records = []
                 now = datetime.utcnow().isoformat() + "Z"
 
@@ -330,7 +335,15 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
                 return validated_records
 
             except Exception as e:
+                self.last_extraction_status = 'FAILED'
                 err_str = str(e)
+                self.last_extraction_error = (
+                    'Hết hạn mức API hoặc giới hạn tốc độ (429)' if '429' in err_str or 'quota' in err_str.lower()
+                    else 'Model không khả dụng hoặc quá tải (503)' if '503' in err_str
+                    else 'Không có quyền API (401/403)' if '401' in err_str or '403' in err_str
+                    else 'Model không tồn tại (404)' if '404' in err_str
+                    else 'Phản hồi AI trống hoặc không đúng cấu trúc' if isinstance(e, (ValueError, TypeError))
+                    else 'Không gọi được AI: '+type(e).__name__)
                 if "429" in err_str or "quota" in err_str.lower():
                     wait = 3 * (attempt + 1)
                     print(f"  ⚠ Quota limit on page {page_num} — waiting {wait}s…")
