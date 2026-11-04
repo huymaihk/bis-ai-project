@@ -9,7 +9,7 @@ import streamlit.components.v1 as components
 from fastapi.testclient import TestClient
 from bis_api import create_app
 
-BRIDGE_PROTOCOL = 'workflow-v2-2'
+BRIDGE_PROTOCOL = 'workflow-v2-3'
 
 
 class SessionBridge:
@@ -102,3 +102,4 @@ def render_react_workspace(root, services=None):
                 st.session_state['q_sku'] = selected['sku']
         st.session_state['_bis_react_last_request']=request.get('id')
         st.rerun()
+

@@ -15,7 +15,7 @@ from persistent_memory import MemoryStore, atomic_json
 from product_quality import fingerprint, render_product
 from quality_jobs import JobRunner
 
-API_PROTOCOL = 'workflow-v2-2'
+API_PROTOCOL = 'workflow-v2-3'
 
 
 def create_app(workspace=None, pin=None):
@@ -231,6 +231,115 @@ def create_app(workspace=None, pin=None):
     def knowledge_search(q: str = ''):
         return {'text':memory.context(q,max_chars=12000)}
 
+    catalogue_lock = threading.RLock()
+    catalogue_folder = root/'Google_Drive_Storage'/'1_Catalogues'
+    catalogue_ledger = memory.root/'catalogue_analysis.json'
+
+    def catalogue_files():
+        catalogue_folder.mkdir(parents=True, exist_ok=True)
+        return {hashlib.sha256(str(p.relative_to(root)).encode()).hexdigest()[:24]:p
+                for p in catalogue_folder.rglob('*') if p.is_file() and p.suffix.lower()=='.pdf'
+                and p.resolve().is_relative_to(catalogue_folder.resolve())}
+
+    def catalogue_records():
+        try:
+            return json.loads(catalogue_ledger.read_text(encoding='utf-8'))
+        except FileNotFoundError:
+            return {}
+
+    @app.get('/api/catalogues')
+    @app.post('/api/catalogues/scan')
+    def scan_catalogues():
+        records = catalogue_records()
+        result=[]
+        for ident,path in catalogue_files().items():
+            digest=hashlib.sha256(path.read_bytes()).hexdigest()
+            record=records.get(str(path.relative_to(root)),{})
+            state=record.get('state','NEW') if record.get('sha256')==digest else 'NEW'
+            result.append(dict(id=ident,name=path.name,path=str(path.relative_to(catalogue_folder)),
+                               sha256=digest,size=path.stat().st_size,state=state,
+                               completed_pages=record.get('completed_pages',0) if record.get('sha256')==digest else 0))
+        return {'files':sorted(result,key=lambda x:x['name'].lower()),
+                'location':'Google_Drive_Storage/1_Catalogues',
+                'desktop_access':os.name=='nt',
+                'detail':'Quét thư mục trên máy đang chạy BIS. Website Cloud chưa tự đồng bộ ổ G của máy cá nhân.'}
+
+    class CatalogueRun(BaseModel):
+        sha256: str
+        confirm: bool = False
+
+    @app.post('/api/catalogues/{ident}/start')
+    def start_catalogue(ident: str, body: CatalogueRun):
+        import pymupdf
+        with catalogue_lock:
+            path=catalogue_files().get(ident)
+            if path is None:
+                raise HTTPException(404,'Không tìm thấy tài liệu; quét lại thư mục')
+            digest=hashlib.sha256(path.read_bytes()).hexdigest()
+            if digest!=body.sha256:
+                raise HTTPException(409,'Tài liệu đã thay đổi; hãy quét lại')
+            records=catalogue_records()
+            old=records.get(str(path.relative_to(root)),{})
+            if old.get('state')=='COMPLETED' and old.get('sha256')==digest and not body.confirm:
+                raise HTTPException(409,'Bạn có muốn phân tích lại tài liệu này không?')
+            with pymupdf.open(path) as document:
+                if document.needs_pass:
+                    raise HTTPException(422,'PDF cần mật khẩu')
+                pages=len(document)
+            run=secrets.token_hex(16)
+            record=dict(sha256=digest,state='RUNNING',run=run,pages=pages,completed_pages=0,products=0)
+            records[str(path.relative_to(root))]=record
+            atomic_json(catalogue_ledger,records)
+            return record
+
+    class CataloguePage(BaseModel):
+        run: str
+        page: int = Field(ge=1)
+
+    @app.post('/api/catalogues/{ident}/page')
+    def analyse_catalogue_page(ident: str, body: CataloguePage):
+        import pymupdf
+        from media_quality import safe_name
+        with catalogue_lock:
+            path=catalogue_files().get(ident)
+            if path is None:
+                raise HTTPException(404,'Không tìm thấy tài liệu')
+            key=str(path.relative_to(root))
+            records=catalogue_records()
+            record=records.get(key,{})
+            if record.get('run')!=body.run or record.get('state')!='RUNNING':
+                raise HTTPException(409,'Lần phân tích không còn hiệu lực')
+            if body.page!=record.get('completed_pages',0)+1 or body.page>record['pages']:
+                raise HTTPException(409,'Thứ tự trang không hợp lệ')
+            try:
+                if hashlib.sha256(path.read_bytes()).hexdigest()!=record['sha256']:
+                    raise ValueError('Tài liệu đã thay đổi')
+                if not hasattr(app.state,'catalogue_agent'):
+                    from agent_technical import AgentTechnical
+                    app.state.catalogue_agent=AgentTechnical(root)
+                with pymupdf.open(path) as document:
+                    image=document[body.page-1].get_pixmap(matrix=pymupdf.Matrix(1.5,1.5)).tobytes('jpeg')
+                rows=JobRunner(root).run('catalogue_page',{'file':key,'page':body.page,'sha256':record['sha256']},
+                    lambda:app.state.catalogue_agent.extract_page(image,body.page,record['pages']))
+                if not isinstance(rows,list) or not rows:
+                    raise ValueError('Trang chưa có kết quả; cần kiểm tra trang không có sản phẩm hoặc lỗi AI. Chưa đánh dấu tài liệu hoàn tất.')
+                for row in rows:
+                    row.update(source_file=key,source_page=body.page,status='EXTRACTED_UNVERIFIED')
+                    row['custom_html']=render_product(row)
+                    target=drafts/(safe_name(row['sku'])+'.json')
+                    if not target.exists():
+                        atomic_json(target,row)
+                record['completed_pages']=body.page
+                record['products']+=len(rows)
+                if body.page==record['pages']:
+                    record['state']='COMPLETED'
+                atomic_json(catalogue_ledger,records)
+                return record
+            except Exception as exc:
+                record['state']='FAILED'
+                atomic_json(catalogue_ledger,records)
+                raise HTTPException(422,'Phân tích chưa hoàn tất: '+type(exc).__name__+'; kiểm tra nguồn và kết nối AI.')
+
     class WorkspaceOpen(BaseModel):
         step: int = Field(ge=0, le=4)
         sku: str = Field(default='', max_length=100)
@@ -286,3 +395,4 @@ def create_app(workspace=None, pin=None):
 if __name__ == '__main__':
     import uvicorn
     uvicorn.run(create_app(),host='127.0.0.1',port=8765)
+

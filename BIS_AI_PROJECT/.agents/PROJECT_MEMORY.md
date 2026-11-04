@@ -253,3 +253,8 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
 ## Technical full document workspace
 - Removed selected-product edit and comparison panels from React Technical. Selecting Technical now opens the complete existing document workspace directly, including the “Từ tài liệu gốc. Đến sản phẩm chuẩn.” overview, scan/upload, selection, analysis and page tools.
 - TypeScript and production build pass. Browser rendering unverified; Haravan unchanged.
+
+## Technical inline catalogue workspace repair
+- Removed automatic native navigation which made Technical disappear. Added inline React document inventory, explicit scan, selection, per-file green completion and reanalysis confirmation.
+- Authenticated API scans only catalogue PDFs and validates SHA256. Analysis runs page by page in-session with progress, version/run guards, preserves existing drafts and marks failures conservatively. Empty AI pages stop for review, not green completion.
+- 13 API tests pass (fake extractor for lifecycle; no real AI call), TypeScript/build pass. Module protocol bumped. Cloud still cannot read desktop G without file synchronization; UI explicitly states limitation. Browser visual acceptance unavailable. Haravan unchanged.

@@ -69,6 +69,43 @@ class BridgeTests(unittest.TestCase):
         Image.new('RGB',(1254,1254),'black').save(image)
         self.assertEqual(image_state(),'BLOCKED')
 
+    def test_catalogue_scan_analyse_confirm_and_changed_file(self):
+        from types import SimpleNamespace
+        import shutil
+        folder=self.root/'Google_Drive_Storage'/'1_Catalogues'
+        folder.mkdir(parents=True)
+        path=folder/'test.pdf'
+        shutil.copyfile(self.root/'catalogue_sample.pdf',path)
+        self.assertEqual(self.client.get('/api/catalogues').status_code,401)
+        self.login()
+        row=self.client.post('/api/catalogues/scan',json={}).json()['files'][0]
+        self.assertEqual(row['state'],'NEW')
+        self.client.app.state.catalogue_agent=SimpleNamespace(extract_page=lambda *args:[dict(self.row)])
+        base='/api/catalogues/'+row['id']
+        run=self.client.post(base+'/start',json={'sha256':row['sha256']}).json()
+        result=self.client.post(base+'/page',json={'run':run['run'],'page':1})
+        self.assertEqual(result.status_code,200,result.text)
+        self.assertEqual(result.json()['state'],'COMPLETED')
+        self.assertEqual(self.client.post(base+'/start',json={'sha256':row['sha256']}).status_code,409)
+        self.assertEqual(self.client.post(base+'/start',json={'sha256':row['sha256'],'confirm':True}).status_code,200)
+        path.write_bytes(path.read_bytes()+b'\n% changed')
+        self.assertEqual(self.client.get('/api/catalogues').json()['files'][0]['state'],'NEW')
+        self.assertEqual(self.client.post(base+'/start',json={'sha256':row['sha256']}).status_code,409)
+
+    def test_empty_ai_result_never_marks_catalogue_green(self):
+        from types import SimpleNamespace
+        import shutil
+        folder=self.root/'Google_Drive_Storage'/'1_Catalogues'
+        folder.mkdir(parents=True)
+        shutil.copyfile(self.root/'catalogue_sample.pdf',folder/'test.pdf')
+        self.login()
+        row=self.client.get('/api/catalogues').json()['files'][0]
+        self.client.app.state.catalogue_agent=SimpleNamespace(extract_page=lambda *args:[])
+        base='/api/catalogues/'+row['id']
+        run=self.client.post(base+'/start',json={'sha256':row['sha256']}).json()
+        self.assertEqual(self.client.post(base+'/page',json={'run':run['run'],'page':1}).status_code,422)
+        self.assertEqual(self.client.get('/api/catalogues').json()['files'][0]['state'],'FAILED')
+
     def test_login_required_and_logout(self):
         for route in ['state','assets','memory','knowledge/search']:
             self.assertEqual(self.client.get('/api/'+route).status_code,401)

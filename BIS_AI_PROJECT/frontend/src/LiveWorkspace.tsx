@@ -1,6 +1,7 @@
 import React, {lazy, Suspense, useEffect, useState} from 'react';
 import {Home, FlaskConical, Megaphone, Image, Settings, BookOpen, Cpu, LogOut, ArrowUpRight} from 'lucide-react';
 import './live.css';
+import CatalogueTechnical from './components/CatalogueTechnical';
 import WorkflowPanel from './components/WorkflowPanel';
 import {bisFetch, ProtectedImage, AssetLink, embedded} from './streamlitTransport';
 
@@ -34,11 +35,6 @@ export default function LiveWorkspace(){
   useEffect(()=>{
     if(product){setFields(Object.fromEntries(['product_name','product_name_en','brand','description','evidence_quote','source_page','source_file','meta_description'].map(k=>[k,product[k]??''])));setSpecs(JSON.stringify(product.specifications||{},null,2));}
   },[sku,product?._revision]);
-  useEffect(()=>{
-    if(tab!=='technical'||!ready||!embedded)return;
-    setBusy(true);setError('');
-    api('workspace/open','POST',{step:0,sku}).catch(e=>setError(e.message)).finally(()=>setBusy(false));
-  },[tab,ready]);
   async function action(fn:()=>Promise<void>){setBusy(true);setError('');setNotice('');try{await fn();}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
   async function saveProduct(){
     if(!product)return;
@@ -56,7 +52,7 @@ export default function LiveWorkspace(){
   <div className="live-main"><header><div><span className="live-caption">BIS / {nav.find(n=>n[0]===tab)?.[1]}</span><h1>{sku||'Chưa có sản phẩm'}</h1><p>{product?.product_name||product?.product_name_en||'Nhập dữ liệu qua công cụ BIS hiện có'}</p></div><div className="live-chip">{product?.status==='APPROVED'?'Bản lưu đã duyệt':'Bản lưu cần kiểm tra'}</div></header>
   <div className="live-notifications" aria-live="polite">{error&&<div className="live-error" role="alert">{error}</div>}{notice&&<div className="live-success">{notice}</div>}</div>
   <main><nav className="bis-process" aria-label="Các bước xử lý sản phẩm">{[['technical','01','Nguồn'],['marketing','02','Nội dung'],['images','03','Hình ảnh'],['operations','04','Duyệt & xuất']].map(([id,num,label])=><button key={id} aria-current={tab===id?'step':undefined} onClick={()=>setTab(id)}><span>{num}</span><strong>{label}</strong><ArrowUpRight size={15}/></button>)}</nav><div className="live-toolbar"><span>Dữ liệu lưu tại BIS · Đồng bộ Google cần kiểm tra</span><button disabled={busy} onClick={()=>action(load)}>Tải lại</button></div>
-  {tab!=='technical'&&<WorkflowPanel tab={tab} product={product} dirty={dirty} reload={load}/>}{tab==='technical'&&<section className="live-panel"><h2>Từ tài liệu gốc. Đến sản phẩm chuẩn.</h2><p>Đang mở toàn bộ không gian tài liệu và phân tích…</p>{error&&<button onClick={()=>action(async()=>{await api('workspace/open','POST',{step:0,sku});})}>Mở lại không gian Technical</button>}</section>}
+  {tab!=='technical'&&<WorkflowPanel tab={tab} product={product} dirty={dirty} reload={load}/>}{tab==='technical'&&<CatalogueTechnical/>}
   {tab==='overview'&&<><Suspense fallback={<p>Đang mở phòng điều hành…</p>}><LiveOffice sku={sku} onNavigate={setTab}/></Suspense><h2>Nhật ký tác vụ đã lưu</h2>{state.jobs.length?<div className="live-list">{state.jobs.slice(0,15).map((j:any)=><article key={j.id}><strong>{j.task}</strong><span>{j.state}</span><small>{j.started_at}</small></article>)}</div>:<p>Chưa có nhật ký tác vụ. Agent chưa chạy trong phiên này.</p>}</>}
   {tab==='marketing'&&product&&<section className="live-panel"><h2>Nội dung sản phẩm</h2>{field('description','Mô tả tiếng Việt',true)}{field('meta_description','SEO',true)}<p>{String(fields.meta_description||'').length}/160 ký tự</p><button className="primary" disabled={busy} onClick={()=>action(saveProduct)}>Lưu phiên bản</button></section>}
   {tab==='images'&&<><h2>Thư viện ảnh thực tế</h2><p>Ảnh từ kho sản phẩm và thành phẩm BIS. Việc chọn ảnh ở đây chỉ phục vụ xem và đối chiếu.</p><input aria-label="Tìm ảnh" placeholder="Lọc theo SKU hoặc tên ảnh…" value={query} onChange={e=>setQuery(e.target.value)}/>{source&&<section className="live-panel"><h3>{source.name}</h3><ProtectedImage className="live-photo" src={source.url} alt={source.name}/><AssetLink url={source.url}>Tải ảnh gốc</AssetLink></section>}<div className="live-gallery">{assets.filter(a=>a.type==='image'&&a.name.toLowerCase().includes(query.toLowerCase())).slice(0,24).map(a=><button key={a.id} onClick={()=>setSource(a)}><ProtectedImage loading="lazy" src={`${a.url}/thumbnail`} alt={a.name}/><strong>{a.name}</strong><small>{a.folder}</small></button>)}</div><p>Hiển thị tối đa 24 ảnh mỗi lần lọc. Dùng nút Mở studio xử lý ảnh phía trên để chọn nguồn, tạo ảnh và duyệt thành phẩm.</p></>}

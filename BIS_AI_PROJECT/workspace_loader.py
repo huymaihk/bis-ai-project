@@ -1,7 +1,7 @@
 """Refresh incompatible cached modules during Streamlit hot deployment."""
 import importlib
 
-PROTOCOL = 'workflow-v2-2'
+PROTOCOL = 'workflow-v2-3'
 
 
 def render_current_workspace(root, services):
@@ -18,3 +18,4 @@ def render_current_workspace(root, services):
     if 'active_step' not in inspect.signature(native.render_workspace).parameters:
         importlib.reload(native)
     host.render_react_workspace(root, services)
+
