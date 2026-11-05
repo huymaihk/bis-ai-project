@@ -308,3 +308,9 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
 - Reload old config/module when class itself lacks page_text; replace stale instance; reuse compatible objects. Bump workspace protocol v2-8 so native changes load on hot deploy.
 - 69 requested-suite tests PASS including new stale-module/instance regression. No Haravan calls, credential changes, or cache-wide deletion.
 - Lesson: checking an instance alone is insufficient if the imported class is also stale. Cloud success must still be demonstrated independently.
+
+
+## 2026-11-05 AGY_003 closed after Cloud acceptance
+- Owner confirmed Antigravity section 7 Cloud acceptance on commit 0bd2651: page 15 native extraction no TypeError, existing draft protected, four expected SKUs present. AGY_003 now CLOUD_VERIFIED / CLOSED.
+- Codex reviewed report; Cloud observations remain attributed to Antigravity. Prior Codex regression: 69/69 PASS; no code change or test rerun required for documentation-only closure.
+- Lesson: distinguish existing preserved drafts from freshly extracted rows; acceptance covers observed scenario, not universal model reliability. No Haravan operations.
