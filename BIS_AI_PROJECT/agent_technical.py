@@ -30,6 +30,7 @@ from google.genai import types
 from config import (
     GEMINI_API_KEY,
     GEMINI_MODEL,
+    PRIORITY_MODELS,
     MAX_WORKERS,
     STATUS_EXTRACTED,
     STATUS_APPROVED,
@@ -246,13 +247,17 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
     def extract_page(self, img_bytes: bytes, page_num: int, total_pages: int, brand: str = "AATCC") -> List[dict]:
         self.last_extraction_status = 'RUNNING'
         self.last_extraction_error = ''
+        self.last_model_attempts = []
+        self.last_model_used = None
         prompt = self._build_prompt(page_num, total_pages, brand=brand)
         max_retries = 2
 
         for attempt in range(max_retries):
             try:
-                response = self.client.models.generate_content(
-                    model=GEMINI_MODEL,
+                from gemini_fallback import generate_with_fallback
+                response, self.last_model_used = generate_with_fallback(
+                    self.client, PRIORITY_MODELS,
+                    attempts=self.last_model_attempts,
                     contents=[
                         prompt,
                         types.Part.from_bytes(data=img_bytes, mime_type="image/jpeg"),
@@ -296,6 +301,7 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
 
                     rec = {
                         "product_id": str(uuid.uuid4()),
+                        "analysis_model": self.last_model_used,
                         "status": STATUS_EXTRACTED,
                         "source_page": str(page_num),
                         "product_name": fact.product_name,
@@ -344,6 +350,8 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
                     else 'Model không tồn tại (404)' if '404' in err_str
                     else 'Phản hồi AI trống hoặc không đúng cấu trúc' if isinstance(e, (ValueError, TypeError))
                     else 'Không gọi được AI: '+type(e).__name__)
+                if getattr(e, 'code', None) in (503, 504):
+                    return []
                 if '401' in err_str or '403' in err_str:
                     return []
                 if "429" in err_str or "quota" in err_str.lower():

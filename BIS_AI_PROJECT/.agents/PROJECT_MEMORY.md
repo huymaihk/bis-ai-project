@@ -280,3 +280,10 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
 - Extended COLLABORATION_GUIDE with project-specific roles, five workstreams, independent review loop and priority Gemini → Technical → durable sync → media.
 - Prepared AGY_002 local read-only browser audit handoff. Both Antigravity tasks remain OPEN/unassigned; no claim that another app is running.
 - Verified files and scopes; no application code or credentials changed. Browser access restrictions remain in force.
+
+
+## 2026-11-05 Codex verified AGY handoffs and Gemini fallback
+- Verified AGY_001 evidence with real local gemini-3.5-flash reply OK (256 output tokens); not a reliability or PDF quality guarantee. AGY_002 verified within source/API review scope; report explicitly did not use browser testing.
+- Added PRIORITY_MODELS=(gemini-3.8-flash, gemini-3.5-flash) and bounded 503/504 fallback for Technical extraction, model attempt metadata and result provenance. No fallback on auth/quota/other HTTP errors.
+- Requested test_bis_api and test_quality_workflow plus new fallback tests: 59 PASS. Both tasks marked VERIFIED with limits. Haravan source/config safety flags untouched except model list added to config; no Haravan calls or mutations.
+- Lesson: 200 without response text does not prove usable output; record test type and scope instead of “100% success”.
