@@ -37,3 +37,26 @@ Task AI dự phòng hoặc giao diện không được tự thay quyền công c
 ## Giới hạn vận hành
 Hai công cụ không tự đọc suy nghĩ, hội thoại hoặc phản hồi của nhau. File bàn giao không tự khởi động Antigravity.
 Chỉ coi Antigravity đã nhận việc khi nó ghi CLAIMED hoặc có kết quả xác nhận từ chính công cụ.
+
+## Phối hợp theo bằng chứng và điều kiện thực tế
+Phân công dưới đây là lựa chọn cho BIS, không phải kết luận một model luôn giỏi hơn model khác. Nếu một công cụ không có quyền trình duyệt/API cần thiết, ghi chặn và chuyển đầu việc phù hợp.
+
+| Chặng | Antigravity phụ trách | Codex phụ trách | Điều kiện nghiệm thu |
+|---|---|---|---|
+| 1 Gemini | Thử AI Studio và đối chiếu project/model, ghi lỗi đã che khóa | Kiểm tra đường gọi API, phân loại lỗi, tích hợp fallback sau xác minh | Có phản hồi thật; phân biệt local/web; không ghi success giả |
+| 2 Technical | Kiểm tra màn hình bằng trình duyệt, thao tác quét/chọn/phạm vi/SKU | Kiểm tra API, lưu trạng thái, dữ liệu theo file/phiên bản và lỗi đồng thời | Cùng file và SKU xuyên suốt; báo cáo có ảnh/bước tái lập |
+| 3 Hình ảnh | Đối chiếu ảnh nguồn với benchmark, phát hiện sai SKU/logo/hình khối | Xử lý file, phiên bản, hash ảnh, API chọn ảnh và duyệt | Chủ dự án duyệt chất lượng; test code không thay nghiệm thu ảnh |
+| 4 Bộ nhớ và đồng bộ | Kiểm tra mở lại phiên và hiển thị lịch sử | Lưu bền vững, xung đột, backup và xác minh đích sync | Đọc lại khớp sau cập nhật; không mất dữ liệu |
+| 5 Haravan | Rà quy trình, nút và thông tin cảnh báo; không thao tác sàn thật | Rà cổng an toàn và test lỗi/đăng lặp bằng giả lập | Mọi rào chắn đạt; không xóa sản phẩm; tác vụ thật có phê duyệt phù hợp |
+
+## Vòng làm việc chung
+1. Người làm nhận một nhiệm vụ nhỏ có đầu vào và tiêu chí đạt.
+2. Bên phụ trách thực hiện trong phạm vi file đã nhận.
+3. Bên còn lại tái lập kiểm tra và ghi PASS/FAIL kèm bằng chứng, không chỉ đọc mô tả của tác giả.
+4. Nếu FAIL: trả đúng lỗi về tác giả, không tự sửa trùng file.
+5. Codex tích hợp, chạy kiểm tra phù hợp, ghi commit và triển khai sau khi đạt.
+6. Antigravity kiểm tra lại giao diện đã triển khai nếu công cụ có quyền. Chưa quan sát thì trạng thái là chưa xác minh.
+
+## Thứ tự ưu tiên hiện tại
+P0: Gemini auth/availability → P1: nghiệm thu một trang Technical/SKU thật → P2: đồng bộ Catalogue từ máy lên web và bộ nhớ bền vững → P3: ảnh đúng SKU/chất lượng → P4: mở rộng các phòng ban.
+Không mở nhiều bản sửa giao diện trước khi xác minh bản trước trên trình duyệt.

@@ -328,3 +328,8 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - Prepared local-only task .agents/collaboration/AGY_001_GEMINI_DIAGNOSIS.md for Gemini diagnosis/fallback research. Status OPEN, not claimed; no direct Antigravity communication channel available.
 - Verified documents exist and task scope is read-only diagnosis; no IDE DB access, credentials, Haravan calls or application changes. Manual ownership markers are advisory, not concurrency locks.
 - Lesson: shared memory and task files enable handoff, not autonomous delivery or proof that another tool has started.
+
+## 2026-11-05 Strength-based collaboration plan
+- Extended COLLABORATION_GUIDE with project-specific roles, five workstreams, independent review loop and priority Gemini → Technical → durable sync → media.
+- Prepared AGY_002 local read-only browser audit handoff. Both Antigravity tasks remain OPEN/unassigned; no claim that another app is running.
+- Verified files and scopes; no application code or credentials changed. Browser access restrictions remain in force.
