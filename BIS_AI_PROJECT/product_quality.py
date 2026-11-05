@@ -59,6 +59,8 @@ def spec_items(product):
 
 def render_product(product):
     """Seven sections, escaped values, no inferred specs/origin/certificates."""
+    from marketing_content import clean_product
+    product=clean_product(product)
     esc=lambda x:html.escape(str(x or ""))
     sku=str(product.get("sku") or "")
     title=str(product.get("product_name") or "")
@@ -67,7 +69,7 @@ def render_product(product):
         title+=" "+sku
     if vendor and vendor.casefold() not in title.casefold():
         title+=" "+vendor
-    description=esc(product.get("description"))
+    description="".join("<p>"+esc(part)+"</p>" for part in str(product.get("description") or "").split("\n\n") if part.strip())
     specs=spec_items(product)
     if len(specs)<2 and specs:
         description+="<p>"+esc(specs[0][0])+": "+esc(specs[0][1])+"</p>"
@@ -122,7 +124,8 @@ def validate_product(product, source_text=None):
     text=plain(product.get("custom_html") or render_product(product))
     if re.search(r"đơn vị phân phối|chính ngạch|trang nguồn tài liệu|đơn vị tính",text,re.I):
         errors.append("Nội dung chứa thông tin bị loại khỏi bài")
-    if re.search(r"CO\s*/\s*CQ|chính hãng|ủy quyền",text,re.I) and not product.get("certificate_evidence"):
+    claim_text = text + " " + str(product.get("description") or "") + " " + str(product.get("highlights") or "")
+    if re.search(r"CO\s*/\s*CQ|chính hãng|ủy quyền",claim_text,re.I) and not product.get("certificate_evidence"):
         errors.append("Cam kết thương mại thiếu chứng cứ")
     markup=product.get("custom_html") or render_product(product)
     soup=BeautifulSoup(markup,"html.parser")

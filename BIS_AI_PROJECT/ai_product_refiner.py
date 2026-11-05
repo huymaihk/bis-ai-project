@@ -68,7 +68,7 @@ def generate_seo_meta(name_vi: str, name_en: str, sku: str, brand: str, desc: st
     """
     Tạo gói SEO Google hoàn chỉnh đạt chuẩn 100%:
     - Meta Title (< 60 ký tự, ngắt theo từ nguyên vẹn)
-    - Meta Description (140 - 160 ký tự): BẮT BUỘC có Tên tiếng Việt + Tên tiếng Anh + Mã SKU + Hãng + Chứng từ CO/CQ BIS Textile
+    - Meta Description (140 - 160 ký tự): BẮT BUỘC có Tên tiếng Việt + Tên tiếng Anh + Mã SKU + Hãng + thông tin có chứng cứ từ tài liệu
     - URL Slug chuẩn SEO
     - Focus Keywords
     """
@@ -97,11 +97,11 @@ def generate_seo_meta(name_vi: str, name_en: str, sku: str, brand: str, desc: st
     # 2. Meta Description (140 - 160 ký tự): BẮT BUỘC TÊN TIẾNG VIỆT + TÊN TIẾNG ANH + MÃ SKU + HÃNG + BIS TEXTILE
     lead = f"{clean_vi_core} - {clean_en_core} ({sku}) chính hãng {brand_short}."
     tail_options = [
-        " Chuẩn kiểm nghiệm dệt may quốc tế, đầy đủ CO/CQ và hỗ trợ kỹ thuật tại BIS Textile.",
-        " Chuẩn kiểm nghiệm dệt may quốc tế, đầy đủ chứng từ CO/CQ tại BIS Textile.",
-        " Tiêu chuẩn dệt may quốc tế, đầy đủ CO/CQ tại BIS Textile.",
-        " Đầy đủ chứng từ CO/CQ và hỗ trợ kỹ thuật tại BIS Textile.",
-        " Đầy đủ chứng từ CO/CQ tại BIS Textile."
+        " Thông tin sản phẩm và tư vấn kỹ thuật tại BIS Textile.",
+        " Thông tin sản phẩm tại BIS Textile.",
+        " Tra cứu thông tin sản phẩm tại BIS Textile.",
+        " Thông tin và tư vấn kỹ thuật tại BIS Textile.",
+        " thông tin sản phẩm tại BIS Textile."
     ]
     meta_desc = ""
     for tail in tail_options:
@@ -111,7 +111,7 @@ def generate_seo_meta(name_vi: str, name_en: str, sku: str, brand: str, desc: st
             break
 
     if not meta_desc or len(meta_desc) > 160:
-        tail = f" chính hãng {brand_short}, đầy đủ CO/CQ tại BIS Textile."
+        tail = f" {brand_short}. Thông tin sản phẩm tại BIS Textile."
         max_names_len = 160 - len(f" ({sku}){tail}")
         half = max_names_len // 2 - 2
         vi_words = clean_vi_core.split()
@@ -192,11 +192,7 @@ def ai_check_and_refine_product(product: Dict[str, Any]) -> Dict[str, Any]:
     p["description"] = clean_desc
 
     # 3. Chuẩn hóa Đặc điểm nổi bật (Khối 5)
-    default_hl = [
-        f"Tiêu chuẩn thử nghiệm chính hãng do {brand} ban hành, áp dụng toàn cầu trong ngành dệt may.",
-        "Độ chính xác và độ lặp lại cao, đáp ứng đầy đủ yêu cầu kiểm nghiệm phòng lab QA/QC.",
-        "Chứng nhận xuất xứ và chất lượng rõ ràng, cung cấp đầy đủ chứng từ CO/CQ từ BIS Textile."
-    ]
+    default_hl = []
     raw_hl = p.get("highlights")
     if raw_hl and isinstance(raw_hl, list) and len(raw_hl) >= 2:
         cleaned_hl = [re.sub(r'^\s*[-*•]\s*', '', str(x)).strip() for x in raw_hl if "phân phối" not in str(x).lower() and "chính ngạch" not in str(x).lower()]
@@ -233,4 +229,5 @@ def ai_check_and_refine_product(product: Dict[str, Any]) -> Dict[str, Any]:
     p.pop("custom_html", None)
     p["custom_html"] = tech.build_7_block_html(p, force_refresh=True)
 
-    return p
+    from marketing_content import clean_product
+    return clean_product(p)

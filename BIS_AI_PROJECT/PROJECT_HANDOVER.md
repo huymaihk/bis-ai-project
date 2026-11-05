@@ -414,3 +414,9 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - Accepted owner-confirmed Antigravity Cloud report: Technical test name excluded, suggestions remain unapproved; Marketing editor/SEO/saved preview stay inline with save and dirty-state behavior. AGY_005 VERIFIED.
 - Browser evidence belongs to Antigravity; prior Codex regression 72 PASS retained. Documentation-only update.
 - Lesson: a meta-description character counter is an editorial target, not SEO/SERP certification; terminology acceptance covers tested examples. No Haravan operations.
+
+## 2026-11-05 Marketing customer-copy policy
+- Removed automatic CO/CQ highlights from refiner and certificate promise guidance from Marketing defaults. Shared cleaner excludes certificate-promise sentences and [Đã kiểm tra] from customer fields/read-save/render, preserving evidence/history.
+- Expanded short 03026A description to ~1192 characters and four source-based highlights only when selected source contains matching SKU/manual edition evidence; local source page7 verified. Unknown products do not receive invented expansion.
+- Read projection changes invalidate approval and regenerate HTML; persistent edits are saved through existing user save flow. Validation still checks original unsafe claims even when render filters them. Paragraph rendering improved.
+- 73 regression tests PASS; final paragraph rendering quality suite PASS. Cloud visual acceptance pending. No Haravan operations.

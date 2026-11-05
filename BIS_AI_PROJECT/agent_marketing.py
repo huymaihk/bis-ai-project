@@ -176,7 +176,7 @@ Chỉ trả về JSON thuần túy, không có thẻ markdown ```json.
                     "Khối giới thiệu: Nhấn mạnh công năng kiểm tra độ bền màu, độ mài mòn, độ xù lông hoặc độ bền kéo vải",
                     "Đặc điểm nổi bật: Liệt kê các tiêu chuẩn tương thích (AATCC, ISO 105, ASTM, GB/T, JIS L)",
                     "Bảng thông số: Tỷ lệ 39% thuộc tính và 61% giá trị chi tiết, rõ ràng xuất xứ và quy cách đóng gói",
-                    "Cam kết phân phối: Cung cấp chính ngạch bởi BIS Textile Việt Nam, đầy đủ CO/CQ và hóa đơn VAT"
+                    "Chỉ mô tả nội dung có chứng cứ; không chèn cam kết CO/CQ hoặc nhãn [Đã kiểm tra] vào bài sản phẩm"
                 ],
                 "top_seo_keywords": [
                     "thiết bị kiểm nghiệm dệt may", "vật tư thử nghiệm vải", "tiêu chuẩn AATCC", "độ bền màu",

@@ -15,7 +15,7 @@ from persistent_memory import MemoryStore, atomic_json
 from product_quality import fingerprint, render_product
 from quality_jobs import JobRunner
 
-API_PROTOCOL = 'workflow-v2-11'
+API_PROTOCOL = 'workflow-v2-12'
 
 
 def create_app(workspace=None, pin=None):
@@ -96,6 +96,20 @@ def create_app(workspace=None, pin=None):
         for path in drafts.glob('*.json'):
             row = json.loads(path.read_text(encoding='utf-8'))
             result[str(row['sku'])] = row
+        from marketing_content import clean_product, expand_manual
+        from safe_publish import source_text
+        for key,row in result.items():
+            cleaned=clean_product(row)
+            if key=='03026A':
+                try:
+                    cleaned=expand_manual(cleaned,source_text(root,row))
+                except (OSError,ValueError,RuntimeError):
+                    pass
+            if cleaned!=row:
+                cleaned['status']='EXTRACTED_UNVERIFIED'
+                cleaned.pop('_review_hash',None)
+                cleaned['custom_html']=render_product(cleaned)
+            result[key]=cleaned
         return result
 
     @app.get('/api/state')
@@ -145,7 +159,8 @@ def create_app(workspace=None, pin=None):
                     valid = isinstance(value,str)
                 if not valid:
                     raise HTTPException(422, 'Kiểu dữ liệu không hợp lệ: '+key)
-            updated = dict(current, **body.fields)
+            from marketing_content import clean_product
+            updated = clean_product(dict(current, **body.fields))
             updated['status'] = 'EXTRACTED_UNVERIFIED'
             updated.pop('_review_hash', None)
             updated['custom_html'] = render_product(updated)

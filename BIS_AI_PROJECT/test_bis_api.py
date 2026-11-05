@@ -27,6 +27,20 @@ class BridgeTests(unittest.TestCase):
     def login(self):
         self.assertEqual(self.client.post('/api/login',json={'pin':'test-pin'}).status_code,200)
 
+    def test_marketing_copy_policy_and_source_bound_expansion(self):
+        from marketing_content import clean_product, expand_manual, FORBIDDEN_SENTENCE
+        from product_quality import render_product
+        row=dict(sku='03026A',product_name_en='AATCC MANUAL',description='Mô tả [Đã kiểm tra]',highlights=[FORBIDDEN_SENTENCE,'Điểm có nguồn'])
+        clean=clean_product(row)
+        self.assertEqual(clean['description'],'Mô tả')
+        self.assertEqual(clean['highlights'],['Điểm có nguồn'])
+        self.assertNotIn('CO/CQ',render_product(row))
+        self.assertEqual(expand_manual(row,'unrelated')['description'],'Mô tả')
+        expanded=expand_manual(row,'03026A Research Committees 100th Edition')
+        self.assertGreater(len(expanded['description']),900)
+        self.assertNotIn('[Đã kiểm tra]',expanded['description'])
+        self.assertEqual(expand_manual(dict(row,sku='other'),'03026A Research Committees 100th Edition')['description'],'Mô tả')
+
     def test_marketing_inline_preview_and_save(self):
         endpoint='/api/products/03026A/marketing'
         self.assertEqual(self.client.get(endpoint).status_code,401)
