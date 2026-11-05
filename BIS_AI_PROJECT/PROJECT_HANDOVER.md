@@ -436,3 +436,11 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - Web links and selected provenance persist in local MemoryStore. Selected image stored under SKU/hash without overwriting earlier images, available to native studio. Dynamic/blocked sites and vector-only PDFs may need manual source/crop.
 - 75 regression tests PASS before added private-URL test; final API/native suite 29 PASS. TypeScript/build PASS. Live public Boxun page discovery returned16 candidates; browser Cloud acceptance pending. No Haravan calls or mutations.
 - Lesson: UI compatibility limits (70/320) differ from Google result truncation; colocated PDF images are candidates requiring selection, not automatic SKU identity proof.
+
+## 2026-11-05 AGY_006 Cloud acceptance verified
+- Antigravity inspected Streamlit Cloud after commit 44bd912 for Marketing copy, SEO fields, and Images SKU-scoped discovery.
+- Marketing 03026A: verified concise description (323 chars, target 250–450), 2 non-repeating highlights, 3 SEO fields (title 58/70, desc 0/320, slug), and illustrative SERP preview.
+- Images tab: verified SKU selector, catalogue_sample.pdf exact-page extraction (Trang 7 for 03026A, 2 candidates), English name below each image, unverified status notice, download link and source selection flow. Unrelated global gallery removed.
+- 76 regression tests PASS. AGY_006 status marked VERIFIED. No Haravan operations.
+
+- Codex reviewed three-file documentation diff and accepted attributed AGY_006 report; corrected source protocol to v2-13 and redacted credential. Lesson: empty SEO field and same-page image candidates establish UI behavior, not completed SEO or image identity approval. Documentation only; no Haravan operations.
