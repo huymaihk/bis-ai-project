@@ -383,3 +383,13 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
 - Inspected local 03026A_final.jpg as visual reference. Cloud only sees files available on its host (currently tracked reference includes03004A_final.jpg); no claim automatic G-drive sync works.
 - 77 regression tests PASS incl automatic PDF discovery, inline composition and refusal of missing confirmation/stale hash. TypeScript/build PASS. Cloud browser/visual quality acceptance pending; no Haravan operations.
 - Lesson: automatic source discovery can remove redundant file selection without pretending every same-page image belongs to the SKU; source confirmation and final-quality approval are distinct steps.
+
+## 2026-11-05 AGY_007 Cloud acceptance verified
+- Antigravity inspected Streamlit Cloud after commit eafbffc for inline source-to-composite image workflow.
+- Verified auto-discovery on SKU 09907B finds exact catalogue page 10 without manual PDF selection.
+- Verified sticky source action bar, inline source confirmation and compose shortcut, 5 BIS backgrounds and 6_Final_Composites reference images available on Cloud.
+- Verified draft preview flow with low-resolution warning, hash-bound explicit final approval with confirmation gate. No real product approved; no Haravan operations.
+- 77 regression tests PASS. AGY_007 status marked VERIFIED.
+
+
+Codex documentation review: Accepted Antigravity's attributed Cloud observations for eafbffc. Source protocol is workflow-v2-14. SHA rejection and final approval behavior are supported by automated tests/code review; no real-product approval was executed on Cloud. Visual quality and end-to-end approval on temporary Cloud data are not independently verified by Codex. Lesson: distinguish visible controls from executed approval and quality acceptance. Documentation-only update; no Haravan operations.
