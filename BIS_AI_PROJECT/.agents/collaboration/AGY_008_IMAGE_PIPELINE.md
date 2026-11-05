@@ -47,3 +47,8 @@ TypeScript lint and production frontend build PASS. Includes exact selected refe
 - Return READY_FOR_REVIEW and a Codex prompt. Overall owner-quality acceptance remains OPEN until a real generated output is compared and owner approves.
 
 Lesson: evaluate per product class (book/white objects vs equipment/straps), validate executable source and license, and separate inference success, API availability and final image quality. No Haravan operations.
+
+## Deployment handoff
+- Codex pushed ded9459 to origin/main. Cloud rollout/browser acceptance is pending, not independently observed. Status READY_FOR_REVIEW means ready for Antigravity Cloud inspection, not final image-quality approval.
+- Antigravity independent report received. Treat numeric hardware/time/quality assertions as unmeasured estimates unless linked to actual measurements; 95% aesthetic quality is not accepted. Local experiments above are the executable evidence.
+- Next owner Antigravity: inspect Cloud UI and safe error display/package/reference selection using temporary data only, record actually observed commit/protocol and scope. Do not imply the local429 proves Cloud quota state. Return READY_FOR_REVIEW to Codex; no Haravan.
