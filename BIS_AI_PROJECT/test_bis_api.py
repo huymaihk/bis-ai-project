@@ -64,6 +64,36 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(saved.json()['status'],'SOURCE_SELECTED_NOT_APPROVED')
         self.assertTrue((self.root/saved.json()['path']).is_file())
 
+    def test_auto_pdf_discovery_inline_studio_approval_and_stale_hash(self):
+        import io
+        from PIL import Image
+        data=io.BytesIO();Image.new('RGB',(80,100),'blue').save(data,format='PNG')
+        doc=pymupdf.open(self.root/'catalogue_sample.pdf')
+        doc[0].insert_image(pymupdf.Rect(50,70,130,170),stream=data.getvalue());doc.saveIncr();doc.close()
+        folder=self.root/'Google_Drive_Storage'/'5_Studio_Backgrounds';folder.mkdir(parents=True)
+        Image.new('RGB',(1254,1254),'white').save(folder/'BIS_BACKDROP_1254.png')
+        self.login();base='/api/products/03026A'
+        found=self.client.post(base+'/image-search',json={}).json()
+        self.assertEqual(found['candidates'][0]['page'],1)
+        choice=found['candidates'][0]['id']
+        self.assertEqual(self.client.post(base+'/image-choice',json={'id':choice,'confirm':True}).status_code,200)
+        state=self.client.get(base+'/studio').json()
+        self.assertTrue(state['source_url'])
+        draft=self.client.post(base+'/studio/draft',json={'background':state['backgrounds'][0]['id']})
+        self.assertEqual(draft.status_code,200,draft.text)
+        row=draft.json();self.assertTrue(row['low_resolution'])
+        payload={'preview_id':row['id'],'sha256':row['sha256']}
+        self.assertEqual(self.client.post(base+'/studio/approve',json=payload).status_code,422)
+        self.assertEqual(self.client.post(base+'/studio/approve',json={**payload,'sha256':'stale','confirm':True}).status_code,409)
+        approved=self.client.post(base+'/studio/approve',json={**payload,'confirm':True})
+        self.assertEqual(approved.status_code,200,approved.text)
+        self.assertEqual(approved.json()['status'],'APPROVED')
+        self.assertEqual(self.client.get(approved.json()['url']).status_code,200)
+        manifest=json.loads((self.root/'Google_Drive_Storage'/'image_review_manifest.json').read_text())
+        self.assertEqual(manifest['03026A']['approved_sha256'],row['sha256'])
+        path=self.root/row['path'];path.write_bytes(path.read_bytes()+b'changed')
+        self.assertEqual(self.client.post(base+'/studio/approve',json={**payload,'confirm':True}).status_code,409)
+
     def test_web_image_fetch_rejects_private_urls_before_request(self):
         from unittest.mock import patch
         from image_sources import web_images

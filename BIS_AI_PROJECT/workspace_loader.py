@@ -1,7 +1,7 @@
 """Refresh incompatible cached modules during Streamlit hot deployment."""
 import importlib
 
-PROTOCOL = 'workflow-v2-13'
+PROTOCOL = 'workflow-v2-14'
 
 
 def render_current_workspace(root, services):
@@ -9,7 +9,7 @@ def render_current_workspace(root, services):
     refresh_api = getattr(api, 'API_PROTOCOL', None) != PROTOCOL
     if refresh_api:
         # Refresh dependencies before recreating each session's API/agent.
-        for name in ('config', 'gemini_fallback', 'agent_technical', 'technical_names', 'marketing_content', 'product_quality'):
+        for name in ('config', 'gemini_fallback', 'agent_technical', 'technical_names', 'marketing_content', 'product_quality', 'media_quality', 'studio_api'):
             importlib.reload(importlib.import_module(name))
         importlib.reload(api)
     host = importlib.import_module('streamlit_react_host')

@@ -375,3 +375,11 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
 - 76 regression tests PASS. AGY_006 status marked VERIFIED. No Haravan operations.
 
 - Codex reviewed three-file documentation diff and accepted attributed AGY_006 report; corrected source protocol to v2-13 and redacted credential. Lesson: empty SEO field and same-page image candidates establish UI behavior, not completed SEO or image identity approval. Documentation only; no Haravan operations.
+
+## 2026-11-05 Inline source-to-composite image workflow
+- Images auto-discovers PDF candidates on entry: prioritize recorded source_file, then bounded available PDFs, require exact SKU on page. No auto-assignment of image identity; user confirms source with sticky action bar or per-card button.
+- Added inline source confirmation + compose shortcut, background selector defaulting BIS_BACKDROP_1254, reference viewer from available 6_Final_Composites (same-SKU files first), multiple draft previews and explicit final approval.
+- Composition reuses pixel-preserving engine; low-resolution sources allowed for draft only with explicit warning, never silently upscaled. Approval binds to preview SHA and current source SHA, writes existing manifest contract and versioned final file; no overwrite of existing approved files.
+- Inspected local 03026A_final.jpg as visual reference. Cloud only sees files available on its host (currently tracked reference includes03004A_final.jpg); no claim automatic G-drive sync works.
+- 77 regression tests PASS incl automatic PDF discovery, inline composition and refusal of missing confirmation/stale hash. TypeScript/build PASS. Cloud browser/visual quality acceptance pending; no Haravan operations.
+- Lesson: automatic source discovery can remove redundant file selection without pretending every same-page image belongs to the SKU; source confirmation and final-quality approval are distinct steps.

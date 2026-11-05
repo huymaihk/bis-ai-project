@@ -15,7 +15,7 @@ from persistent_memory import MemoryStore, atomic_json
 from product_quality import fingerprint, render_product
 from quality_jobs import JobRunner
 
-API_PROTOCOL = 'workflow-v2-13'
+API_PROTOCOL = 'workflow-v2-14'
 
 
 def create_app(workspace=None, pin=None):
@@ -183,7 +183,7 @@ def create_app(workspace=None, pin=None):
 
     def assets():
         found = {}
-        folders = ['1_Catalogues','2_Manuals_Standards','4_Product_Images','6_Final_Composites']
+        folders = ['1_Catalogues','2_Manuals_Standards','4_Product_Images','5_Studio_Backgrounds','5_Draft_Previews','6_Final_Composites']
         paths = [root/'catalogue_sample.pdf']
         for folder in folders:
             paths.extend((root/'Google_Drive_Storage'/folder).rglob('*'))
@@ -465,7 +465,7 @@ def create_app(workspace=None, pin=None):
 
     class ImageSearch(BaseModel):
         asset_id: str = ''
-        urls: list[str] = Field(default_factory=list,max_length=5)
+        urls: list[str] | None = Field(default=None,max_length=5)
 
     @app.get('/api/products/{sku}/image-links')
     def image_links(sku: str):
@@ -482,15 +482,28 @@ def create_app(workspace=None, pin=None):
         import io
         product=products().get(sku)
         if product is None: raise HTTPException(404,'Không tìm thấy SKU')
-        if any(len(url)>2000 for url in body.urls): raise HTTPException(422,'Link quá dài')
-        memory.revise('image-links:'+sku,json.dumps(body.urls,ensure_ascii=False),kind='note',source='User supplied image discovery URLs')
+        if any(len(url)>2000 for url in (body.urls or [])): raise HTTPException(422,'Link quá dài')
+        if body.urls is not None:
+            memory.revise('image-links:'+sku,json.dumps(body.urls,ensure_ascii=False),kind='note',source='User supplied image discovery URLs')
         rows=[];errors=[]
+        pdfs=[]
         if body.asset_id:
             asset=assets().get(body.asset_id)
             if not asset or asset[0].suffix.lower()!='.pdf': raise HTTPException(404,'Không tìm thấy PDF')
-            for item in candidates(asset[0],sku)[:48]:
-                rows.append(dict(item,source_url=asset[1],kind='pdf'))
-        for url in body.urls:
+            pdfs=[asset]
+        else:
+            available=[a for a in assets().values() if a[0].suffix.lower()=='.pdf']
+            preferred=str(product.get('source_file','')).replace('\\','/')
+            pdfs=sorted(available,key=lambda a:a[1]!=preferred)[:24]
+        for asset in pdfs:
+            try:
+                found=candidates(asset[0],sku)
+                for item in found[:48-len(rows)]:
+                    rows.append(dict(item,source_url=asset[1],kind='pdf'))
+                if rows and not body.asset_id: break
+            except Exception as exc:
+                errors.append('Không đọc được PDF '+asset[0].name+': '+type(exc).__name__)
+        for url in body.urls or []:
             try:
                 rows.extend(dict(item,kind='web') for item in web_images(url,sku,product.get('product_name_en','')))
             except Exception as exc:
@@ -541,6 +554,9 @@ def create_app(workspace=None, pin=None):
             return provenance
         except Exception:
             raise HTTPException(422,'Không lưu được ảnh nguồn; chưa duyệt ảnh')
+
+    from studio_api import register_studio
+    register_studio(app, root, memory, products, assets, lock)
 
     class WorkspaceOpen(BaseModel):
         step: int = Field(ge=0, le=4)

@@ -71,10 +71,11 @@ def rank_candidates(rows,sku,name,brand):
                        "sku_evidence":exact,"status":"NEEDS_REVIEW"})
     return sorted(result,key=lambda x:x["score"],reverse=True)
 
-def studio_draft(source_path,background_path,output_path, *, remove_white=False):
+def studio_draft(source_path,background_path,output_path, *, remove_white=False, allow_low_resolution=False):
     data=Path(source_path).read_bytes()
     im=checked_image(data)
-    if min(im.size)<500:
+    low_resolution=min(im.size)<500
+    if low_resolution and not allow_low_resolution:
         raise ValueError(f"Nguồn {im.width}×{im.height} quá nhỏ cho ảnh studio; chọn ảnh gốc lớn hơn")
     if remove_white:
         import cv2
@@ -114,6 +115,6 @@ def studio_draft(source_path,background_path,output_path, *, remove_white=False)
     canvas.alpha_composite(im,(x,y))
     Path(output_path).parent.mkdir(parents=True,exist_ok=True)
     canvas.convert("RGB").save(output_path,format="PNG")
-    return {"source_sha256":hashlib.sha256(data).hexdigest(),"size":[1254,1254],
+    return {"low_resolution":low_resolution,"source_sha256":hashlib.sha256(data).hexdigest(),"size":[1254,1254],
             "object_size":list(size),"status":"PENDING_REVIEW",
             "note":"Bản ghép bảo toàn pixel; cần kiểm tra nền, chữ, logo và độ chân thật."}
