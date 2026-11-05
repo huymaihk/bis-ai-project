@@ -37,9 +37,50 @@ class BridgeTests(unittest.TestCase):
         self.assertNotIn('CO/CQ',render_product(row))
         self.assertEqual(expand_manual(row,'unrelated')['description'],'Mô tả')
         expanded=expand_manual(row,'03026A Research Committees 100th Edition')
-        self.assertGreater(len(expanded['description']),900)
+        self.assertGreaterEqual(len(expanded['description']),250)
+        self.assertLessEqual(len(expanded['description']),450)
         self.assertNotIn('[Đã kiểm tra]',expanded['description'])
         self.assertEqual(expand_manual(dict(row,sku='other'),'03026A Research Committees 100th Edition')['description'],'Mô tả')
+
+    def test_image_search_matches_pdf_sku_and_requires_selection(self):
+        import io
+        from PIL import Image
+        data=io.BytesIO();Image.new('RGB',(60,60),'red').save(data,format='PNG')
+        doc=pymupdf.open(self.root/'catalogue_sample.pdf')
+        doc[0].insert_image(pymupdf.Rect(50,70,110,130),stream=data.getvalue())
+        doc.saveIncr();doc.close()
+        self.login()
+        asset=self.client.get('/api/assets').json()[0]
+        base='/api/products/03026A'
+        r=self.client.post(base+'/image-search',json={'asset_id':asset['id']})
+        self.assertEqual(r.status_code,200,r.text)
+        candidate=r.json()['candidates'][0]
+        self.assertEqual(candidate['page'],1)
+        self.assertEqual(self.client.get(candidate['url']).status_code,200)
+        self.assertEqual(self.client.post(base+'/image-choice',json={'id':candidate['id']}).status_code,422)
+        self.assertEqual(self.client.post('/api/products/other/image-choice',json={'id':candidate['id'],'confirm':True}).status_code,409)
+        saved=self.client.post(base+'/image-choice',json={'id':candidate['id'],'confirm':True})
+        self.assertEqual(saved.status_code,200,saved.text)
+        self.assertEqual(saved.json()['status'],'SOURCE_SELECTED_NOT_APPROVED')
+        self.assertTrue((self.root/saved.json()['path']).is_file())
+
+    def test_web_image_fetch_rejects_private_urls_before_request(self):
+        from unittest.mock import patch
+        from image_sources import web_images
+        with patch('media_quality.socket.getaddrinfo',return_value=[(2,1,6,'',('127.0.0.1',80))]), patch('image_sources.requests.get') as get:
+            with self.assertRaises(ValueError): web_images('http://localhost/private','sku','name')
+            get.assert_not_called()
+
+    def test_seo_three_fields_and_limits(self):
+        self.login()
+        row=self.client.get('/api/state').json()['products'][0]
+        path='/api/products/03026A'
+        for fields in ({'meta_title':'x'*71},{'meta_description':'x'*321},{'url_slug':'../bad'}):
+            self.assertEqual(self.client.put(path,json={'revision':row['_revision'],'fields':fields}).status_code,422)
+        fields={'meta_title':'Sổ tay AATCC 03026A','meta_description':'Mô tả trang','url_slug':'so-tay-aatcc-03026a'}
+        self.assertEqual(self.client.put(path,json={'revision':row['_revision'],'fields':fields}).status_code,200)
+        actual=self.client.get('/api/state').json()['products'][0]
+        for key,value in fields.items(): self.assertEqual(actual[key],value)
 
     def test_marketing_inline_preview_and_save(self):
         endpoint='/api/products/03026A/marketing'

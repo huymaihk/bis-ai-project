@@ -428,3 +428,11 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - 73 tests PASS. AGY_005 updated with section 6. No Haravan operations.
 
 - Codex reviewed section 6 and documentation diffs; acceptance attributed to Antigravity. Lesson: redact login credentials from acceptance reports before committing. Documentation only; no Haravan operations.
+
+## 2026-11-05 Concise copy, three-field SEO and SKU image sources
+- Supersedes 1192-character 03026A copy: concise 250–450 target, nonrepeating format/edition highlights. Other products get explicit extractive shortening suggestion without fabricated padding; users review before save.
+- Marketing now edits/persists SEO title (70), description (320) and slug with server validation, title alternatives and illustrative search preview. References: https://help.haravan.com/docs/products/create-product/huong-dan-tao-va-cap-nhat-san-pham-hang-loat-bang-cach-nhap-file-tren-admin-haravan/ ; https://developers.google.com/search/docs/appearance/title-link ; public https://bistextile.com/products/bxfd-series-boxun . Read-only research; no admin mutation.
+- Replaced unrelated image gallery with SKU selector, PDF choice, bounded explicit URL discovery, English caption below each image, download and human-confirmed source selection. Exact-SKU PDF pages supply image candidates, not guaranteed product matches. Public HTML image ranking uses SKU/name metadata; no AI visual certification or recursive site crawl.
+- Web links and selected provenance persist in local MemoryStore. Selected image stored under SKU/hash without overwriting earlier images, available to native studio. Dynamic/blocked sites and vector-only PDFs may need manual source/crop.
+- 75 regression tests PASS before added private-URL test; final API/native suite 29 PASS. TypeScript/build PASS. Live public Boxun page discovery returned16 candidates; browser Cloud acceptance pending. No Haravan calls or mutations.
+- Lesson: UI compatibility limits (70/320) differ from Google result truncation; colocated PDF images are candidates requiring selection, not automatic SKU identity proof.

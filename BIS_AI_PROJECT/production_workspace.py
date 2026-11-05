@@ -283,6 +283,15 @@ def render_workspace(root,technical,media,knowledge,translator,memory,active_ste
                             st.success("Đã lưu lựa chọn; chưa xác nhận chất lượng thành phẩm.")
                 st.subheader("Ảnh studio và nghiệm thu")
                 source=media.get_product_image_for_sku(selection)
+                selected_heads=memory.heads('image-source:'+selection)
+                if len(selected_heads)==1 and not selected_heads[0]['deleted']:
+                    try:
+                        selected_data=json.loads(selected_heads[0]['content'])
+                        selected_path=(root/selected_data['path']).resolve()
+                        if selected_data.get('sku')==selection and selected_path.is_relative_to((root/'Google_Drive_Storage'/'4_Product_Images').resolve()) and selected_path.is_file():
+                            source=selected_path
+                    except (ValueError,KeyError,TypeError):
+                        pass
                 if source:
                     st.image(str(source),width=260,caption="Ảnh nguồn hiện tại")
                 backgrounds=media.get_backgrounds()

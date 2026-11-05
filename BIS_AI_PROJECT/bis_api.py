@@ -15,7 +15,7 @@ from persistent_memory import MemoryStore, atomic_json
 from product_quality import fingerprint, render_product
 from quality_jobs import JobRunner
 
-API_PROTOCOL = 'workflow-v2-12'
+API_PROTOCOL = 'workflow-v2-13'
 
 
 def create_app(workspace=None, pin=None):
@@ -127,7 +127,14 @@ def create_app(workspace=None, pin=None):
         product=products().get(sku)
         if product is None:
             raise HTTPException(404,'Không tìm thấy SKU')
-        return {'html':render_product(product),'seo':seo_draft(product),'revision':fingerprint(product)}
+        from marketing_content import concise_suggestion
+        seo=seo_draft(product)
+        from product_quality import plain
+        title=(plain(product.get('product_name'))+' '+sku).strip()
+        seo['meta_title']=title if len(title)<=70 else title[:67].rsplit(' ',1)[0]+'…'
+        seo['meta_description']=plain(product.get('description'))[:320].rsplit(' ',1)[0] if len(plain(product.get('description')))>320 else plain(product.get('description'))
+        seo['title_options']=list(dict.fromkeys([seo['meta_title'], (sku+' | '+plain(product.get('product_name')))[:70]]))
+        return {'html':render_product(product),'seo':seo,'copy':concise_suggestion(product),'revision':fingerprint(product)}
 
     class ProductEdit(BaseModel):
         revision: str
@@ -143,7 +150,7 @@ def create_app(workspace=None, pin=None):
             if fingerprint(current) != body.revision:
                 raise HTTPException(409, 'Dữ liệu đã thay đổi; tải lại trước khi sửa')
             allowed = {'product_name','product_name_en','brand','description','evidence_quote',
-                       'source_page','source_file','specifications','highlights','meta_description'}
+                       'source_page','source_file','specifications','highlights','meta_description','meta_title','url_slug'}
             if set(body.fields)-allowed:
                 raise HTTPException(422, 'Trường không được phép sửa')
             if len(json.dumps(body.fields)) > 50000:
@@ -160,6 +167,11 @@ def create_app(workspace=None, pin=None):
                 if not valid:
                     raise HTTPException(422, 'Kiểu dữ liệu không hợp lệ: '+key)
             from marketing_content import clean_product
+            if len(body.fields.get('meta_title',''))>70 or len(body.fields.get('meta_description',''))>320:
+                raise HTTPException(422,'SEO vượt giới hạn 70/320 ký tự')
+            import re
+            if body.fields.get('url_slug') and not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*',body.fields['url_slug']):
+                raise HTTPException(422,'Đường dẫn chỉ dùng chữ thường không dấu, số và dấu gạch nối')
             updated = clean_product(dict(current, **body.fields))
             updated['status'] = 'EXTRACTED_UNVERIFIED'
             updated.pop('_review_hash', None)
@@ -448,6 +460,87 @@ def create_app(workspace=None, pin=None):
             except ValueError:
                 raise HTTPException(409,'Hiệu chỉnh đã thay đổi; tải lại kết quả')
             return name_review(memory,ident,row)
+
+    image_candidates = {}
+
+    class ImageSearch(BaseModel):
+        asset_id: str = ''
+        urls: list[str] = Field(default_factory=list,max_length=5)
+
+    @app.get('/api/products/{sku}/image-links')
+    def image_links(sku: str):
+        if sku not in products(): raise HTTPException(404,'Không tìm thấy SKU')
+        heads=memory.heads('image-links:'+sku)
+        return {'urls':json.loads(heads[0]['content']) if len(heads)==1 and not heads[0]['deleted'] else []}
+
+    @app.post('/api/products/{sku}/image-search')
+    def image_search(sku: str, body: ImageSearch):
+        from pdf_candidates import candidates
+        from image_sources import web_images
+        from media_quality import checked_image
+        from PIL import Image
+        import io
+        product=products().get(sku)
+        if product is None: raise HTTPException(404,'Không tìm thấy SKU')
+        if any(len(url)>2000 for url in body.urls): raise HTTPException(422,'Link quá dài')
+        memory.revise('image-links:'+sku,json.dumps(body.urls,ensure_ascii=False),kind='note',source='User supplied image discovery URLs')
+        rows=[];errors=[]
+        if body.asset_id:
+            asset=assets().get(body.asset_id)
+            if not asset or asset[0].suffix.lower()!='.pdf': raise HTTPException(404,'Không tìm thấy PDF')
+            for item in candidates(asset[0],sku)[:48]:
+                rows.append(dict(item,source_url=asset[1],kind='pdf'))
+        for url in body.urls:
+            try:
+                rows.extend(dict(item,kind='web') for item in web_images(url,sku,product.get('product_name_en','')))
+            except Exception as exc:
+                errors.append('Không đọc được link: '+type(exc).__name__)
+        output=[]
+        # Cache only bounded candidates; bytes never go into JSON memory.
+        if len(image_candidates)>200: image_candidates.clear()
+        for item in rows[:72]:
+            ident=secrets.token_hex(12)
+            item.update(sku=sku,product_name_en=product.get('product_name_en',''))
+            image_candidates[ident]=item
+            output.append({k:v for k,v in dict(item,id=ident,url='/api/image-candidates/'+ident).items() if k not in ('image_bytes','source_file')})
+        return {'candidates':output,'errors':errors,'detail':'Ảnh ứng viên: cùng trang hoặc link chưa chứng minh đúng sản phẩm. Chọn sau khi đối chiếu.'}
+
+    @app.get('/api/image-candidates/{ident}')
+    def candidate_image(ident: str):
+        from media_quality import download_image, checked_image
+        import io
+        row=image_candidates.get(ident)
+        if row is None: raise HTTPException(404,'Danh sách hết hạn; tìm lại')
+        try:
+            data=row.get('image_bytes') or download_image(row['image_url'])
+            image=checked_image(data); image.thumbnail((1400,1400))
+            output=io.BytesIO();image.convert('RGB').save(output,format='JPEG',quality=90)
+            return Response(output.getvalue(),media_type='image/jpeg')
+        except Exception:
+            raise HTTPException(422,'Không tải được ảnh nguồn')
+
+    class ImageChoice(BaseModel):
+        id: str
+        confirm: bool = False
+
+    @app.post('/api/products/{sku}/image-choice')
+    def choose_image(sku: str, body: ImageChoice):
+        from media_quality import checked_image, download_image, safe_name
+        row=image_candidates.get(body.id)
+        if not row or row['sku']!=sku: raise HTTPException(409,'Ảnh không thuộc SKU đang chọn; tìm lại')
+        if not body.confirm: raise HTTPException(422,'Cần xác nhận đã đối chiếu ảnh')
+        try:
+            data=row.get('image_bytes') or download_image(row['image_url'])
+            image=checked_image(data)
+            folder=root/'Google_Drive_Storage'/'4_Product_Images'/'selected_sources'
+            folder.mkdir(parents=True,exist_ok=True)
+            target=folder/(safe_name(sku)+'_'+hashlib.sha256(data).hexdigest()[:16]+'.png')
+            if not target.exists(): image.save(target,format='PNG')
+            provenance=dict(sku=sku,path=str(target.relative_to(root)),source=row['source_url'],page=row.get('page'),product_name_en=row['product_name_en'],status='SOURCE_SELECTED_NOT_APPROVED')
+            memory.revise('image-source:'+sku,json.dumps(provenance,ensure_ascii=False),kind='correction',source='User-selected image source')
+            return provenance
+        except Exception:
+            raise HTTPException(422,'Không lưu được ảnh nguồn; chưa duyệt ảnh')
 
     class WorkspaceOpen(BaseModel):
         step: int = Field(ge=0, le=4)
