@@ -1,30 +1,350 @@
-import {useState,useEffect} from 'react';
-import {bisFetch,ProtectedImage,AssetLink} from '../streamlitTransport';
-async function request(path:string,body?:any){const r=await bisFetch('/api/'+path,{method:body===undefined?'GET':'POST',headers:{'Content-Type':'application/json','X-BIS-Request':'1'},body:body===undefined?undefined:JSON.stringify(body)});const data=await r.json();if(!r.ok)throw Error(data.detail||'Không xử lý được yêu cầu');return data;}
-export default function ImageSources({product,assets}:{product:any;assets:any[]}){
- const [pdf,setPdf]=useState(''),[links,setLinks]=useState(''),[items,setItems]=useState<any[]>([]),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[chosen,setChosen]=useState('');
- const [studio,setStudio]=useState<any>(null),[background,setBackground]=useState(''),[remove,setRemove]=useState(false),[approval,setApproval]=useState('');
- const [feedback,setFeedback]=useState<Record<string,string>>({});
- const base='products/'+encodeURIComponent(product?.sku||'');
- async function refresh(){const data=await request(base+'/studio');setStudio(data);setBackground(old=>data.backgrounds.some((b:any)=>b.id===old)?old:data.backgrounds[0]?.id||'');}
- useEffect(()=>{let active=true;setChosen('');setApproval('');setPdf('');setItems([]);setStudio(null);setBusy(true);setMessage('Đang tự tìm PDF chứa SKU…');Promise.all([request(base+'/image-links'),request(base+'/image-search',{}),request(base+'/studio')]).then(([saved,data,state])=>{if(!active)return;setLinks((saved.urls||[]).join('\n'));setItems(data.candidates);setStudio(state);setBackground(state.backgrounds[0]?.id||'');setMessage(data.candidates.length?'Đã tự tìm ảnh từ tài liệu chứa đúng SKU. Chọn ảnh nguồn bên dưới.':'Không tìm thấy ảnh nhúng trong các PDF đang có; hãy thêm link hoặc chọn tài liệu khác.');}).catch(e=>{if(active)setMessage(e.message);}).finally(()=>{if(active)setBusy(false);});return()=>{active=false;};},[product?.sku]);
- if(!product)return <p>Chọn SKU để tìm ảnh.</p>;
- async function action(fn:()=>Promise<void>){setBusy(true);setMessage('');try{await fn();}catch(e){setMessage((e as Error).message);try{await refresh();}catch{}}finally{setBusy(false);}}
- async function search(){await action(async()=>{setChosen('');const data=await request(base+'/image-search',{asset_id:pdf,urls:links.split('\n').map(s=>s.trim()).filter(Boolean)});setItems(data.candidates);setMessage([data.detail,...data.errors,!data.candidates.length?'Chưa tìm thấy ảnh nhúng.':''].join(' '));});}
- async function choose(compose=false){await action(async()=>{await request(base+'/image-choice',{id:chosen,confirm:true});if(compose)await request(base+'/studio/draft',{background,remove_white:remove});await refresh();setApproval('');setMessage(compose?'Đã xác nhận nguồn và tạo bản ghép chờ duyệt.':'Đã xác nhận ảnh nguồn. Chọn nền và tạo bản ghép ở phần 2.');});}
- return <section className="live-panel"><h2>Ảnh sản phẩm {product.sku}</h2><p>{product.product_name_en}</p><p role="status">{message}</p>
- <h3>1 · Tự tìm nguồn và xác nhận ảnh</h3><p>Ưu tiên tài liệu nguồn đã phân tích, sau đó tìm các PDF đang có trên máy chạy BIS. Ảnh cùng trang vẫn cần đối chiếu đúng vật thể.</p>
- <details><summary>Đổi tài liệu hoặc bổ sung link web</summary><label>PDF<select disabled={busy} value={pdf} onChange={e=>setPdf(e.target.value)}><option value="">Tự tìm theo SKU và tài liệu nguồn</option>{assets.filter(a=>a.type==='pdf').map(a=><option key={a.id} value={a.id}>{a.name} · {a.folder}</option>)}</select></label><label>Link web nguồn · mỗi dòng một link, tối đa 5<textarea rows={3} value={links} onChange={e=>setLinks(e.target.value)}/></label><button disabled={busy} onClick={search}>Tìm lại / tìm thêm từ link</button></details>
- <div className="image-selection-bar"><strong>{chosen?'Đã chọn 1 ảnh ứng viên':'Chọn ảnh bên dưới'}</strong><button className="primary" disabled={busy||!chosen} onClick={()=>choose()}>Xác nhận ảnh nguồn đã chọn</button><button disabled={busy||!chosen||!background} onClick={()=>choose(true)}>Xác nhận nguồn và tạo ảnh bằng AI</button></div>
- <div className="sku-image-grid">{items.map(item=><article key={item.id} style={{outline:chosen===item.id?'2px solid #b82d25':'none'}}><ProtectedImage src={item.url} alt={`Ảnh ứng viên cho ${product.sku}`}/><strong>{product.product_name_en||'Chưa có tên tiếng Anh'}</strong><small>SKU mục tiêu: {product.sku} · {item.page?`Trang ${item.page}`:'Nguồn web'} · Chưa xác nhận đúng ảnh</small><small style={{overflowWrap:'anywhere'}}>{item.source_url}</small><AssetLink url={item.url}>Mở / tải ảnh</AssetLink><label><input type="radio" name="image-choice" checked={chosen===item.id} onChange={()=>setChosen(item.id)}/> Chọn ảnh này để đối chiếu và ghép</label><button disabled={busy||chosen!==item.id} onClick={()=>choose()}>Xác nhận ảnh này làm nguồn</button></article>)}</div>
- <h3>2 · Ghép nền và đối chiếu ảnh mẫu</h3>
- {studio?.source_url&&<div><ProtectedImage src={studio.source_url} style={{maxWidth:240}} alt="Ảnh nguồn đã xác nhận"/><p>Ảnh nguồn đã xác nhận · {product.product_name_en}</p></div>}
- <div className="catalogue-range"><label>Nền studio<select value={background} onChange={e=>setBackground(e.target.value)}>{studio?.backgrounds.map((b:any)=><option key={b.id} value={b.id}>{b.name}</option>)}</select></label></div>
- {!studio?.backgrounds.length&&<p>Chưa có nền studio trên máy chạy web. Thư mục G trên máy cá nhân chưa tự đồng bộ lên Cloud.</p>}
- <div className="sku-image-grid">{background&&studio?.backgrounds.find((b:any)=>b.id===background)&&<article><ProtectedImage src={studio.backgrounds.find((b:any)=>b.id===background).url} alt="Nền ghép"/><small>Nền sẽ dùng để ghép</small></article>}</div>
- <label><input style={{width:'auto'}} type="checkbox" checked={remove} onChange={e=>setRemove(e.target.checked)}/> Tách vùng trắng ngoài vật thể (cần kiểm tra viền và vật thể trắng)</label><button className="primary" disabled={busy||!studio?.source_url||!background} onClick={()=>action(async()=>{await request(base+'/studio/draft',{background,remove_white:remove});await refresh();setApproval('');setMessage('AI đã tạo ảnh mới; kiểm tra chữ, hình dáng và chất lượng trước khi duyệt.');})}>Tạo ảnh studio bằng AI</button>
- <button disabled={busy||!studio?.source_url||!background} onClick={()=>action(async()=>{const r=await bisFetch('/api/'+base+'/studio/package',{method:'POST',headers:{'Content-Type':'application/json','X-BIS-Request':'1'},body:JSON.stringify({background})});if(!r.ok){const error=await r.json();throw Error(error.detail||'Không xuất được bộ ảnh');}const blob=await r.blob();const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='BIS_'+product.sku+'_web_edit.zip';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);setMessage('Đã tải ảnh nguồn, nền và yêu cầu chỉnh ảnh để dùng trên web. Chưa tạo hoặc duyệt ảnh.');})}>Tải bộ ảnh + yêu cầu để chỉnh trên Gemini/ChatGPT web</button>
- <h3>3 · Chọn và duyệt ảnh thành phẩm</h3><div className="image-selection-bar" aria-live="polite"><strong>{busy?'Đang xử lý yêu cầu…':message}</strong>{studio?.last_attempt?.status==='FAILED'&&<p role="alert">Lần tạo gần nhất chưa thành công: {studio.last_attempt.message} · {studio.last_attempt.code}{studio.last_attempt.http_code?` / HTTP ${studio.last_attempt.http_code}`:''}. Chưa có ảnh AI mới từ lần thử này.</p>}</div><p>Ảnh cũ được giữ để đối chiếu. Nhấn Tạo ảnh studio bằng AI để tạo phiên bản mới. Đối chiếu đúng SKU, chữ/logo, hình khối, viền, nền và bóng đổ trước khi duyệt.</p>
- <div className="sku-image-grid">{studio?.previews.map((p:any)=><article key={p.id}><ProtectedImage src={p.url} alt="Bản ghép chờ duyệt"/><strong>{product.product_name_en}</strong><small>{p.engine&&p.engine!=='quick'?'Ảnh chỉnh bằng AI · ': 'Bản ghép nhanh cũ · '}{p.status==='APPROVED'?'Phiên bản này đã được duyệt':'Chờ duyệt'} · {p.low_resolution?'Nguồn nhỏ hơn 500 px: kiểm tra độ nét kỹ':'Nguồn đủ ngưỡng kích thước để thử ghép'}</small><AssetLink url={p.url}>Mở / tải bản ghép</AssetLink><label>Góp ý để AI tạo lại<textarea rows={3} maxLength={2000} value={feedback[p.id]||''} onChange={e=>setFeedback({...feedback,[p.id]:e.target.value})} placeholder="Ví dụ: sản phẩm quá nhỏ, tăng sáng trung thực, giữ đúng chữ và logo"/></label><button disabled={busy||!background||!(feedback[p.id]||'').trim()} onClick={()=>action(async()=>{await request(base+'/studio/retry',{preview_id:p.id,sha256:p.sha256,background,feedback:feedback[p.id]});await refresh();setApproval('');setMessage('AI đã tạo phiên bản mới theo góp ý; hãy đối chiếu trước khi duyệt.');})}>Tạo lại ảnh bằng AI</button><small>Góp ý được lưu theo SKU và dùng cho lần tạo sau. Đây là bộ nhớ phản hồi, không phải huấn luyện lại model. Chỉnh ảnh qua Gemini API có thể dùng quota tính phí.</small><label><input type="checkbox" style={{width:'auto'}} checked={approval===p.id} onChange={e=>setApproval(e.target.checked?p.id:'')}/> Tôi xác nhận đúng sản phẩm và chất lượng thành phẩm</label><button className="primary" disabled={busy||approval!==p.id||p.status==='APPROVED'} onClick={()=>action(async()=>{await request(base+'/studio/approve',{preview_id:p.id,sha256:p.sha256,confirm:true});await refresh();setApproval('');setMessage('Đã duyệt đúng phiên bản ảnh và lưu thành phẩm. Không đăng Haravan.');})}>Duyệt ảnh thành phẩm này</button></article>)}</div>
- </section>;
+import {useState, useEffect} from 'react';
+import {bisFetch, ProtectedImage, AssetLink} from '../streamlitTransport';
+
+type CompletedImage = {
+  filename: string;
+  path: string;
+  sha256: string;
+  size: number;
+  url: string;
+  is_legacy: boolean;
+  legacy_label: string | null;
+  is_confirmed: boolean;
+  is_primary: boolean;
+  order: number;
+  hash_mismatch: boolean;
+  warning: string | null;
+  modified_at: string;
+};
+
+async function request(path: string, body?: any) {
+  const r = await bisFetch('/api/' + path, {
+    method: body === undefined ? 'GET' : 'POST',
+    headers: {'Content-Type': 'application/json', 'X-BIS-Request': '1'},
+    body: body === undefined ? undefined : JSON.stringify(body)
+  });
+  const data = await r.json();
+  if (!r.ok) throw Error(data.detail || 'Không xử lý được yêu cầu');
+  return data;
+}
+
+export default function ImageSources({product, assets}: {product: any; assets: any[]}) {
+  const [items, setItems] = useState<CompletedImage[]>([]);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [primary, setPrimary] = useState<string>('');
+  const [orders, setOrders] = useState<Record<string, number>>({});
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
+  const [scanTime, setScanTime] = useState<string>('');
+
+  const sku = product?.sku || '';
+  const base = 'products/' + encodeURIComponent(sku);
+
+  async function loadImages() {
+    if (!sku) return;
+    setBusy(true);
+    setMessage('Đang quét ảnh hoàn thiện trong Google_Drive_Storage/6_Final_Composites/…');
+    try {
+      const data = await request(base + '/completed-images');
+      const loaded: CompletedImage[] = data.completed_images || [];
+      setItems(loaded);
+      setScanTime(new Date().toLocaleTimeString('vi-VN'));
+
+      // Populate selected and primary from confirmed state or defaults
+      const confirmedSet = new Set<string>();
+      const orderMap: Record<string, number> = {};
+      let foundPrimary = '';
+
+      loaded.forEach((img, idx) => {
+        orderMap[img.filename] = idx + 1;
+        if (img.is_confirmed) {
+          confirmedSet.add(img.filename);
+          if (img.is_primary) foundPrimary = img.filename;
+        }
+      });
+
+      setSelected(confirmedSet);
+      setPrimary(foundPrimary || loaded[0]?.filename || '');
+      setOrders(orderMap);
+
+      const hasMismatch = loaded.some(img => img.hash_mismatch);
+      if (hasMismatch) {
+        setMessage('⚠️ Cảnh báo: Có tệp ảnh đã bị thay đổi nội dung trên đĩa sau khi xác nhận! Cần đối chiếu lại.');
+      } else {
+        setMessage(loaded.length
+          ? `Đã tìm thấy ${loaded.length} ảnh hoàn thiện khớp chính xác SKU ${sku}.`
+          : `Chưa có ảnh hoàn thiện nào cho SKU ${sku} trong Google_Drive_Storage/6_Final_Composites/.`);
+      }
+    } catch (e) {
+      setMessage((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  useEffect(() => {
+    loadImages();
+  }, [sku]);
+
+  if (!product) return <p>Chọn SKU để xem ảnh hoàn thiện.</p>;
+
+  function toggleSelect(filename: string) {
+    const next = new Set(selected);
+    if (next.has(filename)) {
+      next.delete(filename);
+      if (primary === filename) {
+        const remaining = Array.from(next);
+        setPrimary(remaining[0] || '');
+      }
+    } else {
+      next.add(filename);
+      if (!primary) setPrimary(filename);
+    }
+    setSelected(next);
+  }
+
+  function moveOrder(filename: string, direction: 'up' | 'down') {
+    const sorted = [...items].sort((a, b) => (orders[a.filename] || 0) - (orders[b.filename] || 0));
+    const idx = sorted.findIndex(i => i.filename === filename);
+    if (idx < 0) return;
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= sorted.length) return;
+
+    const currentOrder = orders[filename] || idx + 1;
+    const targetItem = sorted[targetIdx];
+    const targetOrder = orders[targetItem.filename] || targetIdx + 1;
+
+    setOrders({
+      ...orders,
+      [filename]: targetOrder,
+      [targetItem.filename]: currentOrder
+    });
+  }
+
+  async function confirmImageSet() {
+    if (selected.size === 0) {
+      setMessage('Vui lòng chọn ít nhất 1 ảnh vào bộ ảnh thành phẩm.');
+      return;
+    }
+    setBusy(true);
+    setMessage('Đang lưu xác nhận bộ ảnh và tính hash SHA256…');
+    try {
+      const selectedList = items
+        .filter(img => selected.has(img.filename))
+        .sort((a, b) => (orders[a.filename] || 0) - (orders[b.filename] || 0))
+        .map(img => ({
+          filename: img.filename,
+          sha256: img.sha256,
+          order: orders[img.filename] || 1
+        }));
+
+      await request(base + '/completed-images/confirm', {
+        images: selectedList,
+        primary_image: primary || selectedList[0].filename,
+        confirm: true
+      });
+
+      setMessage('Đã xác nhận bộ ảnh thành phẩm cho SKU ' + sku + '. Đã lưu SHA256 chống thay đổi file.');
+      await loadImages();
+    } catch (e) {
+      setMessage((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function downloadFlowPackage() {
+    setBusy(true);
+    try {
+      const res = await bisFetch('/api/' + base + '/completed-images/package', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-BIS-Request': '1'},
+        body: JSON.stringify({})
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Không thể tạo gói xuất Flow AI');
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `BIS_${sku}_flow_ai.zip`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      setMessage('Đã tải gói ZIP (ảnh thô + phôi nền BIS + FLOW_AI_PROMPT.txt). Xử lý trên Flow AI rồi lưu kết quả vào 6_Final_Composites/.');
+    } catch (e) {
+      setMessage((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const sortedItems = [...items].sort((a, b) => (orders[a.filename] || 0) - (orders[b.filename] || 0));
+  const hasTamperAlert = items.some(img => img.hash_mismatch);
+
+  return (
+    <section className="live-panel">
+      <p>Quét thư mục trên máy chạy BIS. Chưa xác minh đồng bộ Google Drive; website Cloud không đọc trực tiếp ổ G: trên máy bạn.</p>
+      <div className="catalogue-heading">
+        <div>
+          <h2>Hình ảnh hoàn thiện · SKU {sku}</h2>
+          <p><strong>{product.product_name_en || product.product_name}</strong></p>
+          <small>Nguồn dữ liệu: Google_Drive_Storage / 6_Final_Composites · {scanTime ? `Quét lúc ${scanTime}` : ''}</small>
+        </div>
+        <div style={{display:'flex', gap:'8px', flexWrap:'wrap'}}>
+          <button disabled={busy} onClick={loadImages}>
+            Quét ảnh hoàn thiện
+          </button>
+          <button disabled={busy} onClick={downloadFlowPackage}>
+            Tải gói ảnh thô + prompt cho Flow AI (ZIP)
+          </button>
+        </div>
+      </div>
+
+      {hasTamperAlert && (
+        <div className="live-error" role="alert" style={{margin:'12px 0', padding:'12px', border:'2px solid #b82d25', background:'#fff5f5'}}>
+          <strong>⚠️ PHÁT HIỆN THAY ĐỔI TỆP TRÊN ĐĨA:</strong>
+          <p>Tệp ảnh đã bị chỉnh sửa hoặc ghi đè sau lần xác nhận gần nhất (sai lệch mã băm SHA256). Vui lòng đối chiếu kỹ lại chữ, logo, thông số và nhấn "Xác nhận bộ ảnh thành phẩm" để cập nhật phiên bản mới.</p>
+        </div>
+      )}
+
+      <div className="image-selection-bar" aria-live="polite" style={{marginTop:'12px'}}>
+        <div>
+          <strong>{busy ? 'Đang xử lý…' : message}</strong>
+          <p style={{margin:'4px 0 0 0', fontSize:'0.9rem'}}>
+            Đã chọn {selected.size}/{items.length} ảnh trong bộ · Ảnh chính: <strong>{primary || 'Chưa chọn'}</strong>
+          </p>
+        </div>
+        <button
+          className="primary"
+          disabled={busy || selected.size === 0}
+          onClick={confirmImageSet}
+        >
+          Xác nhận bộ ảnh thành phẩm
+        </button>
+      </div>
+
+      {sortedItems.length === 0 ? (
+        <div style={{padding:'32px', textAlign:'center', background:'#fcfaf7', border:'1px dashed #d9c8b4', borderRadius:'8px', marginTop:'16px'}}>
+          <p>Chưa có ảnh nào khớp chính xác với SKU <strong>{sku}</strong> trong thư mục <code>Google_Drive_Storage/6_Final_Composites/</code>.</p>
+          <p><small>Quy ước đặt tên thành phẩm Flow AI: <code>{sku}_1.png</code>, <code>{sku}_2.png</code>...</small></p>
+          <button disabled={busy} onClick={downloadFlowPackage} style={{marginTop:'8px'}}>
+            Tải gói ảnh thô + prompt để đưa vào Flow AI
+          </button>
+        </div>
+      ) : (
+        <div className="sku-image-grid" style={{marginTop:'20px'}}>
+          {sortedItems.map((item, idx) => {
+            const isSelected = selected.has(item.filename);
+            const isPrimary = (primary === item.filename);
+
+            return (
+              <article
+                key={item.filename}
+                style={{
+                  outline: isPrimary ? '3px solid #1a73e8' : isSelected ? '2px solid #2e7d32' : '1px solid #d9c8b4',
+                  background: isSelected ? '#f6fbf6' : '#fff',
+                  position: 'relative'
+                }}
+              >
+                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'4px'}}>
+                  <span className="live-caption">Vị trí #{orders[item.filename] || idx + 1}</span>
+                  <div style={{display:'flex', gap:'4px'}}>
+                    {item.is_legacy && (
+                      <span className="live-chip" style={{background:'#f0f0f0', fontSize:'0.75rem'}}>
+                        {item.legacy_label || 'Tên cũ'}
+                      </span>
+                    )}
+                    {item.hash_mismatch ? (
+                      <span className="live-chip" style={{background:'#b82d25', color:'#fff', fontSize:'0.75rem'}}>
+                        SHA256 Thay đổi
+                      </span>
+                    ) : item.is_confirmed ? (
+                      <span className="live-chip" style={{background:'#e6f4ea', color:'#137333', fontSize:'0.75rem'}}>
+                        Đã xác nhận
+                      </span>
+                    ) : (
+                      <span className="live-chip" style={{background:'#fff3e0', color:'#e65100', fontSize:'0.75rem'}}>
+                        Chờ duyệt
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <ProtectedImage
+                  src={item.url}
+                  alt={`Ảnh hoàn thiện cho ${sku}`}
+                  style={{width:'100%', maxHeight:'240px', objectFit:'contain', background:'#f8f9fa', borderRadius:'4px'}}
+                />
+
+                <strong style={{display:'block', marginTop:'8px', color:'#202124'}}>
+                  {product.product_name_en || product.product_name}
+                </strong>
+                <code style={{fontSize:'0.8rem', color:'#5f6368', display:'block', wordBreak:'break-all'}}>
+                  {item.filename} ({(item.size / 1024).toFixed(1)} KB)
+                </code>
+
+                {item.warning && (
+                  <small style={{color:'#b82d25', display:'block', fontWeight:600, marginTop:'4px'}}>
+                    {item.warning}
+                  </small>
+                )}
+
+                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:'8px', paddingTop:'8px', borderTop:'1px solid #eee'}}>
+                  <AssetLink url={item.url}>
+                    Mở / tải ảnh ↗
+                  </AssetLink>
+                  <div style={{display:'flex', gap:'4px'}}>
+                    <button
+                      type="button"
+                      disabled={busy || idx === 0}
+                      onClick={() => moveOrder(item.filename, 'up')}
+                      style={{padding:'2px 8px', fontSize:'0.8rem'}}
+                      title="Chuyển lên trước"
+                    >
+                      ▲ Lên
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy || idx === sortedItems.length - 1}
+                      onClick={() => moveOrder(item.filename, 'down')}
+                      style={{padding:'2px 8px', fontSize:'0.8rem'}}
+                      title="Chuyển xuống sau"
+                    >
+                      ▼ Xuống
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{marginTop:'10px', display:'flex', flexDirection:'column', gap:'6px'}}>
+                  <label style={{display:'flex', alignItems:'center', gap:'8px', cursor:'pointer', fontWeight:500}}>
+                    <input
+                      type="checkbox"
+                      style={{width:'auto'}}
+                      checked={isSelected}
+                      onChange={() => toggleSelect(item.filename)}
+                    />
+                    Chọn vào bộ ảnh sản phẩm
+                  </label>
+
+                  <label style={{display:'flex', alignItems:'center', gap:'8px', cursor:'pointer', fontSize:'0.9rem', color: isSelected ? '#1a73e8' : '#999'}}>
+                    <input
+                      type="radio"
+                      name="primary-image"
+                      style={{width:'auto'}}
+                      disabled={!isSelected}
+                      checked={isPrimary}
+                      onChange={() => setPrimary(item.filename)}
+                    />
+                    Đặt làm ảnh chính (Primary)
+                  </label>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
 }

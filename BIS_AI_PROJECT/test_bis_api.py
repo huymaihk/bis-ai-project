@@ -418,5 +418,81 @@ class BridgeTests(unittest.TestCase):
         self.assertNotEqual(self.client.post('/api/operations/haravan/create-draft',json={}).status_code,200)
         self.assertNotEqual(self.client.delete('/api/products/03026A').status_code,200)
 
+
+    def test_raw_images_save_deduplicate_and_list(self):
+        import io
+        from PIL import Image
+        data = io.BytesIO()
+        Image.new('RGB', (80, 80), 'blue').save(data, format='PNG')
+        doc = pymupdf.open(self.root / 'catalogue_sample.pdf')
+        doc[0].insert_image(pymupdf.Rect(20, 20, 90, 90), stream=data.getvalue())
+        doc.saveIncr()
+        doc.close()
+        self.login()
+        asset = self.client.get('/api/assets').json()[0]
+        base = '/api/products/03026A'
+        r = self.client.post(base + '/image-search', json={'asset_id': asset['id']})
+        self.assertEqual(r.status_code, 200)
+        candidates = r.json()['candidates']
+        self.assertTrue(len(candidates) >= 1)
+        cid = candidates[0]['id']
+
+        # Save candidate into raw storage
+        save_resp = self.client.post(base + '/raw-images/save', json={'candidate_ids': [cid], 'confirm': True})
+        self.assertEqual(save_resp.status_code, 200)
+        self.assertEqual(save_resp.json()['status'], 'SAVED')
+        raw_list = self.client.get(base + '/raw-images').json()['raw_images']
+        self.assertEqual(len(raw_list), 1)
+        self.assertEqual(raw_list[0]['filename'], '03026A_1.png')
+
+        # Saving same candidate again must deduplicate and not create 03026A_2.png
+        save_again = self.client.post(base + '/raw-images/save', json={'candidate_ids': [cid], 'confirm': True})
+        self.assertEqual(save_again.status_code, 200)
+        self.assertTrue(save_again.json()['records'][0]['deduplicated'])
+        raw_list2 = self.client.get(base + '/raw-images').json()['raw_images']
+        self.assertEqual(len(raw_list2), 1)
+
+    def test_completed_images_scan_confirm_and_package(self):
+        final_dir = self.root / 'Google_Drive_Storage' / '6_Final_Composites'
+        final_dir.mkdir(parents=True, exist_ok=True)
+        img1 = final_dir / '03026A_1.png'
+        img2 = final_dir / '03026A_2.jpg'
+        unrelated = final_dir / '03026AB_1.png'
+        img1.write_bytes(b'COMPOSITE_1')
+        img2.write_bytes(b'COMPOSITE_2')
+        unrelated.write_bytes(b'COMPOSITE_UNRELATED')
+
+        self.login()
+        base = '/api/products/03026A'
+        r = self.client.get(base + '/completed-images')
+        self.assertEqual(r.status_code, 200)
+        items = r.json()['completed_images']
+        filenames = [i['filename'] for i in items]
+        self.assertIn('03026A_1.png', filenames)
+        self.assertIn('03026A_2.jpg', filenames)
+        self.assertNotIn('03026AB_1.png', filenames)
+
+        # Confirm set
+        conf_req = {
+            'images': [{'filename': i['filename'], 'sha256': i['sha256']} for i in items],
+            'primary_image': '03026A_1.png',
+            'confirm': True
+        }
+        conf_resp = self.client.post(base + '/completed-images/confirm', json=conf_req)
+        self.assertEqual(conf_resp.status_code, 200)
+        self.assertEqual(conf_resp.json()['status'], 'APPROVED_SET')
+
+        img1.write_bytes(b'CHANGED_AFTER_SCAN')
+        self.assertEqual(self.client.post(base + '/completed-images/confirm',json=conf_req).status_code,409)
+        bg = self.root/'Google_Drive_Storage/5_Studio_Backgrounds/BIS_BACKDROP_1254.png'
+        bg.parent.mkdir(parents=True,exist_ok=True); bg.write_bytes(b'bg')
+        # Check export package
+        raw_dir = self.root / 'Google_Drive_Storage' / '4_Product_Images' / 'raw'
+        raw_dir.mkdir(parents=True, exist_ok=True)
+        (raw_dir / '03026A_1.png').write_bytes(b'RAW_IMAGE')
+        pkg_resp = self.client.post(base + '/completed-images/package', json={})
+        self.assertEqual(pkg_resp.status_code, 200)
+        self.assertEqual(pkg_resp.headers['content-type'], 'application/zip')
+
 if __name__=='__main__':
     unittest.main()

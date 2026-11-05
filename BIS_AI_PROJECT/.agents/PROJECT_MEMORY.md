@@ -419,3 +419,32 @@ Codex documentation review: Accepted Antigravity's attributed Cloud observations
 - Isolated real rembg u2netp and Real-ESRGAN NCNN trials completed on strap/book; mask erased white book cover, upscale distorted small text. Rejected blanket automatic adoption; optional repeatable benchmark tool added. IC-Light not inferred (CUDA example; Intel GPU host). Alok repo has output/demo only and CC-BY-NC license.
 - 82 automated tests PASS, frontend lint/build PASS; detailed pins/evidence and pending Cloud/quality acceptance in AGY_008_IMAGE_PIPELINE.md. Antigravity actually received UI task and wrote CLAIMED/review; unsupported quantitative claims returned for correction. No Haravan operations.
 - Lesson: a GitHub demo, inferred file or passed mocked test is not proof of suitable commercial source, legible text or approved product-image quality.
+
+## 2026-11-05 AGY_008 Cloud UI verification and report correction
+- Antigravity inspected Streamlit Cloud after commit ded9459 (protocol workflow-v2-17, bundle index-D8mC009m.js).
+- Confirmed UI controls: selected reference propagation, ZIP package download button, AI generation button, legacy preview label, newest-first order and actionable error alert presentation.
+- Corrected independent report: removed speculative 95% quality and unmeasured hardware numbers; incorporated Codex's actual isolated runtime lab results (rembg white-cover erasing FAIL, ESRGAN small-text distortion FAIL, IC-Light CUDA dependency, Alok no-runnable-code CC-BY-NC); clarified local 429 does not prove Cloud quota.
+- AGY_008_ANTIGRAVITY_REVIEW.md status marked READY_FOR_REVIEW. Overall image quality acceptance remains OPEN/PENDING until real provider generation succeeds and is verified by the owner. No Haravan mutations; no real products approved.
+
+
+## 2026-11-05 Remove image reference selector
+- Owner requested removing the example-image selector and preview from Image Studio. Removed both and stopped passing reference images from initial generation, retry and web-package UI actions. Approved files in 6_Final_Composites remain intact.
+- TypeScript lint and production build PASS. Live browser rendering and AI output quality not verified. No Haravan calls or mutations.
+
+## 2026-11-05 AGY_009 Flow AI & Google Drive Image Architecture
+- Transitioned product image composition to Flow AI; removed in-app generative pixel composition from primary workflow. BIS focuses strictly on Technical (PDF candidate extraction to raw repository) and Hình ảnh hoàn thiện (scanning, natural numerical sorting, multi-select, primary selection, and SHA256 confirmation).
+- Technical -> Raw storage: Created `raw_image_store.py` with SKU page prioritization, PyMuPDF smask extraction, batch/paginated full PDF extraction (`POST /api/technical/pdf-extract-batch`), unassigned pool with multi-select SKU assignment, scanned PDF region cropping (`POST /api/technical/pdf-render-region`), and SHA256 deduplication into `Google_Drive_Storage/4_Product_Images/raw/{SKU}_1.png`, `{SKU}_2.png`. Implemented calibration memory recording (`image-calibration:{sku}`) to boost accepted candidates (+40) and penalize rejected ones (-40).
+- Completed composites -> Hình ảnh hoàn thiện: Created `completed_images.py` with strict SKU boundary matching (`r'^' + re.escape(sku) + r'(?:_\d+|_final|_approved_[a-f0-9]+|\.[a-zA-Z0-9]+$)'` - prevents 03026A matching 03026AB), natural numerical sorting (`_1`, `_2`, `_10`), legacy badges, set confirmation (`POST /api/products/{sku}/completed-images/confirm`), and post-confirmation file modification/tamper detection via SHA256. Renamed tab in `LiveWorkspace.tsx` to "Hình ảnh hoàn thiện".
+- Flow AI semi-automated bridge: Investigated Flow AI capabilities; designed and verified ZIP export package (`POST /api/products/{sku}/completed-images/package`) containing raw images, official BIS studio backdrop, `FLOW_AI_PROMPT.txt` (strict geometry preservation, zero text hallucination, 70-80% frame fill), and machine-readable metadata.
+- 90 tests PASS (`python -m unittest test_bis_api test_quality_workflow test_gemini_fallback test_streamlit_react_host test_studio_ai test_flow_drive_images -v`). AGY_009_FLOW_DRIVE_IMAGES.md marked READY_FOR_REVIEW. No Haravan operations, no modification of existing approved composites in 6_Final_Composites.
+
+
+## 2026-11-05 Codex AGY_009 independent review and release
+- Reviewed supplied implementation; corrected stale approval hash binding, full filename/SKU boundary and folder containment, duplicate/primary validation, raw JPEG-to-PNG encoding with stable deduplication, and exclusive raw file creation.
+- Fixed Technical clearing extracted candidates whenever busy changed; added within-page batch continuation, bounded inputs/render size and real crop dimensions. Removed legacy studio navigation from completed-image tab. No automatic selection/approval of new completed files.
+- Unselected candidates are no longer treated as rejected training examples. Only explicit accepted choices are recorded; explicit rejection UI is not implemented in this release.
+- Refresh protocol workflow-v2-18 includes new image modules. Completed preview URLs carry content hashes. Flow ZIP requires an available background, rejects outside/wrong-SKU paths, and sorts raw images naturally.
+- Independent verification: 94/94 regression tests PASS; TypeScript lint and production build PASS (streamlit_dist). Tests use temporary fixtures, no real product approvals or Haravan API calls.
+- Cloud browser inspection was denied by saved site permission. Live UI acceptance remains PENDING. Drive automation and actual Flow generation are not verified; ZIP is a manual transfer only.
+- APPROVED_SET is an image-set review record, not publication authorization. Existing Haravan publication gate remains unchanged and does not accept this new status automatically.
+- Lesson: reported passing tests did not cover stale previews, path injection, file encoding or React effect clearing. Add boundary/real-image fixtures before deploying.

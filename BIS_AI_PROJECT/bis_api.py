@@ -7,6 +7,7 @@ from pathlib import Path
 import secrets
 import threading
 import time
+from typing import Optional, List, Dict
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -15,7 +16,32 @@ from persistent_memory import MemoryStore, atomic_json
 from product_quality import fingerprint, render_product
 from quality_jobs import JobRunner
 
-API_PROTOCOL = 'workflow-v2-17'
+API_PROTOCOL = 'workflow-v2-18'
+
+class RawImagesSave(BaseModel):
+    candidate_ids: List[str] = Field(min_length=1, max_length=50)
+    confirm: bool = False
+
+class BatchExtract(BaseModel):
+    asset_id: str
+    start_page: int = Field(default=1, ge=1)
+    end_page: Optional[int] = Field(default=None, ge=1)
+    max_images: int = Field(default=60, ge=1, le=60)
+    image_offset: int = Field(default=0, ge=0)
+
+class RegionRender(BaseModel):
+    asset_id: str
+    page: int = Field(default=1, ge=1)
+    crop: Optional[List[float]] = Field(default=None, min_length=4, max_length=4)
+
+class ConfirmCompletedSet(BaseModel):
+    images: List[Dict] = Field(min_length=1, max_length=50)
+    primary_image: str
+    confirm: bool = False
+
+class FlowPackageRequest(BaseModel):
+    raw_filenames: Optional[List[str]] = Field(default=None, max_length=50)
+    background: Optional[str] = None
 
 
 def create_app(workspace=None, pin=None):
@@ -475,7 +501,7 @@ def create_app(workspace=None, pin=None):
 
     @app.post('/api/products/{sku}/image-search')
     def image_search(sku: str, body: ImageSearch):
-        from pdf_candidates import candidates
+        from raw_image_store import extract_sku_page_candidates
         from image_sources import web_images
         from media_quality import checked_image
         from PIL import Image
@@ -497,7 +523,7 @@ def create_app(workspace=None, pin=None):
             pdfs=sorted(available,key=lambda a:a[1]!=preferred)[:24]
         for asset in pdfs:
             try:
-                found=candidates(asset[0],sku)
+                found=extract_sku_page_candidates(asset[0],sku,memory=memory)
                 for item in found[:48-len(rows)]:
                     rows.append(dict(item,source_url=asset[1],kind='pdf'))
                 if rows and not body.asset_id: break
@@ -554,6 +580,141 @@ def create_app(workspace=None, pin=None):
             return provenance
         except Exception:
             raise HTTPException(422,'Không lưu được ảnh nguồn; chưa duyệt ảnh')
+
+    @app.post('/api/products/{sku}/raw-images/save')
+    def save_raw_images_endpoint(sku: str, body: RawImagesSave):
+        from raw_image_store import save_raw_product_images
+        if sku not in products(): raise HTTPException(404, 'Không tìm thấy SKU')
+        if not body.confirm: raise HTTPException(422, 'Cần xác nhận lưu ảnh thô vào kho')
+        selected = []
+        all_presented = []
+        for ident, row in image_candidates.items():
+            if row.get('sku') == sku or not row.get('sku'):
+                all_presented.append(row)
+                if ident in body.candidate_ids:
+                    selected.append(row)
+        if len(selected) != len(set(body.candidate_ids)):
+            raise HTTPException(409, 'Danh sách ảnh hết hạn hoặc không khớp; vui lòng tìm lại')
+        with lock:
+            try:
+                return save_raw_product_images(root, sku, selected, user='operator', memory=memory)
+            except (ValueError, OSError):
+                raise HTTPException(422, 'Không lưu được ảnh thô; kiểm tra ảnh và thử lại')
+
+    @app.get('/api/products/{sku}/raw-images')
+    def list_raw_images_endpoint(sku: str):
+        from raw_image_store import list_raw_images
+        if sku not in products(): raise HTTPException(404, 'Không tìm thấy SKU')
+        items = list_raw_images(root, sku)
+        for item in items:
+            p = root / 'Google_Drive_Storage' / '4_Product_Images' / 'raw' / item['filename']
+            rel = p.relative_to(root).as_posix()
+            item['url'] = '/api/assets/' + hashlib.sha256(rel.encode()).hexdigest()[:24] + '?v=' + item['sha256']
+        return {'raw_images': items}
+
+    @app.post('/api/technical/pdf-extract-batch')
+    def extract_batch_endpoint(body: BatchExtract):
+        from raw_image_store import extract_pdf_batch
+        asset = assets().get(body.asset_id)
+        if not asset or asset[0].suffix.lower() != '.pdf':
+            raise HTTPException(404, 'Không tìm thấy PDF')
+        try:
+            data = extract_pdf_batch(asset[0], body.start_page, body.end_page, body.max_images, body.image_offset)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+        output_images = []
+        if len(image_candidates) > 200: image_candidates.clear()
+        for img in data['images']:
+            ident = secrets.token_hex(12)
+            image_candidates[ident] = dict(img, sku='', product_name_en='')
+            output_images.append({k: v for k, v in dict(img, id=ident, url='/api/image-candidates/' + ident).items() if k not in ('image_bytes', 'source_file')})
+        return {
+            'next_page': data['next_page'],
+            'next_offset': data['next_offset'],
+            'total_pages': data['total_pages'],
+            'start_page': data['start_page'],
+            'end_page': data['end_page'],
+            'images': output_images
+        }
+
+    @app.post('/api/technical/pdf-render-region')
+    def render_region_endpoint(body: RegionRender):
+        from raw_image_store import render_scanned_region
+        asset = assets().get(body.asset_id)
+        if not asset or asset[0].suffix.lower() != '.pdf':
+            raise HTTPException(404, 'Không tìm thấy PDF')
+        crop = tuple(body.crop) if body.crop and len(body.crop) == 4 else (0.0, 0.0, 100.0, 100.0)
+        try:
+            img_bytes = render_scanned_region(asset[0], body.page, crop)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+        import io
+        from PIL import Image
+        with Image.open(io.BytesIO(img_bytes)) as image:
+            width, height = image.size
+        if len(image_candidates) > 200: image_candidates.clear()
+        ident = secrets.token_hex(12)
+        sha256 = hashlib.sha256(img_bytes).hexdigest()
+        item = {
+            'page': body.page,
+            'image_bytes': img_bytes,
+            'sha256': sha256,
+            'width': width,
+            'height': height,
+            'bbox': list(crop),
+            'ext': 'png',
+            'source_file': str(asset[0]),
+            'sku': '',
+            'kind': 'pdf_region_scan',
+            'status': 'UNASSIGNED'
+        }
+        image_candidates[ident] = item
+        return {
+            'id': ident,
+            'url': '/api/image-candidates/' + ident,
+            'sha256': sha256,
+            'page': body.page,
+            'kind': 'pdf_region_scan'
+        }
+
+    # Completed Composites Endpoints
+    @app.get('/api/products/{sku}/completed-images')
+    def get_completed_images(sku: str):
+        from completed_images import scan_completed_composites
+        if sku not in products(): raise HTTPException(404, 'Không tìm thấy SKU')
+        items = scan_completed_composites(root, sku)
+        for item in items:
+            p = root / item['path']
+            rel = p.relative_to(root).as_posix()
+            item['url'] = '/api/assets/' + hashlib.sha256(rel.encode()).hexdigest()[:24] + '?v=' + item['sha256']
+        return {'completed_images': items, 'sync_status': 'unverified', 'detail': 'Quét thư mục trên máy chạy BIS. Chưa xác minh đồng bộ Google Drive; Cloud không đọc trực tiếp ổ G:.'}
+
+    @app.post('/api/products/{sku}/completed-images/confirm')
+    def confirm_completed_images(sku: str, body: ConfirmCompletedSet):
+        from completed_images import confirm_completed_image_set
+        if sku not in products(): raise HTTPException(404, 'Không tìm thấy SKU')
+        if not body.confirm: raise HTTPException(422, 'Cần xác nhận bộ ảnh thành phẩm')
+        with lock:
+            try:
+                res = confirm_completed_image_set(root, sku, body.images, body.primary_image, user='operator', memory=memory)
+            except (ValueError, FileNotFoundError) as exc:
+                raise HTTPException(409, str(exc))
+            return res
+
+    @app.post('/api/products/{sku}/completed-images/package')
+    def export_flow_package(sku: str, body: FlowPackageRequest):
+        from completed_images import export_flow_ai_package
+        if sku not in products(): raise HTTPException(404, 'Không tìm thấy SKU')
+        with lock:
+            try:
+                zip_bytes = export_flow_ai_package(root, sku, body.raw_filenames, body.background or 'BIS_BACKDROP_1254.png')
+            except (ValueError, FileNotFoundError) as exc:
+                raise HTTPException(422, str(exc))
+            return Response(
+                zip_bytes,
+                media_type='application/zip',
+                headers={'Content-Disposition': f'attachment; filename="BIS_{sku}_flow_ai.zip"'}
+            )
 
     from studio_api import register_studio
     register_studio(app, root, memory, products, assets, lock)
