@@ -92,6 +92,21 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(self.client.get('/api/catalogues').json()['files'][0]['state'],'NEW')
         self.assertEqual(self.client.post(base+'/start',json={'sha256':row['sha256']}).status_code,409)
 
+    def test_catalogue_names_reject_only_known_test_approval(self):
+        from persistent_memory import MemoryStore
+        from technical_names import name_review, name_key
+        memory=MemoryStore(self.root)
+        row=dict(sku='08336A',product_name_en='DYEING PRIMER',product_name='Sai',_source_sha256='hash')
+        import json
+        memory.revise(name_key('doc',row),json.dumps(dict(name='Sách Vỡ Lòng Về Nhuộm Vải (Đã duyệt kỹ thuật)',sha256='hash')))
+        review=name_review(memory,'doc',row)
+        self.assertEqual(review['state'],'NEEDS_REVIEW')
+        self.assertEqual(review['display_name'],'Sách nhập môn kỹ thuật nhuộm (bìa cứng)')
+        memory.revise(name_key('doc',row),json.dumps(dict(name='Tên do chuyên viên sửa',sha256='hash')))
+        self.assertEqual(name_review(memory,'doc',row)['display_name'],'Tên do chuyên viên sửa')
+        row['product_name_en']='Other product'
+        self.assertEqual(name_review(memory,'doc',row)['suggested_name'],'')
+
     def test_name_review_source_and_stale_document(self):
         from types import SimpleNamespace
         import shutil

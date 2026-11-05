@@ -396,3 +396,9 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - Reviewed owner-confirmed Antigravity functional Cloud acceptance of commit 937b435: bilingual panels, source preview, explicit name approval and persistence. AGY_004 VERIFIED; prior 70-test result retained.
 - Revision/SHA protection evidence comes from automated tests. Test-saved name on real SKU 08336A is not expert terminology approval; restoration not documented and no Cloud record changed by Codex during review.
 - Lesson: use temporary data for approval tests and separate functional acceptance from linguistic quality. Documentation only; no Haravan operations.
+
+## 2026-11-05 Technical terminology display correction
+- Dropdown now uses source-matched terminology suggestions as display names, without auto-approving. Added explicit printed-title aliases for page10 books and concise Vietnamese names for shown book/replica SKUs.
+- Known AGY004 test approval on 08336A is excluded from effective approval/display; history is preserved and other human corrections remain authoritative. English/SKU mismatch never receives the suggestion.
+- 71 regression tests, TypeScript and production build PASS. Cloud visual result not independently checked. No Haravan operations.
+- Lesson: storing reference suggestions is insufficient when selectors still display raw AI names; known test approvals require explicit handling, not deletion of history.
