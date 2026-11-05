@@ -4,6 +4,7 @@ import json
 import secrets
 import shutil
 from pathlib import Path
+from typing import Literal
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
 from persistent_memory import atomic_json
@@ -12,6 +13,7 @@ from media_quality import studio_draft, safe_name
 class DraftBody(BaseModel):
     background: str
     remove_white: bool = False
+    mode: Literal['ai','quick'] = 'ai'
 
 class ApprovalBody(BaseModel):
     preview_id: str
@@ -60,9 +62,17 @@ def register_studio(app, root, memory, products, assets, lock):
             ident=secrets.token_hex(12)
             target=root/'Google_Drive_Storage'/'5_Draft_Previews'/(safe_name(sku)+'_'+ident+'.png')
             try:
-                result=studio_draft(src,asset[0],target,remove_white=body.remove_white,allow_low_resolution=True)
-            except (ValueError,OSError) as exc:
-                raise HTTPException(422,str(exc))
+                if body.mode=='quick':
+                    result=studio_draft(src,asset[0],target,remove_white=body.remove_white,allow_low_resolution=True)
+                    result['engine']='quick'
+                else:
+                    from studio_ai import edit_image
+                    refs=[p for p,rel in assets().values() if '/6_Final_Composites/' in '/'+rel and p.suffix.lower()!='.pdf']
+                    refs.sort(key=lambda p:not p.name.startswith(sku))
+                    history=[e['content'] for e in memory.events() if e.get('key')=='image-feedback:'+sku][-8:]
+                    result=edit_image(src,asset[0],src,refs[:2],'Create a large, well-lit truthful product image; product occupies about 75% of frame. Preserve exact lettering.',history,target)
+            except Exception:
+                raise HTTPException(502,'AI chưa tạo được ảnh. Kiểm tra quyền/quota Gemini image API. Chưa tạo bản ảnh mới; không thay bằng ghép nhanh.')
             row=dict(result,id=ident,sku=sku,path=str(target.relative_to(root)),source_path=str(src.relative_to(root)),sha256=hashlib.sha256(target.read_bytes()).hexdigest())
             rows=read();rows[ident]=row;atomic_json(ledger,rows)
             memory.append('update',json.dumps(row,ensure_ascii=False),source='Studio draft; not approved')

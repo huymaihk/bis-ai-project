@@ -79,7 +79,7 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(self.client.post(base+'/image-choice',json={'id':choice,'confirm':True}).status_code,200)
         state=self.client.get(base+'/studio').json()
         self.assertTrue(state['source_url'])
-        draft=self.client.post(base+'/studio/draft',json={'background':state['backgrounds'][0]['id']})
+        draft=self.client.post(base+'/studio/draft',json={'background':state['backgrounds'][0]['id'],'mode':'quick'})
         self.assertEqual(draft.status_code,200,draft.text)
         row=draft.json();self.assertTrue(row['low_resolution'])
         from unittest.mock import patch
@@ -93,6 +93,9 @@ class BridgeTests(unittest.TestCase):
             self.assertEqual(feedback,retry['feedback']);self.assertEqual(len(history),1)
             Image.new('RGB',(1254,1254),'green').save(target,'PNG')
             return dict(source_sha256=row['source_sha256'],status='PENDING_REVIEW',engine='mock',low_resolution=False)
+        with patch('studio_ai.edit_image',side_effect=RuntimeError('unavailable')):
+            failed=self.client.post(base+'/studio/draft',json={'background':state['backgrounds'][0]['id']})
+            self.assertEqual(failed.status_code,502)
         with patch('studio_ai.edit_image',side_effect=fake):
             new=self.client.post(base+'/studio/retry',json=retry)
         self.assertEqual(new.status_code,200,new.text)

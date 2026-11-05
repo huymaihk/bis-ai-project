@@ -400,3 +400,9 @@ Codex documentation review: Accepted Antigravity's attributed Cloud observations
 - Gemini image edit uses BIS_IMAGE_MODEL (default gemini-3.1-flash-image), existing configured API key, 90s timeout; no silent deterministic fallback on failure. API quota/billing applies; no live paid generation invoked during tests.
 - 77 regression tests PASS incl mocked retry success, saved feedback on provider failure and stale hash rejection; frontend type/build PASS. Live provider quality/browser acceptance pending. No Haravan operations.
 - Lesson: previous VERIFIED image workflow establishes UI/storage safety, not achievement of owner's approved final-image quality.
+
+## 2026-11-05 Fix initial studio generation path
+- Root cause: initial draft and confirmation shortcut still used pixel compositor; AI was only available on retry. Both initial UI actions now use AI by default, with explicit quick-only API option retained for deterministic tests.
+- Old previews remain labeled quick/legacy; no silent quick fallback after AI provider failure. Protocol v2-16 forces cached API refresh.
+- 77 tests PASS including AI-default failure rejection; frontend lint/build PASS. Live image quality/provider success remains unverified. No Haravan operations.
+- Lesson: verify first-generation execution path separately from retry path; historical previews do not change when generation code changes.
