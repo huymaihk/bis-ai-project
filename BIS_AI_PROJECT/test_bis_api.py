@@ -27,6 +27,21 @@ class BridgeTests(unittest.TestCase):
     def login(self):
         self.assertEqual(self.client.post('/api/login',json={'pin':'test-pin'}).status_code,200)
 
+    def test_marketing_inline_preview_and_save(self):
+        endpoint='/api/products/03026A/marketing'
+        self.assertEqual(self.client.get(endpoint).status_code,401)
+        self.login()
+        before=self.client.get(endpoint).json()
+        self.assertIn('html',before)
+        self.assertIn('url_slug',before['seo'])
+        response=self.client.put('/api/products/03026A',json={'revision':before['revision'],'fields':{'description':'Nội dung mới','highlights':['Có chứng cứ'],'meta_description':'SEO mới'}})
+        self.assertEqual(response.status_code,200,response.text)
+        after=self.client.get(endpoint).json()
+        self.assertNotEqual(after['revision'],before['revision'])
+        self.assertIn('Nội dung mới',after['html'])
+        self.assertEqual(self.client.get('/api/products/missing/marketing').status_code,404)
+        self.assertNotIn('native_step',self.client.get('/api/state').json())
+
     def test_workflow_review_is_authenticated_and_never_grants_publish(self):
         path='/api/workflow/03026A/check'
         self.assertEqual(self.client.get(path).status_code,401)

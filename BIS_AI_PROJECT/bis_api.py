@@ -15,7 +15,7 @@ from persistent_memory import MemoryStore, atomic_json
 from product_quality import fingerprint, render_product
 from quality_jobs import JobRunner
 
-API_PROTOCOL = 'workflow-v2-10'
+API_PROTOCOL = 'workflow-v2-11'
 
 
 def create_app(workspace=None, pin=None):
@@ -106,6 +106,14 @@ def create_app(workspace=None, pin=None):
                 'preferred_sku':getattr(app.state, 'preferred_sku', ''),
                 'sync':{'state':'unverified','detail':'Đã lưu cục bộ; chưa xác minh đồng bộ Google trong phiên này.'},
                 'capabilities':{'publish':False,'extraction':False,'agent_meetings':False}}
+
+    @app.get('/api/products/{sku}/marketing')
+    def marketing_preview(sku: str):
+        from product_quality import seo_draft
+        product=products().get(sku)
+        if product is None:
+            raise HTTPException(404,'Không tìm thấy SKU')
+        return {'html':render_product(product),'seo':seo_draft(product),'revision':fingerprint(product)}
 
     class ProductEdit(BaseModel):
         revision: str

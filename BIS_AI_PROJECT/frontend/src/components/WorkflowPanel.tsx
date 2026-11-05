@@ -35,15 +35,15 @@ export default function WorkflowPanel({tab, product, dirty, reload}:{tab:string;
     <p>{section[2]}. Công cụ sử dụng cùng bản làm việc và bộ nhớ của BIS.</p>
     {tab==='technical'&&<ol className="technical-steps"><li><strong>01 · Tài liệu</strong><small>Quét thư mục hoặc tải PDF lên</small></li><li><strong>02 · Phân tích</strong><small>Chọn file và xác nhận chạy</small></li><li><strong>03 · Kiểm tra</strong><small>Đối chiếu SKU và chứng cứ</small></li></ol>}
     <div className="bis-workflow-actions">
-      <button className="primary" disabled={busy||dirty||!embedded} onClick={async()=>{
+      {tab!=='marketing'&&<button className="primary" disabled={busy||dirty||!embedded} onClick={async()=>{
         setBusy(true);setError('');
         try{await request('workspace/open',{step:section[0],sku:product?.sku||''});}
         catch(e){setError((e as Error).message);setBusy(false);}
-      }}>{section[1]} ↗</button>
+      }}>{section[1]} ↗</button>}
       <button disabled={busy||dirty||!product} onClick={run}>{busy?'Đang xử lý…':'Kiểm tra hồ sơ đã lưu'}</button>
     </div>
     {dirty&&<p role="status">Có chỉnh sửa chưa lưu. Lưu phiên bản trước khi mở công cụ hoặc kiểm tra hồ sơ.</p>}
-    {!embedded&&<p>Công cụ nghiệp vụ mở trong website Streamlit BIS sau đăng nhập.</p>}
+    {!embedded&&tab!=='marketing'&&<p>Công cụ nghiệp vụ mở trong website Streamlit BIS sau đăng nhập.</p>}
     {error&&<p role="alert">{error}</p>}
     {report?.checks?.length>0&&<details open={tab==='operations'}><summary>Kết quả kiểm tra gần nhất · {new Date(report.checked_at).toLocaleString('vi-VN')}</summary>
       {report.stale&&<p role="alert">Nội dung đã thay đổi sau lần kiểm tra. Cần chạy lại.</p>}
