@@ -393,3 +393,10 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
 
 
 Codex documentation review: Accepted Antigravity's attributed Cloud observations for eafbffc. Source protocol is workflow-v2-14. SHA rejection and final approval behavior are supported by automated tests/code review; no real-product approval was executed on Cloud. Visual quality and end-to-end approval on temporary Cloud data are not independently verified by Codex. Lesson: distinguish visible controls from executed approval and quality acceptance. Documentation-only update; no Haravan operations.
+
+## 2026-11-05 Image feedback and AI retry
+- Added per-preview feedback and explicit AI retry with original/source hash checks, parent version and new pending preview. Prior files preserved; approval remains explicit.
+- Feedback saved before provider call, last 8 same-SKU feedback records reused with original/background/previous draft and up to 2 final references. This is retrieval memory, not model training; local storage is not verified durable Cloud sync.
+- Gemini image edit uses BIS_IMAGE_MODEL (default gemini-3.1-flash-image), existing configured API key, 90s timeout; no silent deterministic fallback on failure. API quota/billing applies; no live paid generation invoked during tests.
+- 77 regression tests PASS incl mocked retry success, saved feedback on provider failure and stale hash rejection; frontend type/build PASS. Live provider quality/browser acceptance pending. No Haravan operations.
+- Lesson: previous VERIFIED image workflow establishes UI/storage safety, not achievement of owner's approved final-image quality.

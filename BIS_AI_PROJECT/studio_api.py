@@ -5,7 +5,7 @@ import secrets
 import shutil
 from pathlib import Path
 from fastapi import HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from persistent_memory import atomic_json
 from media_quality import studio_draft, safe_name
 
@@ -17,6 +17,12 @@ class ApprovalBody(BaseModel):
     preview_id: str
     sha256: str
     confirm: bool = False
+
+class RetryBody(BaseModel):
+    preview_id: str
+    sha256: str
+    feedback: str = Field(min_length=3, max_length=2000)
+    background: str
 
 def register_studio(app, root, memory, products, assets, lock):
     ledger=memory.root/'studio_previews.json'
@@ -82,3 +88,33 @@ def register_studio(app, root, memory, products, assets, lock):
             row['status']='APPROVED';rows[body.preview_id]=row;atomic_json(ledger,rows)
             memory.append('update',json.dumps(dict(sku=sku,sha256=body.sha256,status='APPROVED'),ensure_ascii=False),source='User approved studio image')
             return {'status':'APPROVED','url':asset_url(final)}
+
+    @app.post('/api/products/{sku}/studio/retry')
+    def retry(sku: str, body: RetryBody):
+        from studio_ai import edit_image
+        with lock:
+            row=read().get(body.preview_id)
+            if not row or row['sku']!=sku: raise HTTPException(404,'Không tìm thấy bản ảnh')
+            previous=root/row['path']; src=source(sku)
+            if not previous.is_file() or hashlib.sha256(previous.read_bytes()).hexdigest()!=body.sha256 or row['sha256']!=body.sha256:
+                raise HTTPException(409,'Phiên bản ảnh đã thay đổi')
+            if src is None or hashlib.sha256(src.read_bytes()).hexdigest()!=row['source_sha256']:
+                raise HTTPException(409,'Nguồn đã thay đổi; chọn lại ảnh nguồn')
+            bg=assets().get(body.background)
+            if not bg or '/5_Studio_Backgrounds/' not in '/'+bg[1]: raise HTTPException(422,'Chọn nền hợp lệ')
+            history=[e['content'] for e in memory.events() if e.get('key')=='image-feedback:'+sku][-8:]
+            feedback=body.feedback.strip()
+            if len(feedback)<3: raise HTTPException(422,'Nhập góp ý cụ thể')
+            memory.append('note',json.dumps(dict(preview_id=body.preview_id,sha256=body.sha256,feedback=feedback),ensure_ascii=False),key='image-feedback:'+sku,source='User image feedback')
+            references=[p for p,rel in assets().values() if '/6_Final_Composites/' in '/'+rel and p.suffix.lower()!='.pdf']
+            references.sort(key=lambda p:not p.name.startswith(sku))
+            ident=secrets.token_hex(12)
+            target=root/'Google_Drive_Storage'/'5_Draft_Previews'/(safe_name(sku)+'_'+ident+'.png')
+            try: result=edit_image(src,bg[0],previous,references[:2],feedback,history,target)
+            except Exception:
+                raise HTTPException(502,'Đã lưu góp ý nhưng AI chưa tạo được ảnh. Kiểm tra quyền/quota Gemini image API; không dùng bản ghép cũ làm kết quả giả.')
+            if source(sku)!=src or hashlib.sha256(src.read_bytes()).hexdigest()!=row['source_sha256']:
+                raise HTTPException(409,'Nguồn thay đổi khi AI xử lý; chưa lưu kết quả')
+            result.update(id=ident,sku=sku,path=str(target.relative_to(root)),source_path=str(src.relative_to(root)),sha256=hashlib.sha256(target.read_bytes()).hexdigest(),parent_id=body.preview_id,feedback=feedback)
+            rows=read();rows[ident]=result;atomic_json(ledger,rows)
+            return result

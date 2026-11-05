@@ -82,6 +82,23 @@ class BridgeTests(unittest.TestCase):
         draft=self.client.post(base+'/studio/draft',json={'background':state['backgrounds'][0]['id']})
         self.assertEqual(draft.status_code,200,draft.text)
         row=draft.json();self.assertTrue(row['low_resolution'])
+        from unittest.mock import patch
+        from persistent_memory import MemoryStore
+        retry={'preview_id':row['id'],'sha256':row['sha256'],'background':state['backgrounds'][0]['id'],'feedback':'Make brighter, preserve text'}
+        with patch('studio_ai.edit_image',side_effect=RuntimeError('provider failure')):
+            self.assertEqual(self.client.post(base+'/studio/retry',json=retry).status_code,502)
+        notes=[e for e in MemoryStore(self.root).events() if e.get('key')=='image-feedback:03026A']
+        self.assertEqual(len(notes),1)
+        def fake(src,bg,prev,refs,feedback,history,target):
+            self.assertEqual(feedback,retry['feedback']);self.assertEqual(len(history),1)
+            Image.new('RGB',(1254,1254),'green').save(target,'PNG')
+            return dict(source_sha256=row['source_sha256'],status='PENDING_REVIEW',engine='mock',low_resolution=False)
+        with patch('studio_ai.edit_image',side_effect=fake):
+            new=self.client.post(base+'/studio/retry',json=retry)
+        self.assertEqual(new.status_code,200,new.text)
+        self.assertNotEqual(new.json()['id'],row['id'])
+        self.assertEqual(new.json()['parent_id'],row['id'])
+        self.assertEqual(self.client.post(base+'/studio/retry',json={**retry,'sha256':'stale'}).status_code,409)
         payload={'preview_id':row['id'],'sha256':row['sha256']}
         self.assertEqual(self.client.post(base+'/studio/approve',json=payload).status_code,422)
         self.assertEqual(self.client.post(base+'/studio/approve',json={**payload,'sha256':'stale','confirm':True}).status_code,409)
