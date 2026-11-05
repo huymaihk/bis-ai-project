@@ -101,6 +101,37 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(new.status_code,200,new.text)
         self.assertNotEqual(new.json()['id'],row['id'])
         self.assertEqual(new.json()['parent_id'],row['id'])
+        # The selected reference, not the first file by directory order, must reach AI.
+        final_folder=self.root/'Google_Drive_Storage'/'6_Final_Composites'
+        final_folder.mkdir(parents=True,exist_ok=True)
+        for name in ('a.png','z.png'): Image.new('RGB',(600,600),'white').save(final_folder/name)
+        studio=self.client.get(base+'/studio').json()
+        ref=next(r['url'] for r in studio['references'] if r['name']=='z.png')
+        def first_generation(src,bg,prev,refs,feedback,history,target):
+            self.assertEqual([p.name for p in refs],['z.png'])
+            Image.new('RGB',(1254,1254),'yellow').save(target,'PNG')
+            return dict(source_sha256=row['source_sha256'],status='PENDING_REVIEW',engine='mock')
+        with patch('studio_ai.edit_image',side_effect=first_generation):
+            latest=self.client.post(base+'/studio/draft',json={'background':state['backgrounds'][0]['id'],'reference':ref})
+        self.assertEqual(latest.status_code,200,latest.text)
+        self.assertEqual(self.client.get(base+'/studio').json()['previews'][0]['id'],latest.json()['id'])
+        self.assertEqual(self.client.post(base+'/studio/draft',json={'background':state['backgrounds'][0]['id'],'reference':'/invalid'}).status_code,422)
+        class QuotaError(Exception): code=429
+        with patch('studio_ai.edit_image',side_effect=QuotaError('secret provider payload must not leak')):
+            failure=self.client.post(base+'/studio/draft',json={'background':state['backgrounds'][0]['id']})
+        self.assertIn('429',failure.json()['detail'])
+        self.assertNotIn('secret provider',failure.text)
+        last=self.client.get(base+'/studio').json()['last_attempt']
+        self.assertEqual((last['status'],last['code'],last['http_code']),('FAILED','QUOTA',429))
+        import zipfile
+        package=self.client.post(base+'/studio/package',json={'background':state['backgrounds'][0]['id'],'reference':ref})
+        self.assertEqual(package.status_code,200)
+        self.assertEqual(package.headers['content-type'],'application/zip')
+        with zipfile.ZipFile(io.BytesIO(package.content)) as archive:
+            self.assertEqual(len(archive.namelist()),5)
+            self.assertIn('03_reference_0.png',archive.namelist())
+            self.assertIn('Make brighter',archive.read('PROMPT.txt').decode())
+            self.assertNotIn('private',str(archive.namelist()))
         self.assertEqual(self.client.post(base+'/studio/retry',json={**retry,'sha256':'stale'}).status_code,409)
         payload={'preview_id':row['id'],'sha256':row['sha256']}
         self.assertEqual(self.client.post(base+'/studio/approve',json=payload).status_code,422)

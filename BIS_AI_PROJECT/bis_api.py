@@ -15,7 +15,7 @@ from persistent_memory import MemoryStore, atomic_json
 from product_quality import fingerprint, render_product
 from quality_jobs import JobRunner
 
-API_PROTOCOL = 'workflow-v2-16'
+API_PROTOCOL = 'workflow-v2-17'
 
 
 def create_app(workspace=None, pin=None):

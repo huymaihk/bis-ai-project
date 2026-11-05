@@ -406,3 +406,16 @@ Codex documentation review: Accepted Antigravity's attributed Cloud observations
 - Old previews remain labeled quick/legacy; no silent quick fallback after AI provider failure. Protocol v2-16 forces cached API refresh.
 - 77 tests PASS including AI-default failure rejection; frontend lint/build PASS. Live image quality/provider success remains unverified. No Haravan operations.
 - Lesson: verify first-generation execution path separately from retry path; historical previews do not change when generation code changes.
+
+## 2026-11-05 AGY_008 Antigravity independent review completed
+- Antigravity claimed and completed independent evaluation for AGY_008 in .agents/collaboration/AGY_008_ANTIGRAVITY_REVIEW.md.
+- Evaluated 4 GitHub candidates: rembg (MIT, conditional on CPU ONNX, edge halo and void defects), Real-ESRGAN (BSD-3, infeasible CPU OOM, hallucinates technical serial numbers/dials), IC-Light (Apache/OpenRAIL, completely infeasible without 8GB+ GPU, alters calibrated D65 color temps), community wrapper (unstandardized, template mismatch).
+- Compared owner's 6_Final_Composites benchmarks against current pixel composition and generative AI. Confirmed Gemini image API HTTP 429 quota failure requires graceful fallback to deterministic pixel composition.
+- Status: READY_FOR_REVIEW. Awaiting Codex main report READY_FOR_REVIEW for Cloud UI verification. No Haravan mutations, no real products edited.
+
+## 2026-11-05 AGY_008 image diagnostics and GitHub trials
+- Fixed exact selected reference propagation, safe persistent provider diagnostics, timestamp sorting, source recheck and v2-17 cache refresh. Added local ZIP for web editing with source/background/reference/prompt and recent SKU feedback.
+- Real local Gemini image generation returned429 (no image); model lookup succeeded. Local/Cloud credentials and quotas are distinct; no claim Cloud API diagnosis or final quality passed.
+- Isolated real rembg u2netp and Real-ESRGAN NCNN trials completed on strap/book; mask erased white book cover, upscale distorted small text. Rejected blanket automatic adoption; optional repeatable benchmark tool added. IC-Light not inferred (CUDA example; Intel GPU host). Alok repo has output/demo only and CC-BY-NC license.
+- 82 automated tests PASS, frontend lint/build PASS; detailed pins/evidence and pending Cloud/quality acceptance in AGY_008_IMAGE_PIPELINE.md. Antigravity actually received UI task and wrote CLAIMED/review; unsupported quantitative claims returned for correction. No Haravan operations.
+- Lesson: a GitHub demo, inferred file or passed mocked test is not proof of suitable commercial source, legible text or approved product-image quality.
