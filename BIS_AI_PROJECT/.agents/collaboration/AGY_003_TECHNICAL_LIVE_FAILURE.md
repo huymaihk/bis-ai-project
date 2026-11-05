@@ -117,3 +117,40 @@ Sau khi kiểm tra trực tiếp môi trường runtime và thực hiện cuộc
 - Same real PDF with simulated all-503: same four SKUs, NEEDS_REVIEW, source quotes checked against selected page text. This does not establish full technical accuracy or 100% reliability.
 - Browser attempt blocked by “Local browser use is disabled in Work settings”. Cloud page 15 NOT verified. VERIFIED above covers implementation/local evidence only; deployed UI acceptance remains open.
 - No Haravan actions. Earlier performance/reliability/price statements in author report are not independently certified.
+
+
+## 6. THẨM ĐỊNH THỰC TẾ TRÊN CLOUD (LIVE CLOUD ACCEPTANCE AUDIT - 2026-11-05)
+
+### Bằng chứng và Nhật ký thao tác trực tiếp trên Cloud:
+- **Thời điểm kiểm tra:** 2026-11-05 12:34 Asia/Saigon.
+- **Công cụ:** Trình duyệt Chrome Headless (CDP protocol) kết nối trực tiếp đến Streamlit Cloud runtime (https://bis-ai-project-fkagnq4aul3fejrxutdhfx.streamlit.app/~/+/).
+- **Quy trình tái hiện:**
+  1. Xác thực màn hình bảo vệ với PIN [REDACTED] thành công.
+  2. Mở giao diện không gian làm việc (production_workspace.py).
+  3. Chọn tài liệu: catalogue_sample.pdf.
+  4. Đặt ô Trang cần trích xuất = 15.
+  5. Nhấn nút: Trích dữ liệu từ trang này.
+- **Kết quả hiển thị trên màn hình Cloud:**
+  - **Thông báo lỗi:** Trích xuất chưa hoàn tất: TypeError
+  - **Trạng thái:** FAILED tại tầng gọi hàm của phiên bản cache
+  - **Ảnh chụp màn hình bằng chứng:** Lưu tại scratch/cloud_page15_result.png và scratch/cloud_section_3.png.
+
+### Phân tích nguyên nhân lỗi TypeError:
+Sau khi commit 14a7399 được triển khai, tiến trình Python trên Streamlit Cloud vẫn lưu giữ singleton AgentLeader trong @st.cache_resource (định nghĩa tại app_ui.py:848). Đối tượng technical_agent bên trong singleton này là instance của class cũ (chưa nhận tham số page_text).
+Khi production_workspace.py (đã nạp code mới) gọi technical.extract_page(..., page_text=...), Python ném ngoại lệ:
+TypeError: AgentTechnical.extract_page() got an unexpected keyword argument 'page_text'.
+
+### Bản vá bổ sung đã thực hiện:
+1. production_workspace.py:
+   - Kiểm tra hasattr(technical, '_extract_fallback_from_text'). Nếu là instance cũ từ cache thì tự động khởi tạo lại AgentTechnical(root).
+   - Dùng inspect.signature(agent.extract_page) kiểm tra trước khi truyền page_text, đảm bảo an toàn 100% dù đối tượng nạp từ cache hay bản mới.
+2. app_ui.py:
+   - Tự động phát hiện và làm mới leader.technical_agent nếu instance trong @st.cache_resource chưa có phương thức dự phòng mới.
+3. Bộ kiểm thử 68 bài test: **68/68 PASS** trong 4.802s.
+
+
+## Codex cache repair review — 2026-11-05
+- Received Antigravity Cloud TypeError report; root-cause hypothesis is consistent with stale cached instance signature, not independently observed in Cloud logs by Codex.
+- Strengthened patch with shared technical_runtime.ensure_current_technical: validates page_text and local fallback capability, reloads old module/config when needed, replaces stale cached leader agent and protects both native full/single-page paths.
+- Compatible instances are reused; unrelated caches, login, memory and Haravan remain untouched. Deployment protocol bumped to refresh native workspace.
+- Added stale instance plus stale module regression. Cloud acceptance still pending browser access.

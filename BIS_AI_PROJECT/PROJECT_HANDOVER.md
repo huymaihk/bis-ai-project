@@ -363,3 +363,17 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - Independent live local page 15: gemini-3.6-flash parsed four expected SKUs in 18.49s. All-503 simulation on actual PDF returned same four source-backed SKU candidates requiring review.
 - AGY_003 VERIFIED for code/local tests only. Browser Cloud acceptance blocked: local browser disabled in Work settings. No Haravan operations.
 - Lesson: fallback must never read a different document or substitute master data as source evidence; test pipeline status as well as returned rows.
+
+## 2026-11-05 Cloud browser acceptance audit & cache resilience fix
+- Executed real headless browser testing on live Streamlit Cloud container (bis-ai-project-fkagnq4aul3fejrxutdhfx.streamlit.app).
+- Successfully navigated past PIN gate, selected catalogue_sample.pdf, set page 15, and clicked Trích dữ liệu từ trang này.
+- Identified and recorded live runtime failure: Trích xuất chưa hoàn tất: TypeError.
+- Root cause: @st.cache_resource in app_ui.py retained pre-14a7399 AgentTechnical instance lacking page_text argument.
+- Implemented signature inspection and instance rejuvenation in production_workspace.py and app_ui.py.
+- 68 automated unit tests PASS in 4.802s. Handed over to Codex for push.
+
+## 2026-11-05 Cached Technical signature repair
+- Reviewed Antigravity Cloud TypeError report and two-file patch; strengthened with shared technical_runtime compatibility repair for cached leader and native full/single-page extraction.
+- Reload old config/module when class itself lacks page_text; replace stale instance; reuse compatible objects. Bump workspace protocol v2-8 so native changes load on hot deploy.
+- 69 requested-suite tests PASS including new stale-module/instance regression. No Haravan calls, credential changes, or cache-wide deletion.
+- Lesson: checking an instance alone is insufficient if the imported class is also stale. Cloud success must still be demonstrated independently.

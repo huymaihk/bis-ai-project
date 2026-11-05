@@ -939,6 +939,8 @@ def load_cached_translated_docs(project_dir_str: str):
 
 
 leader = get_cached_agent_leader(str(PROJECT_DIR))
+from technical_runtime import ensure_current_technical
+leader.technical_agent = ensure_current_technical(getattr(leader, "technical_agent", None), PROJECT_DIR)
 technical_agent = getattr(leader, "technical_agent", None)
 operations_agent = AgentOperations(PROJECT_DIR) if AgentOperations else getattr(leader, "operations_agent", None)
 translator_agent = AgentTranslator(PROJECT_DIR) if AgentTranslator else None

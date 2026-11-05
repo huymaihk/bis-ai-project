@@ -89,4 +89,24 @@ Item #28360C
         self.assertEqual([call.args[0].name for call in reload.call_args_list],
                          ['config','gemini_fallback','agent_technical','bis_api','streamlit_react_host','production_workspace'])
 
+    def test_stale_technical_instance_and_module_are_repaired(self):
+        from unittest.mock import patch
+        import technical_runtime as runtime
+        class Old:
+            def extract_page(self, image, page, total): return []
+        class New:
+            def __init__(self, root): self.root=root
+            def _extract_fallback_from_text(self): pass
+            def extract_page(self, image, page, total, page_text=None): return page_text
+        stale=Old()
+        module=SimpleNamespace(AgentTechnical=Old)
+        config=SimpleNamespace()
+        def reload(value):
+            if value is module: module.AgentTechnical=New
+            return value
+        with patch.object(runtime.importlib,'import_module',side_effect=lambda name:module if name=='agent_technical' else config), patch.object(runtime.importlib,'reload',side_effect=reload):
+            fixed=runtime.ensure_current_technical(stale,'root')
+        self.assertEqual(fixed.extract_page(b'',15,36,page_text='source'),'source')
+        self.assertIs(runtime.ensure_current_technical(fixed,'root'),fixed)
+
 if __name__=='__main__': unittest.main()

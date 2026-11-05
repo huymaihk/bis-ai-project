@@ -15,6 +15,8 @@ from memory_ui import render_memory_panel
 
 def render_workspace(root,technical,media,knowledge,translator,memory,active_step=None):
     root=Path(root)
+    from technical_runtime import ensure_current_technical
+    technical=ensure_current_technical(technical, root)
     runner=JobRunner(root)
     folder=memory.root/"product_drafts"
     folder.mkdir(exist_ok=True)
