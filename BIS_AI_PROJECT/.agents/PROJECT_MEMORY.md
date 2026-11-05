@@ -314,3 +314,10 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
 - Owner confirmed Antigravity section 7 Cloud acceptance on commit 0bd2651: page 15 native extraction no TypeError, existing draft protected, four expected SKUs present. AGY_003 now CLOUD_VERIFIED / CLOSED.
 - Codex reviewed report; Cloud observations remain attributed to Antigravity. Prior Codex regression: 69/69 PASS; no code change or test rerun required for documentation-only closure.
 - Lesson: distinguish existing preserved drafts from freshly extracted rows; acceptance covers observed scenario, not universal model reliability. No Haravan operations.
+
+## 2026-11-05 Technical source / translation / name review
+- Added three-part React result review: PDF page image/text and English evidence, proposed Vietnamese name/description with actual extracted fields, explicit name approval with versioned MemoryStore corrections.
+- Reference suggestions require exact normalized English name AND SKU; references are not automatically approved. Human names scoped by document/SKU/English title; new PDF version requires reapproval. Name-only approval does not approve technical facts or overwrite edited drafts.
+- Hide stale source-version results; validate source SHA, name changes and memory revision on save. Correct NEEDS_REVIEW wording so local fallback products are not reported as empty.
+- 70 regression tests PASS; after final name-source concurrency guard, API tests PASS. TypeScript and Streamlit production build PASS. Browser visual acceptance remains pending; no new live AI extraction or Haravan operations.
+- Lesson: parsed JSON is not translation acceptance; show source and provenance next to proposals and keep human name approval separate from product approval.

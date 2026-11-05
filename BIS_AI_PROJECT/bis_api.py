@@ -15,7 +15,7 @@ from persistent_memory import MemoryStore, atomic_json
 from product_quality import fingerprint, render_product
 from quality_jobs import JobRunner
 
-API_PROTOCOL = 'workflow-v2-8'
+API_PROTOCOL = 'workflow-v2-9'
 
 
 def create_app(workspace=None, pin=None):
@@ -367,14 +367,64 @@ def create_app(workspace=None, pin=None):
                 atomic_json(catalogue_ledger,records)
                 raise HTTPException(422,f'Trang {body.page}/{record["pages"]}: {reason}. Các bản làm việc đã lưu được giữ lại.')
 
+    def current_catalogue_rows(ident):
+        path=catalogue_files().get(ident)
+        if path is None:
+            raise HTTPException(404,'Không tìm thấy tài liệu')
+        digest=hashlib.sha256(path.read_bytes()).hexdigest()
+        rows=[]
+        for result_path in (memory.root/'catalogue_results'/ident).glob('*.json'):
+            row=json.loads(result_path.read_text(encoding='utf-8'))
+            if row.get('_source_sha256')==digest:
+                rows.append(row)
+        return path, digest, rows
+
     @app.get('/api/catalogues/{ident}/results')
     def catalogue_results(ident: str):
-        if ident not in catalogue_files():
-            raise HTTPException(404,'Không tìm thấy tài liệu')
-        rows=[]
-        for path in (memory.root/'catalogue_results'/ident).glob('*.json'):
-            rows.append(json.loads(path.read_text(encoding='utf-8')))
+        from technical_names import name_review
+        _, _, rows=current_catalogue_rows(ident)
+        for row in rows:
+            row['name_review']=name_review(memory,ident,row)
         return {'products':sorted(rows,key=lambda x:str(x.get('sku','')))}
+
+    @app.get('/api/catalogues/{ident}/source/{page}')
+    def catalogue_source(ident: str, page: int, sha256: str):
+        import pymupdf, base64
+        path,digest,_=current_catalogue_rows(ident)
+        if digest!=sha256:
+            raise HTTPException(409,'Tài liệu đã thay đổi; quét lại')
+        with pymupdf.open(path) as doc:
+            if page<1 or page>len(doc):
+                raise HTTPException(422,'Trang không hợp lệ')
+            source=doc[page-1]
+            return {'text':source.get_text(),'image':'data:image/jpeg;base64,'+base64.b64encode(source.get_pixmap(matrix=pymupdf.Matrix(1,1)).tobytes('jpeg')).decode()}
+
+    class NameApproval(BaseModel):
+        product_name_en: str
+        sku: str
+        sha256: str
+        name: str = Field(min_length=1,max_length=300)
+        revision: list[str] = Field(default_factory=list)
+
+    @app.post('/api/catalogues/{ident}/name')
+    def approve_catalogue_name(ident: str, body: NameApproval):
+        from technical_names import name_key, name_review
+        with catalogue_lock:
+            _,digest,rows=current_catalogue_rows(ident)
+            if digest!=body.sha256:
+                raise HTTPException(409,'Tài liệu đã thay đổi; quét lại')
+            row=next((r for r in rows if r.get('sku')==body.sku),None)
+            if row is None:
+                raise HTTPException(404,'Không tìm thấy kết quả hiện hành')
+            if body.product_name_en != row.get('product_name_en'):
+                raise HTTPException(409,'Tên nguồn đã thay đổi; tải lại kết quả')
+            if not body.name.strip() or not row.get('product_name_en'):
+                raise HTTPException(422,'Cần tên tiếng Việt và tên nguồn tiếng Anh')
+            try:
+                memory.revise(name_key(ident,row),json.dumps({'name':body.name.strip(),'sha256':digest},ensure_ascii=False),kind='correction',source='Technical name review',expected=body.revision)
+            except ValueError:
+                raise HTTPException(409,'Hiệu chỉnh đã thay đổi; tải lại kết quả')
+            return name_review(memory,ident,row)
 
     class WorkspaceOpen(BaseModel):
         step: int = Field(ge=0, le=4)

@@ -92,6 +92,34 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(self.client.get('/api/catalogues').json()['files'][0]['state'],'NEW')
         self.assertEqual(self.client.post(base+'/start',json={'sha256':row['sha256']}).status_code,409)
 
+    def test_name_review_source_and_stale_document(self):
+        from types import SimpleNamespace
+        import shutil
+        folder=self.root/'Google_Drive_Storage'/'1_Catalogues'
+        folder.mkdir(parents=True)
+        path=folder/'test.pdf'
+        shutil.copyfile(self.root/'catalogue_sample.pdf',path)
+        self.login()
+        file=self.client.get('/api/catalogues').json()['files'][0]
+        base='/api/catalogues/'+file['id']
+        self.client.app.state.catalogue_agent=SimpleNamespace(extract_page=lambda *args:[dict(self.row,product_name_en='DYEING PRIMER (Hardbound)',sku='08336A')])
+        run=self.client.post(base+'/start',json={'sha256':file['sha256']}).json()
+        self.assertEqual(self.client.post(base+'/page',json={'run':run['run'],'page':1}).status_code,200)
+        row=self.client.get(base+'/results').json()['products'][0]
+        self.assertEqual(row['name_review']['state'],'NEEDS_REVIEW')
+        self.assertTrue(row['name_review']['suggested_name'])
+        payload=dict(product_name_en='DYEING PRIMER (Hardbound)',sku='08336A',sha256=file['sha256'],name='Sách Nhập môn Kỹ thuật Nhuộm',revision=[])
+        response=self.client.post(base+'/name',json=payload)
+        self.assertEqual(response.status_code,200,response.text)
+        self.assertEqual(response.json()['state'],'NAME_APPROVED')
+        self.assertEqual(self.client.post(base+'/name',json=payload).status_code,409)
+        self.assertEqual(self.client.get(base+'/results').json()['products'][0]['name_review']['suggested_name'],payload['name'])
+        self.assertEqual(self.client.get(base+'/source/1',params={'sha256':file['sha256']}).status_code,200)
+        self.assertEqual(self.client.get(base+'/source/999',params={'sha256':file['sha256']}).status_code,422)
+        path.write_bytes(path.read_bytes()+b'\n% changed')
+        self.assertEqual(self.client.get(base+'/results').json()['products'],[])
+        self.assertEqual(self.client.post(base+'/name',json=payload).status_code,409)
+
     def test_empty_ai_result_never_marks_catalogue_green(self):
         from types import SimpleNamespace
         import shutil
