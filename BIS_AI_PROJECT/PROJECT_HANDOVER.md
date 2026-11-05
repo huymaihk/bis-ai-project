@@ -390,3 +390,9 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - Hide stale source-version results; validate source SHA, name changes and memory revision on save. Correct NEEDS_REVIEW wording so local fallback products are not reported as empty.
 - 70 regression tests PASS; after final name-source concurrency guard, API tests PASS. TypeScript and Streamlit production build PASS. Browser visual acceptance remains pending; no new live AI extraction or Haravan operations.
 - Lesson: parsed JSON is not translation acceptance; show source and provenance next to proposals and keep human name approval separate from product approval.
+
+
+## 2026-11-05 AGY_004 acceptance report reviewed
+- Reviewed owner-confirmed Antigravity functional Cloud acceptance of commit 937b435: bilingual panels, source preview, explicit name approval and persistence. AGY_004 VERIFIED; prior 70-test result retained.
+- Revision/SHA protection evidence comes from automated tests. Test-saved name on real SKU 08336A is not expert terminology approval; restoration not documented and no Cloud record changed by Codex during review.
+- Lesson: use temporary data for approval tests and separate functional acceptance from linguistic quality. Documentation only; no Haravan operations.
