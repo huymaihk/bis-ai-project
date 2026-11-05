@@ -7,3 +7,8 @@ python sync_memory.py --local-only --record-update "verified changes, tests, unr
 The owner approved BIS_Textile_Product_Master / BIS_AI_MEMORY_V1 in memory_sync_config.json. Local service-account credentials currently fail with Invalid JWT Signature; do not claim automatic sync is working until fixed and verified.
 Never commit chat history, memory events, secret files, or local backups.
 Never describe simulation or an AI-generated claim as a completed business operation.
+
+# Cross tool collaboration
+Read COLLABORATION_GUIDE.md for Codex and Antigravity coordination.
+Use explicit owner and file scope in .agents/collaboration tasks before concurrent edits.
+A handoff file does not mean the receiving agent has started.

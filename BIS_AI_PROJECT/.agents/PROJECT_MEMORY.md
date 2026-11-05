@@ -269,3 +269,9 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
 - Persist per-file SKU extraction results separately from edited drafts; UI selects SKU, displays evidence and can confirm rerun on its source page filtered to that SKU. Compact panels.
 - Authentication failures 401/403 stop retries and provide Streamlit Secrets/Gemini permission guidance. Screenshot confirms auth rejection; live credential remediation unresolved.
 - 20 API/bridge tests including ranges/results/confirmation pass; TypeScript/build pass. Haravan unchanged; browser/real AI acceptance pending.
+
+## 2026-11-05 Codex and Antigravity collaboration
+- Added COLLABORATION_GUIDE.md, GEMINI.md entry and AGENTS.md pointer with ownership, file scope, isolated checkout guidance, review evidence and single deployment writer.
+- Prepared local-only task .agents/collaboration/AGY_001_GEMINI_DIAGNOSIS.md for Gemini diagnosis/fallback research. Status OPEN, not claimed; no direct Antigravity communication channel available.
+- Verified documents exist and task scope is read-only diagnosis; no IDE DB access, credentials, Haravan calls or application changes. Manual ownership markers are advisory, not concurrency locks.
+- Lesson: shared memory and task files enable handoff, not autonomous delivery or proof that another tool has started.
