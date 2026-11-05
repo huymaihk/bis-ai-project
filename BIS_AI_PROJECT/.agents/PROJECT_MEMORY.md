@@ -294,3 +294,11 @@ Mọi ảnh sản phẩm xử lý cho hệ sinh thái BIS Textile bắt buộc p
 - Error text now lists model attempts and safe status codes, distinguishing primary failure from exhausted fallback. No credentials or raw provider body added.
 - 66 API/quality/fallback/bridge tests PASS including dependency reload ordering and both-model exhaustion. Live Cloud page 15 remains unverified; no Haravan calls or changes.
 - Lesson: source deployment alone does not prove cached session objects use updated dependencies; report model attempts rather than inferring fallback success.
+
+
+## 2026-11-05 Codex AGY_003 cross-verification
+- Integrated model priority and 45s client timeout; corrected fallback to use selected page text only, preserve source quotes and avoid inferred brand/unit/category/master descriptions. Fallback audits cannot pass and catalogue remains NEEDS_REVIEW.
+- Added text to native full-document extraction and refreshed deployment protocol v2-7. Final requested suite plus regression: 68 PASS in deployment checkout.
+- Independent live local page 15: gemini-3.6-flash parsed four expected SKUs in 18.49s. All-503 simulation on actual PDF returned same four source-backed SKU candidates requiring review.
+- AGY_003 VERIFIED for code/local tests only. Browser Cloud acceptance blocked: local browser disabled in Work settings. No Haravan operations.
+- Lesson: fallback must never read a different document or substitute master data as source evidence; test pipeline status as well as returned rows.

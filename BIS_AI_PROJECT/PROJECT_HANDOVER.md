@@ -347,3 +347,19 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - Error text now lists model attempts and safe status codes, distinguishing primary failure from exhausted fallback. No credentials or raw provider body added.
 - 66 API/quality/fallback/bridge tests PASS including dependency reload ordering and both-model exhaustion. Live Cloud page 15 remains unverified; no Haravan calls or changes.
 - Lesson: source deployment alone does not prove cached session objects use updated dependencies; report model attempts rather than inferring fallback success.
+
+## 2026-11-05 Technical live failure diagnosis and dual-mode resolution (AGY_003)
+- Empirical benchmark on real page 15 image revealed gemini-3.8-flash suffers persistent 503/504, while gemini-3.5-flash exceeded the 30s client timeout (taking 31.04s).
+- Tested 8 Gemini models: gemini-3.6-flash succeeded in 7.59s - 19.75s with zero 503s; gemini-3.5-flash-lite succeeded in 12.99s.
+- Promoted gemini-3.6-flash to primary in config.py with PRIORITY_MODELS=(gemini-3.6-flash, gemini-3.5-flash-lite, gemini-3.5-flash, gemini-3.8-flash) and increased client timeout to 45s.
+- Implemented deterministic AI-independent local text extraction fallback (Solution B) with PyMuPDF and CATALOG_MASTER matching: extracts all 4 page 15 SKUs in 0.05s tagged as NEEDS_REVIEW when all AI models fail.
+- All 67 unit tests PASS in 6.000s; live page 15 multimodal test extracted 4/4 SKUs in 23.61s; live outage simulation test extracted 4/4 SKUs in 0.05s.
+- Marked AGY_003 READY_FOR_REVIEW for Codex cross-verification, git commit and push.
+
+
+## 2026-11-05 Codex AGY_003 cross-verification
+- Integrated model priority and 45s client timeout; corrected fallback to use selected page text only, preserve source quotes and avoid inferred brand/unit/category/master descriptions. Fallback audits cannot pass and catalogue remains NEEDS_REVIEW.
+- Added text to native full-document extraction and refreshed deployment protocol v2-7. Final requested suite plus regression: 68 PASS in deployment checkout.
+- Independent live local page 15: gemini-3.6-flash parsed four expected SKUs in 18.49s. All-503 simulation on actual PDF returned same four source-backed SKU candidates requiring review.
+- AGY_003 VERIFIED for code/local tests only. Browser Cloud acceptance blocked: local browser disabled in Work settings. No Haravan operations.
+- Lesson: fallback must never read a different document or substitute master data as source evidence; test pipeline status as well as returned rows.

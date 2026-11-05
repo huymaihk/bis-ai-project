@@ -106,6 +106,20 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(self.client.post(base+'/page',json={'run':run['run'],'page':1}).status_code,422)
         self.assertEqual(self.client.get('/api/catalogues').json()['files'][0]['state'],'FAILED')
 
+    def test_local_fallback_requires_review_not_green(self):
+        from types import SimpleNamespace
+        import shutil
+        folder=self.root/'Google_Drive_Storage'/'1_Catalogues'
+        folder.mkdir(parents=True)
+        shutil.copyfile(self.root/'catalogue_sample.pdf',folder/'test.pdf')
+        self.login()
+        row=self.client.get('/api/catalogues').json()['files'][0]
+        self.client.app.state.catalogue_agent=SimpleNamespace(extract_page=lambda *args:[dict(self.row,analysis_model='PyMuPDF-LocalFallback')])
+        base='/api/catalogues/'+row['id']
+        run=self.client.post(base+'/start',json={'sha256':row['sha256']}).json()
+        self.assertEqual(self.client.post(base+'/page',json={'run':run['run'],'page':1}).status_code,200)
+        self.assertEqual(self.client.get('/api/catalogues').json()['files'][0]['state'],'NEEDS_REVIEW')
+
     def test_valid_empty_cover_is_processed_without_false_green(self):
         from types import SimpleNamespace
         import shutil

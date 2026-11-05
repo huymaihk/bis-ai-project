@@ -85,15 +85,17 @@ def render_workspace(root,technical,media,knowledge,translator,memory,active_ste
                     atomic_json(ledger_path,analysis)
                     try:
                         total_rows=0
+                        needs_review=False
                         with pymupdf.open(chosen) as document:
                             if document.needs_pass:
                                 raise ValueError('PDF cần mật khẩu')
                             progress=st.progress(0)
                             for index in range(len(document)):
                                 rows=runner.run('catalogue_page',{'file':key,'sha256':file_hash,'page':index+1},
-                                    lambda i=index: technical.extract_page(document[i].get_pixmap(matrix=pymupdf.Matrix(1.5,1.5)).tobytes('jpeg'),i+1,len(document)))
+                                    lambda i=index: technical.extract_page(document[i].get_pixmap(matrix=pymupdf.Matrix(1.5,1.5)).tobytes('jpeg'),i+1,len(document),page_text=document[i].get_text()))
                                 if not isinstance(rows,list) or not rows:
                                     raise ValueError(f'Trang {index+1} chưa có kết quả xác minh; dùng trích từng trang để kiểm tra.')
+                                needs_review = needs_review or any(row.get('analysis_model') == 'PyMuPDF-LocalFallback' for row in rows)
                                 for row in rows:
                                     from media_quality import safe_name
                                     row.update(source_file=key,source_page=index+1,status='EXTRACTED_UNVERIFIED')
@@ -103,7 +105,7 @@ def render_workspace(root,technical,media,knowledge,translator,memory,active_ste
                                         atomic_json(target,row)
                                     total_rows+=1
                                 progress.progress((index+1)/len(document))
-                        analysis[key]={'sha256':file_hash,'state':'COMPLETED','products':total_rows}
+                        analysis[key]={'sha256':file_hash,'state':'NEEDS_REVIEW' if needs_review else 'COMPLETED','products':total_rows}
                         atomic_json(ledger_path,analysis)
                         memory.append('update',f'Đã phân tích {key}: {total_rows} kết quả; dữ liệu cần nghiệm thu.',source='catalogue_analysis')
                         st.rerun()
@@ -129,7 +131,8 @@ def render_workspace(root,technical,media,knowledge,translator,memory,active_ste
                             with pymupdf.open(chosen) as d:
                                 if not 1<=page<=len(d):
                                     raise ValueError("Số trang vượt tài liệu")
-                                return technical.extract_page(d[int(page)-1].get_pixmap(matrix=pymupdf.Matrix(1.5,1.5)).tobytes("jpeg"),int(page),len(d))
+                                page_item=d[int(page)-1]
+                                return technical.extract_page(page_item.get_pixmap(matrix=pymupdf.Matrix(1.5,1.5)).tobytes("jpeg"),int(page),len(d),page_text=page_item.get_text())
                         rows=runner.run("technical_extract",{"pdf":str(chosen),"page":page},extract)
                         if not rows:
                             st.warning("Chưa có sản phẩm trích xuất. Kiểm tra nội dung trang và trạng thái API.")

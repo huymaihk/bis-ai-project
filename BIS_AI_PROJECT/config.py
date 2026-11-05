@@ -36,8 +36,9 @@ HARAVAN_PUSH_ENABLED = False   # set True only when user manually enables
 
 # ── Google Gemini Model ───────────────────────────────────────────────────────
 # gemini-3.8-flash: multimodal, fast, high free quota — confirmed working
-GEMINI_MODEL         = "gemini-3.8-flash"
-PRIORITY_MODELS = (GEMINI_MODEL, "gemini-3.5-flash")
+# Primary selected from AGY_003 local PDF trials; availability may vary.
+GEMINI_MODEL         = "gemini-3.6-flash"
+PRIORITY_MODELS      = (GEMINI_MODEL, "gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.8-flash")
 GEMINI_MODEL_PRO     = "gemini-3.1-pro-preview"   # higher quality, lower quota
 MAX_WORKERS          = 5                          # Concurrent extraction threads
 

@@ -202,7 +202,7 @@ class AgentTechnical:
     def __init__(self, storage_dir: str | Path | None = None):
         self.storage_dir = Path(storage_dir) if storage_dir else Path(__file__).parent.resolve()
         self.learning_engine = LearningEngine(self.storage_dir)
-        self.client = genai.Client(api_key=GEMINI_API_KEY, http_options=types.HttpOptions(timeout=30000))
+        self.client = genai.Client(api_key=GEMINI_API_KEY, http_options=types.HttpOptions(timeout=45000))
 
     def _build_prompt(self, page_num: int, total_pages: int, brand: str = "AATCC") -> str:
         focused_guidelines = self.learning_engine.get_focused_guidelines(brand=brand)
@@ -244,12 +244,95 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
 """
         return base_prompt.strip()
 
-    def extract_page(self, img_bytes: bytes, page_num: int, total_pages: int, brand: str = "AATCC") -> List[dict]:
+    def _extract_fallback_from_text(self, page_num: int, brand: str = "AATCC", page_text: Optional[str] = None) -> List[dict]:
+        """
+        Chế độ bóc tách không phụ thuộc AI (Deterministic Local Fallback):
+        - Chỉ dùng text của trang đã chọn và mã SKU có dấu định danh rõ.
+        - Gán nhãn NEEDS_REVIEW để người dùng đối soát, không làm gián đoạn quy trình.
+        """
+        # Never substitute another document when the selected page has no text.
+        if not page_text or not str(page_text).strip():
+            return []
+
+        matches = list(re.finditer(r'\b(?:Item|Order|Code|Part)\s*(?:#|No\.?|:)\s*([A-Z0-9][A-Z0-9\-]*)\b', page_text, re.IGNORECASE))
+        if not matches:
+            return []
+
+        now = datetime.utcnow().isoformat() + "Z"
+        records = []
+        start_pos = 0
+
+        for m in matches:
+            sku = m.group(1).strip().upper()
+            if not any(c.isdigit() for c in sku) or any(r['sku'] == sku for r in records):
+                continue
+            end_pos = m.end()
+            segment = page_text[start_pos:end_pos].strip()
+            start_pos = end_pos
+
+            lines = [l.strip() for l in segment.splitlines() if l.strip()]
+            filtered = [l for l in lines if not (l.isdigit() and len(l) <= 3) and l.upper() not in ('SCALES', 'CATALOGUE')]
+
+            title_lines, desc_lines = [], []
+            is_title = True
+            for line in filtered:
+                if is_title and (line.isupper() or len(title_lines) < 2) and not line.lower().startswith(('the ', 'item ', 'order ')):
+                    title_lines.append(line)
+                else:
+                    is_title = False
+                    if not line.lower().startswith(('item ', 'order ')):
+                        desc_lines.append(line)
+
+            title_en = ' '.join(title_lines).strip()
+            desc = ' '.join(desc_lines).strip()
+
+            name_vi = title_en or sku
+            name_en = title_en or sku
+            final_desc = desc
+
+            rec = {
+                "product_id": str(uuid.uuid4()),
+                "analysis_model": "PyMuPDF-LocalFallback",
+                "status": STATUS_EXTRACTED,
+                "source_page": str(page_num),
+                "product_name": name_vi,
+                "product_name_en": name_en,
+                "sku": sku,
+                "category": None,
+                "material": None,
+                "color": None,
+                "width_cm": None,
+                "weight_gsm": None,
+                "pattern": None,
+                "finish": None,
+                "description": final_desc,
+                "price_vnd": None,
+                "price_usd": None,
+                "min_order_qty": None,
+                "unit": None,
+                "image_urls": None,
+                "haravan_product_id": None,
+                "created_at": now,
+                "updated_at": now,
+                "notes": f"[Dự phòng cục bộ] Trích xuất từ văn bản gốc (AI bận/quá tải). Cần kiểm tra lại trước khi duyệt.",
+                "evidence_quote": segment[:1000],
+                "brand_evidence": None,
+            }
+            audit_res = self.audit_6_steps(rec)
+            audit_res.update(status="NEEDS_REVIEW", overall_pass=False, passed=False, has_warnings=True)
+            rec["audit_result"] = audit_res
+            records.append(rec)
+
+        return records
+
+    def extract_page(self, img_bytes: bytes, page_num: int, total_pages: int, brand: str = "AATCC", page_text: Optional[str] = None, allow_local_fallback: bool = True) -> List[dict]:
         self.last_extraction_status = 'RUNNING'
         self.last_extraction_error = ''
         self.last_model_attempts = []
         self.last_model_used = None
         prompt = self._build_prompt(page_num, total_pages, brand=brand)
+        if page_text and str(page_text).strip():
+            prompt += f"\n\nVĂN BẢN GỐC TỪ TRANG {page_num} CỦA TÀI LIỆU (DÙNG ĐỂ ĐỐI CHIẾU VÀ TRÍCH XUẤT CHÍNH XÁC):\n{str(page_text).strip()}\n"
         max_retries = 2
 
         for attempt in range(max_retries):
@@ -356,6 +439,12 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
                         for item in self.last_model_attempts)
                     self.last_extraction_error += ' | Model đã thử: ' + tried
                 if getattr(e, 'code', None) in (503, 504):
+                    if allow_local_fallback:
+                        fallback_rows = self._extract_fallback_from_text(page_num, brand, page_text=page_text)
+                        if fallback_rows:
+                            self.last_extraction_status = 'NEEDS_REVIEW'
+                            self.last_model_used = 'PyMuPDF-LocalFallback'
+                            return fallback_rows
                     return []
                 if '401' in err_str or '403' in err_str:
                     return []
@@ -368,6 +457,12 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
                     if attempt < max_retries - 1:
                         time.sleep(3)
                     else:
+                        if allow_local_fallback:
+                            fallback_rows = self._extract_fallback_from_text(page_num, brand, page_text=page_text)
+                            if fallback_rows:
+                                self.last_extraction_status = 'PARSED'
+                                self.last_model_used = 'PyMuPDF-LocalFallback'
+                                return fallback_rows
                         return []
         return []
 

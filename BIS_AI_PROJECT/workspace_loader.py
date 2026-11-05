@@ -1,7 +1,7 @@
 """Refresh incompatible cached modules during Streamlit hot deployment."""
 import importlib
 
-PROTOCOL = 'workflow-v2-6'
+PROTOCOL = 'workflow-v2-7'
 
 
 def render_current_workspace(root, services):
@@ -18,7 +18,7 @@ def render_current_workspace(root, services):
     # Native tools can remain cached across a deploy too.
     import inspect
     native = importlib.import_module('production_workspace')
-    if 'active_step' not in inspect.signature(native.render_workspace).parameters:
+    if refresh_api or 'active_step' not in inspect.signature(native.render_workspace).parameters:
         importlib.reload(native)
     host.render_react_workspace(root, services)
 

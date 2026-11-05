@@ -15,7 +15,7 @@ from persistent_memory import MemoryStore, atomic_json
 from product_quality import fingerprint, render_product
 from quality_jobs import JobRunner
 
-API_PROTOCOL = 'workflow-v2-6'
+API_PROTOCOL = 'workflow-v2-7'
 
 
 def create_app(workspace=None, pin=None):
@@ -326,9 +326,11 @@ def create_app(workspace=None, pin=None):
                     from agent_technical import AgentTechnical
                     app.state.catalogue_agent=AgentTechnical(root)
                 with pymupdf.open(path) as document:
-                    image=document[body.page-1].get_pixmap(matrix=pymupdf.Matrix(1.5,1.5)).tobytes('jpeg')
+                    page_obj=document[body.page-1]
+                    image=page_obj.get_pixmap(matrix=pymupdf.Matrix(1.5,1.5)).tobytes('jpeg')
+                    page_text=page_obj.get_text()
                 rows=JobRunner(root).run('catalogue_page',{'file':key,'page':body.page,'sha256':record['sha256']},
-                    lambda:app.state.catalogue_agent.extract_page(image,body.page,record['pages']))
+                    lambda:app.state.catalogue_agent.extract_page(image,body.page,record['pages'],'AATCC',page_text))
                 if not isinstance(rows,list) or (not rows and getattr(app.state.catalogue_agent,'last_extraction_status','')!='EMPTY_VALID'):
                     reason=getattr(app.state.catalogue_agent,'last_extraction_error','') or 'Chưa xác định được trang không có sản phẩm hay lỗi AI'
                     raise ValueError(reason)
@@ -339,6 +341,8 @@ def create_app(workspace=None, pin=None):
                     rows=[row for row in rows if str(row.get('sku','')).upper()==record['sku'].upper()]
                     if not rows:
                         raise ValueError('Không tìm thấy SKU được yêu cầu trên trang nguồn')
+                if any(row.get('analysis_model') == 'PyMuPDF-LocalFallback' for row in rows):
+                    record['needs_review'] = True
                 for row in rows:
                     row.update(source_file=key,source_page=body.page,status='EXTRACTED_UNVERIFIED')
                     row['custom_html']=render_product(row)
@@ -351,6 +355,8 @@ def create_app(workspace=None, pin=None):
                 record['products']+=len(rows)
                 if body.page==record.get('end_page',record['pages']):
                     record['state']=('COMPLETED' if record.get('start_page',1)==1 and body.page==record['pages'] and not record.get('sku') else 'PARTIAL') if record['products'] else 'NEEDS_REVIEW'
+                if body.page==record.get('end_page',record['pages']) and record.get('needs_review'):
+                    record['state']='NEEDS_REVIEW'
                 atomic_json(catalogue_ledger,records)
                 return record
             except Exception as exc:
