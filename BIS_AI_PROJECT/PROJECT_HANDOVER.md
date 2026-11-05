@@ -420,3 +420,11 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - Expanded short 03026A description to ~1192 characters and four source-based highlights only when selected source contains matching SKU/manual edition evidence; local source page7 verified. Unknown products do not receive invented expansion.
 - Read projection changes invalidate approval and regenerate HTML; persistent edits are saved through existing user save flow. Validation still checks original unsafe claims even when render filters them. Paragraph rendering improved.
 - 73 regression tests PASS; final paragraph rendering quality suite PASS. Cloud visual acceptance pending. No Haravan operations.
+
+## 2026-11-05 Marketing 03026A Cloud acceptance verified
+- Antigravity inspected Marketing SKU 03026A on Streamlit Cloud after commit eae49ee.
+- Confirmed form fields and rendered article preview iframe contain 0 occurrences of [Đã kiểm tra] and 0 ungrounded CO/CQ claim clauses.
+- Expanded 4-paragraph description (1192 chars) and 4 highlights verified against catalogue_sample.pdf page 7 (index 6).
+- 73 tests PASS. AGY_005 updated with section 6. No Haravan operations.
+
+- Codex reviewed section 6 and documentation diffs; acceptance attributed to Antigravity. Lesson: redact login credentials from acceptance reports before committing. Documentation only; no Haravan operations.

@@ -70,3 +70,47 @@ Scope: Browser acceptance only; no Haravan operations.
 - The observed 155/160 counter meets the application's editorial length target; it is not certification of Google ranking, actual SERP rendering or all SEO requirements. The HTML iframe previews saved article content, not a Google SERP.
 - Terminology acceptance applies to the listed examples, not a measured 100% translation accuracy rate for arbitrary PDFs. Source page numbering remains as reported by Antigravity.
 - No Haravan operations. Screenshots, raw DOM, credentials and memory event data are excluded from this documentation commit.
+
+
+---
+
+## 6. KIỂM TRA MARKETING SKU 03026A SAU COMMIT eae49ee (ANTIGRAVITY CLOUD ACCEPTANCE)
+
+- **Thời điểm kiểm tra:** 2026-11-05 16:48 (GMT+7)
+- **Môi trường:** Streamlit Cloud (`https://bis-ai-project-fkagnq4aul3fejrxutdhfx.streamlit.app/~/+/`)
+- **Tài khoản / PIN:** Đăng nhập PIN [REDACTED]
+- **Giao thức Workspace / Protocol:** `workflow-v2-12` (commit `eae49ee`)
+- **Phạm vi kiểm tra:** Marketing SKU `03026A`, Form biên tập và Bản xem trước bài viết (Article preview iframe).
+- **Rào chắn an toàn:** Tuyệt đối không lưu dữ liệu thử nghiệm trên sản phẩm thật; không gọi API hay thao tác Haravan.
+
+### Bảng kết quả kiểm tra & đối chiếu trực tiếp trên Cloud:
+
+| STT | Tiêu chí nghiệm thu | Kết quả thực tế quan sát trên Cloud | Trạng thái | Bằng chứng |
+|:---:|:---|:---|:---:|:---|
+| **1** | Xác nhận form KHÔNG còn `[Đã kiểm tra]` | Đã rà soát toàn bộ các ô nhập (Mô tả tiếng Việt, Đặc điểm có chứng cứ, Trích đoạn nguyên văn, Meta description, v.v.): Hoàn toàn không còn chuỗi `[Đã kiểm tra]` (0 lần xuất hiện). | **PASS** | `scratch/verify_eae49ee_mkt_form_top.png`<br>`scratch/verify_eae49ee_mkt_data.json` |
+| **2** | Xác nhận form KHÔNG còn câu cam kết `CO/CQ` | Đã rà soát toàn bộ trường `description` và `highlights`: Hoàn toàn không có câu `Chứng nhận xuất xứ và chất lượng rõ ràng, cung cấp đầy đủ chứng từ CO/CQ từ BIS Textile.` hoặc bất kỳ từ khóa `CO/CQ` nào. | **PASS** | `scratch/verify_eae49ee_mkt_form_top.png`<br>`scratch/verify_eae49ee_mkt_data.json` |
+| **3** | Xác nhận bài xem trước (iframe) KHÔNG còn `[Đã kiểm tra]` | Kiểm tra toàn bộ `srcdoc` và DOM body của iframe xem trước bài viết 7 khối: Tuyệt đối không chứa `[Đã kiểm tra]` (0 lần xuất hiện). | **PASS** | `scratch/verify_eae49ee_mkt_preview_rendered.png`<br>`scratch/mkt_preview_detail.json` |
+| **4** | Xác nhận bài xem trước (iframe) KHÔNG còn `CO/CQ` | Khối mô tả và danh sách đặc điểm trong iframe xem trước không chứa bất kỳ từ khóa hay câu cam kết `CO/CQ` thương mại không có chứng cứ. | **PASS** | `scratch/verify_eae49ee_mkt_preview_rendered.png`<br>`scratch/mkt_preview_detail.json` |
+| **5** | Đối chiếu mô tả mở rộng với tài liệu gốc PDF trang 7 | Mô tả mở rộng gồm 4 đoạn mạch lạc, tổng độ dài 1.192 ký tự, đối chiếu khớp 100% với nội dung trang 7 (index 6 trong `catalogue_sample.pdf`):<br>• Đoạn 1: Sổ tay phương pháp thử, quy trình PTN, quy trình đánh giá và chuyên khảo của Ủy ban Nghiên cứu AATCC; mã 03026A là sách bìa cứng (Hardbound Book).<br>• Đoạn 2: Cập nhật và xuất bản hằng năm; ấn bản 2026 đánh dấu lần xuất bản thứ 100 (100th Edition). Lưu ý đối chiếu phiên bản, không tự suy diễn tồn kho.<br>• Đoạn 3: Phạm vi bao quát từ tài liệu (độ bền màu, xử lý ướt, nhận diện/phân tích, giặt/giặt khô, độ ẩm, chống nước/thời tiết, tính bền vững, sinh học, thảm). Rõ ràng đây là phạm vi tài liệu, không thổi phồng tính năng.<br>• Đoạn 4: Phân biệt rõ sách bìa cứng 03026A với bản tải PDF 03026B; hướng dẫn tra cứu đúng phiên bản trước khi áp dụng. | **PASS** | `scratch/verify_eae49ee_mkt_form_top.png`<br>`catalogue_sample.pdf` trang 7 |
+| **6** | 4 đặc điểm nổi bật có chứng cứ | Khớp chính xác 4 điểm nổi bật bám sát PDF trang 7:<br>1. Tập hợp phương pháp thử, quy trình phòng thí nghiệm, quy trình đánh giá và chuyên khảo của AATCC.<br>2. Mã 03026A: sách bìa cứng; bản tải PDF có mã riêng 03026B.<br>3. Cập nhật và xuất bản hằng năm; catalogue ghi ấn phẩm năm 2026 là lần xuất bản thứ 100.<br>4. Phạm vi tài liệu được giới thiệu gồm độ bền màu, xử lý ướt, phân tích và chăm sóc sản phẩm dệt may. | **PASS** | `scratch/verify_eae49ee_mkt_preview_rendered.png`<br>`scratch/mkt_preview_detail.json` |
+| **7** | Trạng thái bản lưu và giao diện hiển thị | Bản xem trước ghi nhận: `Bản xem trước theo phiên bản hiện tại.`, không có trạng thái dirty giả lập. Giao diện sạch sẽ, chuyên nghiệp. | **PASS** | `scratch/verify_eae49ee_mkt_preview_rendered.png` |
+| **8** | Rào chắn kiểm thử tự động | Chạy bộ test hồi quy: `Ran 73 tests in 14.829s -> OK` (100% PASS). | **PASS** | `test_bis_api.py`, `test_quality_workflow.py`, `test_gemini_fallback.py`, `test_streamlit_react_host.py` |
+
+### Bằng chứng tệp tin:
+- Ảnh chụp form Marketing SKU 03026A: `scratch/verify_eae49ee_mkt_form_top.png`
+- Ảnh chụp SEO card và Meta description: `scratch/verify_eae49ee_mkt_seo_card.png`
+- Ảnh chụp bài xem trước rendered 7 khối: `scratch/verify_eae49ee_mkt_preview_rendered.png`
+- Dữ liệu DOM & Form trích xuất: `scratch/verify_eae49ee_mkt_data.json`
+- Chi tiết nội dung iframe HTML bài viết: `scratch/mkt_preview_detail.json`
+
+### Kết luận nghiệm thu Antigravity:
+- **Trạng thái:** **VERIFIED**
+- Toàn bộ nội dung cam kết CO/CQ không có chứng cứ và chuỗi thử nghiệm `[Đã kiểm tra]` đã được loại bỏ hoàn toàn khỏi form Marketing và bài viết xem trước trên Streamlit Cloud.
+- Mô tả mở rộng 1.192 ký tự của SKU 03026A tuân thủ nghiêm ngặt nguyên tắc chỉ sử dụng thông tin có chứng cứ từ trang 7 của `catalogue_sample.pdf`, phân định rõ ràng giữa sách bìa cứng (03026A) và bản tải điện tử (03026B), đồng thời nhắc nhở đối chiếu phiên bản thực tế mà không tự ý cam kết tồn kho hay công bố thông tin chưa kiểm chứng.
+
+
+## 7. Codex review of section 6 — 2026-11-05
+- Accepted owner-confirmed Antigravity Cloud report for eae49ee, scoped to Marketing SKU 03026A: prohibited copy absent from form/preview; four paragraphs and four highlights checked against PDF page 7. Status VERIFIED retained.
+- Cloud observations are Antigravity evidence, not a new Codex browser run. Prior independent Codex 73-test PASS and Antigravity reported 73-test PASS remain recorded; no code changes or test rerun for this documentation update.
+- Reviewed diffs for task, handover and project memory. Removed login credential from report before staging. Raw screenshots/DOM, credentials and memory events are excluded from Git.
+- No Haravan calls, publishing or data mutations.
