@@ -408,3 +408,9 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - Removed Marketing native-workspace launch button; retained saved-profile validation inline. Existing product revision/memory API saves drafts, resets approval and preserves conflict detection. Added authenticated read-only HTML/SEO endpoint; suggestion applies to editable field before explicit save.
 - Block SKU switch/reload while dirty; label preview as saved version. Other departments unchanged. Protocol v2-11.
 - 72 tests PASS incl authenticated preview/save, TypeScript/build PASS. Cloud visual acceptance pending. No Haravan calls or mutations.
+
+
+## 2026-11-05 AGY_005 acceptance reviewed
+- Accepted owner-confirmed Antigravity Cloud report: Technical test name excluded, suggestions remain unapproved; Marketing editor/SEO/saved preview stay inline with save and dirty-state behavior. AGY_005 VERIFIED.
+- Browser evidence belongs to Antigravity; prior Codex regression 72 PASS retained. Documentation-only update.
+- Lesson: a meta-description character counter is an editorial target, not SEO/SERP certification; terminology acceptance covers tested examples. No Haravan operations.
