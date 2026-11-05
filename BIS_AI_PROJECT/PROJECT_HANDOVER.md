@@ -340,3 +340,10 @@ Sau mỗi lần cập nhật và kiểm thử thành công, chạy lệnh:
 - Added PRIORITY_MODELS=(gemini-3.8-flash, gemini-3.5-flash) and bounded 503/504 fallback for Technical extraction, model attempt metadata and result provenance. No fallback on auth/quota/other HTTP errors.
 - Requested test_bis_api and test_quality_workflow plus new fallback tests: 59 PASS. Both tasks marked VERIFIED with limits. Haravan source/config safety flags untouched except model list added to config; no Haravan calls or mutations.
 - Lesson: 200 without response text does not prove usable output; record test type and scope instead of “100% success”.
+
+## 2026-11-05 Technical fallback hot deployment repair
+- Screenshot still reports page 15 HTTP 503; cannot establish whether backup was attempted from old message alone.
+- Refresh workspace loader on rerun, bump API/bridge protocol and reload config/fallback/Technical dependencies before replacing stale session bridge. Avoid retaining pre-fallback agent after hot deployment.
+- Error text now lists model attempts and safe status codes, distinguishing primary failure from exhausted fallback. No credentials or raw provider body added.
+- 66 API/quality/fallback/bridge tests PASS including dependency reload ordering and both-model exhaustion. Live Cloud page 15 remains unverified; no Haravan calls or changes.
+- Lesson: source deployment alone does not prove cached session objects use updated dependencies; report model attempts rather than inferring fallback success.

@@ -32,4 +32,26 @@ class FallbackTests(unittest.TestCase):
         self.assertEqual(agent.extract_page(b'test',1,1),[])
         self.assertEqual(agent.last_model_used,'gemini-3.5-flash')
         self.assertEqual(agent.last_extraction_status,'EMPTY_VALID')
+    def test_exhausted_extractor_identifies_both_models(self):
+        from agent_technical import AgentTechnical
+        agent=AgentTechnical.__new__(AgentTechnical)
+        agent._build_prompt=lambda *a,**kw:'test'
+        agent.client=SimpleNamespace(models=SimpleNamespace(generate_content=Mock(side_effect=APIError(503))))
+        self.assertEqual(agent.extract_page(b'test',15,36),[])
+        self.assertEqual(agent.client.models.generate_content.call_count,2)
+        self.assertIn('gemini-3.8-flash: 503',agent.last_extraction_error)
+        self.assertIn('gemini-3.5-flash: 503',agent.last_extraction_error)
+
+    def test_hot_deploy_reloads_dependencies_before_api(self):
+        from unittest.mock import patch
+        import workspace_loader as loader
+        modules={name:SimpleNamespace(name=name) for name in
+                 ('bis_api','streamlit_react_host','config','gemini_fallback','agent_technical','production_workspace')}
+        modules['production_workspace'].render_workspace=lambda active_step=None:None
+        modules['streamlit_react_host'].render_react_workspace=Mock()
+        with patch.object(loader.importlib,'import_module',side_effect=lambda name:modules[name]), patch.object(loader.importlib,'reload',side_effect=lambda module:module) as reload:
+            loader.render_current_workspace('root',())
+        self.assertEqual([call.args[0].name for call in reload.call_args_list],
+                         ['config','gemini_fallback','agent_technical','bis_api','streamlit_react_host'])
+
 if __name__=='__main__': unittest.main()

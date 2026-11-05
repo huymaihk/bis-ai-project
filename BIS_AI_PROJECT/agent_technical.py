@@ -350,6 +350,11 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
                     else 'Model không tồn tại (404)' if '404' in err_str
                     else 'Phản hồi AI trống hoặc không đúng cấu trúc' if isinstance(e, (ValueError, TypeError))
                     else 'Không gọi được AI: '+type(e).__name__)
+                if self.last_model_attempts:
+                    tried = '; '.join(
+                        str(item['model']) + ': ' + (str(item.get('code', 0)) if item['status'] == 'FAILED' else 'OK')
+                        for item in self.last_model_attempts)
+                    self.last_extraction_error += ' | Model đã thử: ' + tried
                 if getattr(e, 'code', None) in (503, 504):
                     return []
                 if '401' in err_str or '403' in err_str:
