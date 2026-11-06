@@ -72,13 +72,13 @@ export function ProtectedImage(props:React.ImgHTMLAttributes<HTMLImageElement>){
   },[props.src]);
   return failed?<p role="alert">Không đọc được ảnh/trang PDF này.</p>:src?<img {...props} src={src}/>:<p>Đang đọc ảnh…</p>;
 }
-export function AssetLink({url,children}:{url:string;children:React.ReactNode}){
+export function AssetLink({url,children,filename}:{url:string;children:React.ReactNode;filename?:string}){
   const [error,setError]=useState('');
   return <><button onClick={async()=>{
     try{
       const response=await bisFetch(url);if(!response.ok)throw Error('Không đọc được tệp');
       const blob=await response.blob();const src=URL.createObjectURL(blob);
-      const a=document.createElement('a');a.href=src;a.download=blob.type.includes('pdf')?'tai-lieu.pdf':'anh-goc';a.click();
+      const a=document.createElement('a');a.href=src;a.download=filename||(blob.type.includes('pdf')?'tai-lieu.pdf':'anh-goc');a.click();
       setTimeout(()=>URL.revokeObjectURL(src),60000);
     }catch(e){setError((e as Error).message);}
   }}>{children}</button>{error&&<span role="alert">{error}</span>}</>;

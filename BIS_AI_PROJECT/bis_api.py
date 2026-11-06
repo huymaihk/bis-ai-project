@@ -16,7 +16,7 @@ from persistent_memory import MemoryStore, atomic_json
 from product_quality import fingerprint, render_product
 from quality_jobs import JobRunner
 
-API_PROTOCOL = 'workflow-v2-22'
+API_PROTOCOL = 'workflow-v2-23'
 
 class RawImagesSave(BaseModel):
     candidate_ids: List[str] = Field(min_length=1, max_length=50)
@@ -164,6 +164,34 @@ def create_app(workspace=None, pin=None):
         seo['meta_description']=plain(product.get('description'))[:320].rsplit(' ',1)[0] if len(plain(product.get('description')))>320 else plain(product.get('description'))
         seo['title_options']=list(dict.fromkeys([seo['meta_title'], (sku+' | '+plain(product.get('product_name')))[:70]]))
         return {'html':render_product(product),'seo':seo,'copy':concise_suggestion(product),'revision':fingerprint(product)}
+
+    def duplicate_result(sku, live=False):
+        from product_quality import match_product
+        from datetime import datetime, timezone
+        product=products().get(sku)
+        if product is None: raise HTTPException(404,'Không tìm thấy SKU')
+        if live:
+            from safe_publish import scan_store
+            from config import HARAVAN_TOKEN, HARAVAN_SHOP
+            try:
+                items=scan_store({'Authorization':'Bearer '+HARAVAN_TOKEN,'Content-Type':'application/json','X-Haravan-Shop':HARAVAN_SHOP})
+            except Exception:
+                raise HTTPException(502,'Chưa quét được Haravan; không kết luận sản phẩm chưa trùng. Kiểm tra kết nối và quyền đọc.')
+        else:
+            try: items=json.loads((root/'bistextile_existing_products.json').read_text(encoding='utf-8'))
+            except (ValueError,OSError):
+                return {'state':'UNVERIFIED','reason':'Chưa có bản lưu Haravan để đối chiếu','source':'snapshot','checked_at':''}
+        if not isinstance(items,list): raise HTTPException(422,'Dữ liệu đối chiếu không hợp lệ')
+        if not live and not items:
+            return {'state':'UNVERIFIED','reason':'Bản lưu Haravan trống; cần quét trực tiếp','source':'snapshot','checked_at':''}
+        result=match_product(product,items)
+        return dict(result,source='Haravan live (read only)' if live else 'Bản lưu Haravan; có thể đã cũ',checked_at=datetime.now(timezone.utc).isoformat(),count=len(items))
+
+    @app.get('/api/products/{sku}/duplicate-check')
+    def duplicate_snapshot(sku: str): return duplicate_result(sku)
+
+    @app.post('/api/products/{sku}/duplicate-check')
+    def duplicate_live(sku: str): return duplicate_result(sku,True)
 
     class ProductEdit(BaseModel):
         revision: str
@@ -666,7 +694,22 @@ def create_app(workspace=None, pin=None):
             p = root / 'Google_Drive_Storage' / '4_Product_Images' / 'raw' / item['filename']
             rel = p.relative_to(root).as_posix()
             item['url'] = '/api/assets/' + hashlib.sha256(rel.encode()).hexdigest()[:24] + '?v=' + item['sha256']
-        return {'raw_images': items}
+        return {'raw_images': items, 'storage': 'server_local', 'drive_sync': 'unverified'}
+
+    @app.get('/api/products/{sku}/raw-images/package')
+    def raw_image_package(sku: str):
+        from raw_image_store import list_raw_images
+        from completed_images import safe_image_path
+        import io, zipfile
+        if sku not in products(): raise HTTPException(404,'Không tìm thấy SKU')
+        folder=root/'Google_Drive_Storage/4_Product_Images/raw'
+        rows=list_raw_images(root,sku)
+        if not rows: raise HTTPException(404,'Chưa có ảnh thô')
+        output=io.BytesIO()
+        with zipfile.ZipFile(output,'w',zipfile.ZIP_DEFLATED) as archive:
+            for row in rows:
+                archive.write(safe_image_path(folder,row['filename'],sku),row['filename'])
+        return Response(output.getvalue(),media_type='application/zip')
 
     @app.post('/api/technical/pdf-extract-batch')
     def extract_batch_endpoint(body: BatchExtract):

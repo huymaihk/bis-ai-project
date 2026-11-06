@@ -420,6 +420,20 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(agent.extract_page.call_count,1)
         self.assertFalse(run(True)['cache_hit']);self.assertEqual(agent.extract_page.call_count,2)
 
+    def test_readonly_duplicate_snapshot_and_live(self):
+        from unittest.mock import patch
+        self.login();base='/api/products/03026A/duplicate-check'
+        self.assertEqual(self.client.get(base).json()['state'],'UNVERIFIED')
+        items=[{'id':123,'title':'Manual','handle':'manual','variants':[{'sku':'03026A'}]}]
+        (self.root/'bistextile_existing_products.json').write_text(json.dumps(items))
+        self.assertEqual(self.client.get(base).json()['state'],'MATCH')
+        with patch('safe_publish.scan_store',return_value=items) as scan:
+            result=self.client.post(base,json={})
+            self.assertEqual(result.status_code,200);self.assertEqual(result.json()['state'],'MATCH');scan.assert_called_once()
+        with patch('safe_publish.scan_store',side_effect=RuntimeError('secret')):
+            response=self.client.post(base,json={})
+            self.assertEqual(response.status_code,502);self.assertNotIn('secret',response.text)
+
     def test_login_required_and_logout(self):
         for route in ['state','assets','memory','knowledge/search']:
             self.assertEqual(self.client.get('/api/'+route).status_code,401)
@@ -521,6 +535,9 @@ class BridgeTests(unittest.TestCase):
         raw_list = self.client.get(base + '/raw-images').json()['raw_images']
         self.assertEqual(len(raw_list), 1)
         self.assertEqual(raw_list[0]['filename'], '03026A_1.png')
+        import zipfile
+        with zipfile.ZipFile(io.BytesIO(self.client.get(base+'/raw-images/package').content)) as archive:
+            self.assertEqual(archive.namelist(),['03026A_1.png'])
 
         # Saving same candidate again must deduplicate and not create 03026A_2.png
         save_again = self.client.post(base + '/raw-images/save', json={'candidate_ids': [cid], 'confirm': True})

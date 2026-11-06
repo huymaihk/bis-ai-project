@@ -489,7 +489,12 @@ export default function CatalogueTechnical() {
             </label>
             {result && (
               <>
-                <TechnicalReview key={selected + ':' + result.sku} file={file!} result={result} />
+                <TechnicalReview key={selected + ':' + result.sku} file={file!} result={result} onApproved={() => {
+                  const idx=results.findIndex(r=>r.sku===result.sku);
+                  const next=results.slice(idx+1).find(r=>r.name_review?.state!=='NAME_APPROVED');
+                  if(next){setResultSku(next.sku);try{sessionStorage.setItem('bis:technical:sku:'+selected,next.sku);}catch{}}
+                  else {setProgress('Đã duyệt tên; không còn mã chưa duyệt phía sau trong danh sách.');}
+                }}/>
                 <label>
                   <input
                     type="checkbox"
@@ -513,7 +518,7 @@ export default function CatalogueTechnical() {
   );
 }
 
-function TechnicalReview({file, result}: {file: Catalogue; result: any}) {
+function TechnicalReview({file, result, onApproved}: {file: Catalogue; result: any; onApproved:()=>void}) {
   const [review, setReview] = useState(result.name_review);
   const [name, setName] = useState(result.name_review?.suggested_name || result.product_name || '');
   const [saving, setSaving] = useState(false);
@@ -600,7 +605,7 @@ function TechnicalReview({file, result}: {file: Catalogue; result: any}) {
         confirm: true
       });
       const savedCount = res.saved_count || 0;
-      setCandMsg(`Đã xác nhận và lưu ${savedCount} ảnh thô cho SKU ${sku}. Naming: ${sku}_1.png, ${sku}_2.png... (chống trùng SHA256).`);
+      setCandMsg(`Đã lưu ${savedCount} ảnh thô trên máy chạy BIS. Chưa đồng bộ Google Drive; dùng Mở/tải ảnh bên dưới để lưu về thư mục raw trên Drive.`);
       setSelectedCands(new Set());
       const rawData = await request(`products/${encodeURIComponent(sku)}/raw-images`);
       setSavedRawList(rawData.raw_images || []);
@@ -722,11 +727,13 @@ function TechnicalReview({file, result}: {file: Catalogue; result: any}) {
 
         {savedRawList.length > 0 && (
           <div style={{marginTop:'16px', padding:'10px', background:'#f0f4f8', borderRadius:'6px'}}>
+            <p>Ảnh đang lưu trên máy chủ BIS; chưa tự đồng bộ về ổ G:. Tải ZIP rồi giải nén vào Google_Drive_Storage/4_Product_Images/raw/ trên Google Drive.</p>
+            <AssetLink url={`/api/products/${encodeURIComponent(sku)}/raw-images/package`} filename={`BIS_${sku}_raw.zip`}>Tải toàn bộ ảnh thô của SKU (ZIP)</AssetLink>
             <strong>Ảnh thô đã lưu cho {sku} ({savedRawList.length} ảnh):</strong>
             <ul style={{margin:'6px 0 0 16px', padding:0}}>
               {savedRawList.map(item => (
                 <li key={item.filename}>
-                  <code>{item.filename}</code> · {(item.size / 1024).toFixed(1)} KB · SHA256: <code>{item.sha256?.slice(0, 10)}…</code>
+                  <code>{item.filename}</code> <AssetLink url={item.url} filename={item.filename}>Mở/tải ảnh thô</AssetLink> · {(item.size / 1024).toFixed(1)} KB · SHA256: <code>{item.sha256?.slice(0, 10)}…</code>
                 </li>
               ))}
             </ul>
@@ -764,6 +771,7 @@ function TechnicalReview({file, result}: {file: Catalogue; result: any}) {
               });
               setReview(next);
               setMessage('Đã lưu tên vào bộ nhớ có phiên bản.');
+              if(next.state==='NAME_APPROVED')onApproved();
             } catch (e) {
               setMessage((e as Error).message);
             } finally {
@@ -771,7 +779,7 @@ function TechnicalReview({file, result}: {file: Catalogue; result: any}) {
             }
           }}
         >
-          {saving ? 'Đang lưu…' : 'Xác nhận tên và lưu bộ nhớ'}
+          {saving ? 'Đang lưu…' : 'Duyệt tên, lưu và sang mã tiếp theo'}
         </button>
         {message && <p role="status">{message}</p>}
       </section>
