@@ -16,11 +16,14 @@ from persistent_memory import MemoryStore, atomic_json
 from product_quality import fingerprint, render_product
 from quality_jobs import JobRunner
 
-API_PROTOCOL = 'workflow-v2-18'
+API_PROTOCOL = 'workflow-v2-19'
 
 class RawImagesSave(BaseModel):
     candidate_ids: List[str] = Field(min_length=1, max_length=50)
     confirm: bool = False
+
+class ImageFeedback(RawImagesSave):
+    reason: str = Field(pattern='^(NOT_PRODUCT|OTHER_SKU|RESET)$')
 
 class BatchExtract(BaseModel):
     asset_id: str
@@ -600,6 +603,24 @@ def create_app(workspace=None, pin=None):
                 return save_raw_product_images(root, sku, selected, user='operator', memory=memory)
             except (ValueError, OSError):
                 raise HTTPException(422, 'Không lưu được ảnh thô; kiểm tra ảnh và thử lại')
+
+    @app.post('/api/products/{sku}/raw-images/feedback')
+    def raw_image_feedback(sku: str, body: ImageFeedback):
+        if sku not in products(): raise HTTPException(404, 'Không tìm thấy SKU')
+        if not body.confirm: raise HTTPException(422, 'Cần xác nhận phân loại ảnh')
+        rows = [image_candidates.get(ident) for ident in set(body.candidate_ids)]
+        if any(not row or row.get('sku') not in ('', sku) or not row.get('image_bytes') for row in rows):
+            raise HTTPException(409, 'Ảnh hết hạn hoặc khác SKU; tìm lại')
+        hashes = [hashlib.sha256(row['image_bytes']).hexdigest() for row in rows]
+        payload = {'sku': sku, 'reason': body.reason,
+                   'rejected_hashes': hashes if body.reason != 'RESET' else [],
+                   'reset_hashes': hashes if body.reason == 'RESET' else [],
+                   'scope': 'current_sku',
+                   'sources': [{'page': r.get('page'), 'source': r.get('source_url', '')} for r in rows]}
+        with lock:
+            memory.append('correction', json.dumps(payload, ensure_ascii=False),
+                          key='image-calibration:'+sku, source='User explicitly classified candidate images')
+        return {'status': 'SAVED', 'count': len(hashes)}
 
     @app.get('/api/products/{sku}/raw-images')
     def list_raw_images_endpoint(sku: str):

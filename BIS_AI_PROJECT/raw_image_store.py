@@ -37,6 +37,8 @@ def get_calibration_memory(memory, sku: str) -> dict[str, str]:
             if ev.get("key") == f"image-calibration:{sku}":
                 try:
                     data = json.loads(ev.get("content", "{}"))
+                    for h in data.get("reset_hashes", []):
+                        decisions.pop(h, None)
                     for h in data.get("accepted_hashes", []):
                         decisions[h] = "ACCEPTED"
                     for h in data.get("rejected_hashes", []):

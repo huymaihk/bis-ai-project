@@ -436,6 +436,14 @@ class BridgeTests(unittest.TestCase):
         candidates = r.json()['candidates']
         self.assertTrue(len(candidates) >= 1)
         cid = candidates[0]['id']
+        self.assertEqual(self.client.post(base+'/raw-images/feedback',json={'candidate_ids':[cid],'reason':'NOT_PRODUCT','confirm':False}).status_code,422)
+        self.assertEqual(self.client.post(base+'/raw-images/feedback',json={'candidate_ids':[cid],'reason':'NOT_PRODUCT','confirm':True}).status_code,200)
+        ranked=self.client.post(base+'/image-search',json={'asset_id':asset['id']}).json()['candidates']
+        self.assertEqual(ranked[0]['calibration_status'],'REJECTED')
+        self.assertEqual(self.client.post(base+'/raw-images/feedback',json={'candidate_ids':[cid],'reason':'RESET','confirm':True}).status_code,200)
+        ranked=self.client.post(base+'/image-search',json={'asset_id':asset['id']}).json()['candidates']
+        self.assertEqual(ranked[0]['calibration_status'],'UNKNOWN')
+        self.assertEqual(self.client.post(base+'/raw-images/feedback',json={'candidate_ids':['expired'],'reason':'NOT_PRODUCT','confirm':True}).status_code,409)
 
         # Save candidate into raw storage
         save_resp = self.client.post(base + '/raw-images/save', json={'candidate_ids': [cid], 'confirm': True})

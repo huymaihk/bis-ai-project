@@ -499,6 +499,7 @@ function TechnicalReview({file, result}: {file: Catalogue; result: any}) {
 
   // Raw Image Candidates for SKU on page
   const [candidates, setCandidates] = useState<any[]>([]);
+  const [showRejected, setShowRejected] = useState(false);
   const [selectedCands, setSelectedCands] = useState<Set<string>>(new Set());
   const [savedRawList, setSavedRawList] = useState<any[]>([]);
   const [candBusy, setCandBusy] = useState(false);
@@ -535,6 +536,19 @@ function TechnicalReview({file, result}: {file: Catalogue; result: any}) {
     setSavedRawList([]);
     loadSkuCandidates();
   }, [result]);
+
+  async function classifySelected(reason: string) {
+    setCandBusy(true);
+    try {
+      await request(`products/${encodeURIComponent(sku)}/raw-images/feedback`, {
+        candidate_ids: Array.from(selectedCands), reason, confirm: true
+      });
+      setSelectedCands(new Set());
+      await loadSkuCandidates();
+      setCandMsg(reason === 'RESET' ? 'Đã bỏ nhãn loại; ảnh được xét lại.' : 'Đã lưu phân loại cho SKU này. Ảnh bị loại được ẩn mặc định; không xóa file gốc.');
+    } catch(e) { setCandMsg((e as Error).message); }
+    finally { setCandBusy(false); }
+  }
 
   async function saveRawSelected() {
     if (selectedCands.size === 0) {
@@ -625,8 +639,16 @@ function TechnicalReview({file, result}: {file: Catalogue; result: any}) {
               </button>
             </div>
 
+            <p><small>Chọn ảnh rồi xác nhận đúng thao tác. Tên dưới ảnh là sản phẩm đang đối chiếu, chưa phải nhận diện ảnh.</small></p>
+            <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+              <button disabled={candBusy || !selectedCands.size} onClick={() => classifySelected('NOT_PRODUCT')}>Xác nhận ảnh đã chọn không phải ảnh sản phẩm</button>
+              <button disabled={candBusy || !selectedCands.size} onClick={() => classifySelected('OTHER_SKU')}>Ảnh sản phẩm khác SKU</button>
+              <button disabled={candBusy || !selectedCands.size} onClick={() => classifySelected('RESET')}>Bỏ nhãn loại — xét lại ảnh</button>
+            </div>
+            <label><input type="checkbox" style={{width:'auto'}} checked={showRejected} onChange={e => {setShowRejected(e.target.checked);setSelectedCands(new Set());}}/> Hiện ảnh đã loại ({candidates.filter(c => c.calibration_status === 'REJECTED').length})</label>
+            <p><small>Bộ nhớ dùng hash ảnh và SKU để lọc lần sau, chưa tự nhận diện mọi ảnh tương tự. Chưa xác minh đồng bộ bộ nhớ Cloud.</small></p>
             <div className="sku-image-grid">
-              {candidates.map(cand => {
+              {candidates.filter(c => showRejected || c.calibration_status !== 'REJECTED').map(cand => {
                 const isSelected = selectedCands.has(cand.id);
                 return (
                   <article
@@ -648,7 +670,7 @@ function TechnicalReview({file, result}: {file: Catalogue; result: any}) {
                       <span className="live-chip" style={{background:'#e6f4ea', color:'#137333'}}>Đã từng lưu trước đây</span>
                     )}
                     {cand.calibration_status === 'REJECTED' && (
-                      <span className="live-chip" style={{background:'#fce8e6', color:'#c5221f'}}>Từng bị bỏ qua cho SKU này</span>
+                      <span className="live-chip" style={{background:'#fce8e6', color:'#c5221f'}}>Đã được xác nhận loại cho SKU này</span>
                     )}
                     <label style={{display:'flex', alignItems:'center', gap:'6px', marginTop:'8px', cursor:'pointer', fontWeight:500}}>
                       <input
@@ -661,7 +683,7 @@ function TechnicalReview({file, result}: {file: Catalogue; result: any}) {
                           setSelectedCands(next);
                         }}
                       />
-                      Chọn ảnh này làm ảnh thô
+                      Chọn ảnh để lưu hoặc phân loại
                     </label>
                   </article>
                 );

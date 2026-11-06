@@ -448,3 +448,8 @@ Codex documentation review: Accepted Antigravity's attributed Cloud observations
 - Cloud browser inspection was denied by saved site permission. Live UI acceptance remains PENDING. Drive automation and actual Flow generation are not verified; ZIP is a manual transfer only.
 - APPROVED_SET is an image-set review record, not publication authorization. Existing Haravan publication gate remains unchanged and does not accept this new status automatically.
 - Lesson: reported passing tests did not cover stale previews, path injection, file encoding or React effect clearing. Add boundary/real-image fixtures before deploying.
+
+
+## 2026-11-06 Explicit candidate rejection
+- Added explicit NOT_PRODUCT / OTHER_SKU / RESET feedback to Technical SKU candidates, with confirmation, candidate validation and append-only per-SKU hash memory. Rejected candidates hidden by default with show/reconsider controls; no file deletion. No general visual-model training or verified Cloud memory durability claimed.
+- 94 regression tests PASS; extended 26 API tests PASS including reject/requery/reset/stale candidate. Frontend lint/build PASS. Live Cloud UI pending. No Haravan operations.
