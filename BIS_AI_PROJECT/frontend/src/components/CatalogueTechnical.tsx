@@ -519,6 +519,9 @@ function TechnicalReview({file, result}: {file: Catalogue; result: any}) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [source, setSource] = useState<any>(null);
+  const [sourceError,setSourceError]=useState('');
+  const [zoom,setZoom]=useState(100);
+  const [viewPage,setViewPage]=useState(Number(result.source_page));
   const [loading, setLoading] = useState(false);
 
   // Raw Image Candidates for SKU on page
@@ -553,13 +556,22 @@ function TechnicalReview({file, result}: {file: Catalogue; result: any}) {
   useEffect(() => {
     setReview(result.name_review);
     setName(result.name_review?.suggested_name || result.product_name || '');
-    setSource(null);
     setMessage('');
     setCandidates([]);
     setSelectedCands(new Set());
     setSavedRawList([]);
     loadSkuCandidates();
   }, [result]);
+
+  useEffect(() => {setViewPage(Number(result.source_page));setZoom(100);}, [file.id,result.sku,result.source_page]);
+  useEffect(() => {
+    let active=true;setLoading(true);setSource(null);setSourceError('');
+    request(`catalogues/${file.id}/source/${viewPage}?sha256=${file.sha256}`)
+      .then(data=>{if(active)setSource(data);})
+      .catch(e=>{if(active)setSourceError(e.message);})
+      .finally(()=>{if(active)setLoading(false);});
+    return()=>{active=false;};
+  }, [file.id,file.sha256,viewPage]);
 
   async function classifySelected(reason: string) {
     setCandBusy(true);
@@ -613,6 +625,20 @@ function TechnicalReview({file, result}: {file: Catalogue; result: any}) {
   ];
 
   return (
+    <div className="technical-compare-layout">
+      <aside className="technical-pdf-panel" aria-label="Trang catalogue đối chiếu">
+        <h3>Trang catalogue gốc</h3>
+        <p>{file.name} · Trang {viewPage} · SKU {sku}</p>
+        <div className="technical-pdf-toolbar">
+          <button disabled={loading || viewPage<=1} onClick={()=>setViewPage(p=>p-1)}>← Trang trước</button>
+          <button disabled={loading || viewPage>=file.pages} onClick={()=>setViewPage(p=>p+1)}>Trang sau →</button>
+          <button onClick={()=>setViewPage(Number(result.source_page))}>Về trang sản phẩm</button>
+          <label>Phóng to <select value={zoom} onChange={e=>setZoom(Number(e.target.value))}>{[100,125,150,200,250].map(n=><option key={n} value={n}>{n}%</option>)}</select></label>
+        </div>
+        {loading && <p role="status">Đang mở trang catalogue…</p>}
+        {sourceError && <p role="alert">{sourceError}</p>}
+        {source && <><div className="technical-pdf-scroll" tabIndex={0} aria-label="Ảnh trang PDF, cuộn để đối chiếu"><img src={source.image} alt={`${file.name} trang ${viewPage}`} style={{width:`${zoom}%`,maxWidth:'none'}}/></div><details><summary>Văn bản trang gốc</summary><pre style={{whiteSpace:'pre-wrap',maxHeight:220,overflow:'auto'}}>{source.text || 'Trang không có lớp chữ.'}</pre></details></>}
+      </aside>
     <div className="technical-review">
       <section>
         <h3>1 · Nguồn PDF</h3>
@@ -620,29 +646,7 @@ function TechnicalReview({file, result}: {file: Catalogue; result: any}) {
         <label>Tên tiếng Anh trong kết quả trích xuất</label>
         <p><strong>{result.product_name_en || 'Chưa trích được tên gốc'}</strong></p>
         <blockquote>{result.evidence_quote || 'Chưa có câu trích dẫn; cần mở trang để kiểm tra.'}</blockquote>
-        <button
-          disabled={loading}
-          onClick={async () => {
-            setLoading(true);
-            setMessage('');
-            try {
-              setSource(await request(`catalogues/${file.id}/source/${result.source_page}?sha256=${file.sha256}`));
-            } catch (e) {
-              setMessage((e as Error).message);
-            } finally {
-              setLoading(false);
-            }
-          }}
-        >
-          {loading ? 'Đang mở…' : 'Xem trang PDF để đối chiếu'}
-        </button>
-        {source && (
-          <details open>
-            <summary>Trang gốc và văn bản</summary>
-            <img style={{width: '100%', maxWidth: 760}} src={source.image} alt={`Trang ${result.source_page} của ${file.name}`} />
-            <pre style={{whiteSpace: 'pre-wrap', maxHeight: 260, overflow: 'auto'}}>{source.text || 'Trang không có lớp văn bản.'}</pre>
-          </details>
-        )}
+        <button onClick={()=>{setViewPage(Number(result.source_page));setZoom(150);}}>Đối chiếu trang nguồn bên cạnh</button>
       </section>
 
       <section>
@@ -771,6 +775,7 @@ function TechnicalReview({file, result}: {file: Catalogue; result: any}) {
         </button>
         {message && <p role="status">{message}</p>}
       </section>
+    </div>
     </div>
   );
 }

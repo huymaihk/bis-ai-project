@@ -495,3 +495,7 @@ Codex documentation review: Accepted Antigravity's attributed Cloud observations
 
 ## 2026-11-06 Technical SKU selection retention
 - Fixed results reload resetting SKU to first03000A. Persist document and explicit user SKU choice in sessionStorage; restore only if SKU exists in current document. Ignore late response after document switch/unmount. Frontend lint/build PASS; live Cloud browser acceptance pending. No Haravan operations.
+
+
+## 2026-11-06 Technical side-by-side catalogue
+- Added automatic source-page panel adjacent to SKU review/image selection. Wide desktop uses sticky PDF panel; narrow viewport stacks panels. Includes zoom100-250%, page navigation, return-to-SKU source and original text. Stale page fetches ignored. No AI requests required for rendering. Frontend lint/build PASS; live Cloud visual acceptance pending. No Haravan.
