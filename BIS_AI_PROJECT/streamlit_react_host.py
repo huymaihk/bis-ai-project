@@ -9,7 +9,7 @@ import streamlit.components.v1 as components
 from fastapi.testclient import TestClient
 from bis_api import create_app
 
-BRIDGE_PROTOCOL = 'workflow-v2-23'
+BRIDGE_PROTOCOL = 'workflow-v2-24'
 
 
 class SessionBridge:

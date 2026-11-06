@@ -16,7 +16,7 @@ from persistent_memory import MemoryStore, atomic_json
 from product_quality import fingerprint, render_product
 from quality_jobs import JobRunner
 
-API_PROTOCOL = 'workflow-v2-23'
+API_PROTOCOL = 'workflow-v2-24'
 
 class RawImagesSave(BaseModel):
     candidate_ids: List[str] = Field(min_length=1, max_length=50)
@@ -171,12 +171,10 @@ def create_app(workspace=None, pin=None):
         product=products().get(sku)
         if product is None: raise HTTPException(404,'Không tìm thấy SKU')
         if live:
-            from safe_publish import scan_store
+            from readonly_duplicates import check_sources
             from config import HARAVAN_TOKEN, HARAVAN_SHOP
-            try:
-                items=scan_store({'Authorization':'Bearer '+HARAVAN_TOKEN,'Content-Type':'application/json','X-Haravan-Shop':HARAVAN_SHOP})
-            except Exception:
-                raise HTTPException(502,'Chưa quét được Haravan; không kết luận sản phẩm chưa trùng. Kiểm tra kết nối và quyền đọc.')
+            return check_sources(product, {'Authorization':'Bearer '+HARAVAN_TOKEN,
+                'Content-Type':'application/json','X-Haravan-Shop':HARAVAN_SHOP})
         else:
             try: items=json.loads((root/'bistextile_existing_products.json').read_text(encoding='utf-8'))
             except (ValueError,OSError):

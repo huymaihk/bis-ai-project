@@ -427,12 +427,12 @@ class BridgeTests(unittest.TestCase):
         items=[{'id':123,'title':'Manual','handle':'manual','variants':[{'sku':'03026A'}]}]
         (self.root/'bistextile_existing_products.json').write_text(json.dumps(items))
         self.assertEqual(self.client.get(base).json()['state'],'MATCH')
-        with patch('safe_publish.scan_store',return_value=items) as scan:
+        with patch('readonly_duplicates.scan_website',return_value=[]), patch('safe_publish.scan_store',return_value=items) as scan:
             result=self.client.post(base,json={})
             self.assertEqual(result.status_code,200);self.assertEqual(result.json()['state'],'MATCH');scan.assert_called_once()
-        with patch('safe_publish.scan_store',side_effect=RuntimeError('secret')):
+        with patch('readonly_duplicates.scan_website',return_value=[]), patch('safe_publish.scan_store',side_effect=RuntimeError('secret')):
             response=self.client.post(base,json={})
-            self.assertEqual(response.status_code,502);self.assertNotIn('secret',response.text)
+            self.assertEqual(response.status_code,200);self.assertEqual(response.json()['state'],'UNVERIFIED');self.assertTrue(response.json()['blocked']);self.assertNotIn('secret',response.text)
 
     def test_login_required_and_logout(self):
         for route in ['state','assets','memory','knowledge/search']:
