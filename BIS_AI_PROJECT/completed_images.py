@@ -255,6 +255,8 @@ def export_flow_ai_package(
     bg_dir = (root / "Google_Drive_Storage" / "5_Studio_Backgrounds").resolve()
 
     bg_path = safe_image_path(bg_dir, background_filename)
+    if not bg_path.exists() and background_filename != "BIS_BACKDROP_1254.png":
+        raise FileNotFoundError("Không tìm thấy phôi nền đã chọn: " + background_filename)
     if not bg_path.exists():
         # Fallback to any BIS_BACKDROP in studio backgrounds or 4_Product_Images
         candidates = [

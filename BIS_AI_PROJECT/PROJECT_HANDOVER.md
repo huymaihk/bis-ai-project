@@ -584,3 +584,23 @@ Codex documentation review: Accepted Antigravity's attributed Cloud observations
 -80 automated API/quality/bridge/read-only tests PASS incl pagination repetition, source failure sanitization, partial-positive and related-code boundaries. TypeScript check/build PASS. Cloud visual acceptance pending. Protocolv2-24.
 - All existing Haravan creation guards unchanged, including push-enable, protected existing products/date, exact revision/image approval, durable ledger, fresh live duplicate check and published:false. No Haravan POST/PUT/PATCH/DELETE, no secrets changes. Website/public data is corroborating evidence, not authority to publish.
 - Lesson: show source completeness independently; an unavailable source must never be summarized as no duplicates. Public web cannot establish absence of hidden Haravan products.
+
+
+## 2026-11-06 AGY_016 full system acceptance and audit
+- Completed independent audit across all modules (A to H). Verified commit 2692567, Streamlit Cloud healthy (HTTP 200), and frontend assets built 13:54:42.
+- 125/126 unit tests PASS; identified P1 test regression in `test_gemini_fallback.py:118` (KeyError 'readonly_duplicates' caused by missing mock entry when `workspace_loader.py` added the module).
+- Business gaps & findings logged in AGY_016_FULL_SYSTEM_ACCEPTANCE.md:
+  1. P1: Missing `Nền vật tư.png` and `Nền máy móc.png` in `5_Studio_Backgrounds/`, and frontend `ImageSources.tsx` lacks background picker before exporting Flow ZIP.
+  2. P2: UI SEO meta description counter shows `/320 ký tự` while backend publishing gate in `safe_publish.py` enforces 140–160 chars.
+  3. P2: Raw images on Cloud are ephemeral server-local; Google Sheets sync remains pending due to RefreshError (Invalid JWT Signature).
+- System ready for operation through Technical extraction, Raw storage, Marketing inline editing, Completed image review, and Read-only dual-source duplicate checks. Publishing remains safely locked (`HARAVAN_PUSH_ENABLED = False`, button disabled). No Haravan mutations, no secrets exposed.
+
+
+## 2026-11-06 AGY016 remediation verified by Codex
+- Fixed hot-deploy test mock/expected reload order to include readonly_duplicates. Full unittest discovery from deployment checkout C: passes126/126 (44.208s); shared G: run also126/126 PASS (60.544s).
+- Added exact user-supplied PNG originals Nền vật tư.png and Nền máy móc.png to5_Studio_Backgrounds; verified PNG integrity and SHA256 equality with4_Product_Images originals. ImageSources dropdown sends background_filename; API preserves legacy background compatibility. Explicit missing selected background now fails422 rather than silently choosing another backdrop.
+- Extended existing API test with both background ZIP name/content checks and missing/path-traversal rejection. No real product approvals or Haravan calls in this remediation.
+- SEO description UI counter now /160 ký tự (chuẩn SERP140–160 ký tự), matching existing publication gate. This changes guidance only, leaves editable drafts and existing safety checks intact; no universal Google snippet-length guarantee.
+- Fixed discovery portability: legacy test_full_system.py/test_gemini.py diagnostics now execute only under __main__, resolve their own checkout, no import-time config output/network calls. Initial unguarded discovery attempted an obsolete Gemini model and failed checkout location because of hardcoded G path; final suite uses guarded scripts. Lesson: importing tests must not launch operational diagnostics or print credentials.
+- Frontend TypeScript check and Vite build PASS via local node entrypoints (npm command unavailable). Built streamlit_dist included; protocolv2-25. Live Cloud visual acceptance pending. Google automatic sync and durable Cloud raw storage remain unresolved; local-only memory sync is not Google sync.
+- Existing config/safe_publish/Haravan mutation code unchanged. No enabling push, no Haravan POST/PUT/PATCH/DELETE, no existing product changes; date protection retained. Audit claims of absolute safety/full operational acceptance are not independently certified by these automated tests.

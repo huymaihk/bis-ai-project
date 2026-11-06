@@ -35,6 +35,7 @@ export default function ImageSources({product, assets}: {product: any; assets: a
   const [orders, setOrders] = useState<Record<string, number>>({});
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [backgroundFilename, setBackgroundFilename] = useState('Nền vật tư.png');
   const [scanTime, setScanTime] = useState<string>('');
 
   const sku = product?.sku || '';
@@ -159,7 +160,7 @@ export default function ImageSources({product, assets}: {product: any; assets: a
       const res = await bisFetch('/api/' + base + '/completed-images/package', {
         method: 'POST',
         headers: {'Content-Type': 'application/json', 'X-BIS-Request': '1'},
-        body: JSON.stringify({})
+        body: JSON.stringify({background_filename: backgroundFilename})
       });
       if (!res.ok) {
         const err = await res.json();
@@ -196,6 +197,12 @@ export default function ImageSources({product, assets}: {product: any; assets: a
           <button disabled={busy} onClick={loadImages}>
             Quét ảnh hoàn thiện
           </button>
+          <label>Phôi nền Flow AI
+            <select disabled={busy} value={backgroundFilename} onChange={e => setBackgroundFilename(e.target.value)}>
+              <option value="Nền vật tư.png">Nền vật tư</option>
+              <option value="Nền máy móc.png">Nền máy móc</option>
+            </select>
+          </label>
           <button disabled={busy} onClick={downloadFlowPackage}>
             Tải gói ảnh thô + prompt cho Flow AI (ZIP)
           </button>

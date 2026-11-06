@@ -16,7 +16,7 @@ from persistent_memory import MemoryStore, atomic_json
 from product_quality import fingerprint, render_product
 from quality_jobs import JobRunner
 
-API_PROTOCOL = 'workflow-v2-24'
+API_PROTOCOL = 'workflow-v2-25'
 
 class RawImagesSave(BaseModel):
     candidate_ids: List[str] = Field(min_length=1, max_length=50)
@@ -45,6 +45,7 @@ class ConfirmCompletedSet(BaseModel):
 class FlowPackageRequest(BaseModel):
     raw_filenames: Optional[List[str]] = Field(default=None, max_length=50)
     background: Optional[str] = None
+    background_filename: Optional[str] = None
 
 
 def create_app(workspace=None, pin=None):
@@ -804,7 +805,7 @@ def create_app(workspace=None, pin=None):
         if sku not in products(): raise HTTPException(404, 'Không tìm thấy SKU')
         with lock:
             try:
-                zip_bytes = export_flow_ai_package(root, sku, body.raw_filenames, body.background or 'BIS_BACKDROP_1254.png')
+                zip_bytes = export_flow_ai_package(root, sku, body.raw_filenames, body.background_filename or body.background or 'BIS_BACKDROP_1254.png')
             except (ValueError, FileNotFoundError) as exc:
                 raise HTTPException(422, str(exc))
             return Response(

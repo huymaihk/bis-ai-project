@@ -587,6 +587,18 @@ class BridgeTests(unittest.TestCase):
         pkg_resp = self.client.post(base + '/completed-images/package', json={})
         self.assertEqual(pkg_resp.status_code, 200)
         self.assertEqual(pkg_resp.headers['content-type'], 'application/zip')
+        import io, zipfile
+        for filename, content in [('Nền vật tư.png', b'supplies-backdrop'), ('Nền máy móc.png', b'machinery-backdrop')]:
+            with self.subTest(background=filename):
+                (bg.parent/filename).write_bytes(content)
+                response=self.client.post(base + '/completed-images/package', json={'background_filename':filename})
+                self.assertEqual(response.status_code,200)
+                with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
+                    self.assertEqual(archive.read('02_BACKDROP_'+filename),content)
+                    self.assertNotIn('02_BACKDROP_BIS_BACKDROP_1254.png',archive.namelist())
+        self.assertEqual(self.client.post(base + '/completed-images/package', json={'background_filename':'missing.png'}).status_code,422)
+        self.assertEqual(self.client.post(base + '/completed-images/package', json={'background_filename':'../outside.png'}).status_code,422)
+
 
 if __name__=='__main__':
     unittest.main()
