@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {bisFetch, ProtectedImage, AssetLink} from '../streamlitTransport';
 
-type Catalogue = {id: string; name: string; path: string; sha256: string; size: number; state: string; completed_pages: number};
+type Catalogue = {id: string; name: string; path: string; sha256: string; size: number; state: string; completed_pages: number; pages:number; done_pages:number[]; changed:boolean};
 
 async function request(path: string, body?: unknown) {
   const response = await bisFetch('/api/' + path, {
@@ -33,6 +33,7 @@ export default function CatalogueTechnical() {
   const [confirm, setConfirm] = useState(false);
   const [dialog, setDialog] = useState(false);
   const [progress, setProgress] = useState('');
+  const [runProgress,setRunProgress]=useState<{done:number;total:number}|null>(null);
   const [detail, setDetail] = useState('');
 
   const [mode, setMode] = useState('full');
@@ -88,9 +89,9 @@ export default function CatalogueTechnical() {
     }
   }, [selected, resultVersion]);
 
-  async function analyse(again = false, product?: any) {
+  async function analyse(again = false, product?: any, resume = false) {
     if (!file) return;
-    if (file.state === 'COMPLETED' && !again) {
+    if (!again && (file.changed || (!resume && file.completed_pages > 0))) {
       setDialog(true);
       return;
     }
@@ -102,14 +103,19 @@ export default function CatalogueTechnical() {
       const run = await request(`catalogues/${file.id}/start`, {
         sha256: file.sha256,
         confirm: again,
+        resume,
         start_page: product ? Number(product.source_page) : mode === 'full' ? 1 : from,
         end_page: product ? Number(product.source_page) : mode === 'full' ? null : mode === 'single' ? from : to,
         sku: product?.sku || ''
       });
-      for (let page = run.start_page; page <= run.end_page; page++) {
+      const pending:number[]=run.pending_pages || [];
+      setRunProgress({done:0,total:pending.length});
+      if(!pending.length)setProgress('Phạm vi này không còn trang chưa phân tích.');
+      for (const page of pending) {
         setProgress(`Đang phân tích trang ${page}/${run.pages} · ${file.name}`);
         const pageResult = await request(`catalogues/${file.id}/page`, {run: run.run, page});
-        if (page === run.end_page) {
+        setRunProgress({done:pageResult.run_done,total:run.run_total});
+        if (page === pending[pending.length-1]) {
           setProgress(
             ['COMPLETED', 'PARTIAL'].includes(pageResult.state)
               ? `Đã xử lý ${pageResult.completed_pages} trang · ${pageResult.products} kết quả. Dữ liệu cần được nghiệm thu.`
@@ -119,7 +125,7 @@ export default function CatalogueTechnical() {
       }
     } catch (e) {
       setError((e as Error).message);
-      setProgress('Phân tích chưa hoàn tất.');
+      setProgress('Đã dừng; các trang thành công được giữ lại. Dùng Tiếp tục để xử lý trang còn thiếu.');
     } finally {
       await scan().catch(() => {});
       setBusy(false);
@@ -320,7 +326,7 @@ export default function CatalogueTechnical() {
         {dialog && (
           <div className="catalogue-confirm" role="alertdialog" aria-label="Xác nhận phân tích lại">
             <h3>Bạn có muốn phân tích lại tài liệu này không?</h3>
-            <p>{file?.name} đã được phân tích. Chạy lại sẽ gọi AI và có thể dùng thêm hạn mức API.</p>
+            <p>{file?.name} có trang đã xử lý hoặc phiên bản đã thay đổi. Chạy lại sẽ gọi AI và có thể dùng thêm hạn mức API.</p>
             <label>
               <input type="checkbox" checked={confirm} onChange={e => setConfirm(e.target.checked)} />
               Tôi muốn phân tích lại
@@ -333,6 +339,13 @@ export default function CatalogueTechnical() {
             </div>
           </div>
         )}
+        {file && <div>
+          <p>Đã lưu kết quả: {file.completed_pages}/{file.pages} trang ({file.pages ? Math.round(file.completed_pages/file.pages*100) : 0}%). {file.changed ? 'PDF đã đổi — cần xác nhận phiên bản mới.' : ''}</p>
+          <progress style={{width:'100%'}} max={file.pages || 1} value={file.completed_pages}/>
+          {file.done_pages?.length > 0 && <details><summary>Trang đã xử lý</summary>{file.done_pages.join(', ')}</details>}
+          <button disabled={busy} onClick={() => analyse(false, undefined, true)}>Tiếp tục trang chưa phân tích trong phạm vi đã chọn</button>
+        </div>}
+        {runProgress && <div role="status">Lượt hiện tại: {runProgress.done}/{runProgress.total} trang · {runProgress.total ? Math.round(runProgress.done/runProgress.total*100) : 100}%<progress style={{width:'100%'}} max={runProgress.total || 1} value={runProgress.done}/></div>}
         {progress && <p role="status">{progress}</p>}
         {error && <p role="alert" className="catalogue-error">{error}</p>}
       </section>

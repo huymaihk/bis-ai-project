@@ -351,6 +351,38 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(products[0]['source_page'],2)
         self.assertEqual(self.client.post(base+'/start',json={'sha256':row['sha256'],'start_page':2,'end_page':2,'sku':'03026A'}).status_code,409)
 
+    def test_pdf_resume_progress_failure_and_changed_version(self):
+        from types import SimpleNamespace
+        folder=self.root/'Google_Drive_Storage/1_Catalogues';folder.mkdir(parents=True)
+        path=folder/'resume.pdf'
+        with pymupdf.open() as doc:
+            for _ in range(3): doc.new_page().insert_text((40,40),'03026A Manual')
+            doc.save(path)
+        self.login()
+        row=self.client.get('/api/catalogues').json()['files'][0]
+        base='/api/catalogues/'+row['id']
+        agent=SimpleNamespace(extract_page=lambda *a:[dict(self.row)])
+        self.client.app.state.catalogue_agent=agent
+        run=self.client.post(base+'/start',json={'sha256':row['sha256'],'start_page':2,'end_page':2}).json()
+        self.assertEqual(self.client.post(base+'/page',json={'run':run['run'],'page':2}).json()['completed_pages'],1)
+        self.assertEqual(self.client.post(base+'/start',json={'sha256':row['sha256']}).status_code,409)
+        run=self.client.post(base+'/start',json={'sha256':row['sha256'],'resume':True}).json()
+        self.assertEqual(run['pending_pages'],[1,3])
+        self.client.post(base+'/page',json={'run':run['run'],'page':1})
+        agent.extract_page=lambda *a:[];agent.last_extraction_error='Hạn mức 429'
+        self.assertEqual(self.client.post(base+'/page',json={'run':run['run'],'page':3}).status_code,422)
+        state=self.client.get('/api/catalogues').json()['files'][0]
+        self.assertEqual(state['done_pages'],[1,2])
+        run=self.client.post(base+'/start',json={'sha256':row['sha256'],'resume':True}).json()
+        self.assertEqual(run['pending_pages'],[3])
+        agent.extract_page=lambda *a:[dict(self.row)]
+        self.assertEqual(self.client.post(base+'/page',json={'run':run['run'],'page':3}).json()['state'],'COMPLETED')
+        with pymupdf.open(path) as doc:
+            doc[0].insert_text((50,100),'New version');doc.saveIncr()
+        changed=self.client.get('/api/catalogues').json()['files'][0]
+        self.assertTrue(changed['changed']);self.assertEqual(changed['completed_pages'],0)
+        self.assertEqual(self.client.post(base+'/start',json={'sha256':changed['sha256'],'resume':True}).status_code,409)
+
     def test_login_required_and_logout(self):
         for route in ['state','assets','memory','knowledge/search']:
             self.assertEqual(self.client.get('/api/'+route).status_code,401)

@@ -16,7 +16,7 @@ from persistent_memory import MemoryStore, atomic_json
 from product_quality import fingerprint, render_product
 from quality_jobs import JobRunner
 
-API_PROTOCOL = 'workflow-v2-19'
+API_PROTOCOL = 'workflow-v2-20'
 
 class RawImagesSave(BaseModel):
     candidate_ids: List[str] = Field(min_length=1, max_length=50)
@@ -311,6 +311,11 @@ def create_app(workspace=None, pin=None):
         except FileNotFoundError:
             return {}
 
+    def done_pages(record):
+        if 'done_pages' in record: return sorted(set(record['done_pages']))
+        # Legacy completed_pages was a page number, not a count.
+        return list(range(record.get('start_page', 1), record.get('completed_pages', 0)+1))
+
     @app.get('/api/catalogues')
     @app.post('/api/catalogues/scan')
     def scan_catalogues():
@@ -319,10 +324,17 @@ def create_app(workspace=None, pin=None):
         for ident,path in catalogue_files().items():
             digest=hashlib.sha256(path.read_bytes()).hexdigest()
             record=records.get(str(path.relative_to(root)),{})
-            state=record.get('state','NEW') if record.get('sha256')==digest else 'NEW'
+            same = record.get('sha256') == digest
+            state=record.get('state','NEW') if same else 'NEW'
+            import pymupdf
+            try:
+                with pymupdf.open(path) as doc: total_pages=len(doc)
+            except Exception: total_pages=0
             result.append(dict(id=ident,name=path.name,path=str(path.relative_to(catalogue_folder)),
                                sha256=digest,size=path.stat().st_size,state=state,
-                               completed_pages=record.get('completed_pages',0) if record.get('sha256')==digest else 0))
+                               pages=total_pages, done_pages=done_pages(record) if same else [],
+                               changed=bool(record and not same),
+                               completed_pages=len(done_pages(record)) if same else 0))
         return {'files':sorted(result,key=lambda x:x['name'].lower()),
                 'location':'Google_Drive_Storage/1_Catalogues',
                 'desktop_access':os.name=='nt',
@@ -334,6 +346,7 @@ def create_app(workspace=None, pin=None):
         start_page: int = Field(default=1,ge=1)
         end_page: int | None = Field(default=None,ge=1)
         sku: str = Field(default='',max_length=100)
+        resume: bool = False
 
     @app.post('/api/catalogues/{ident}/start')
     def start_catalogue(ident: str, body: CatalogueRun):
@@ -347,7 +360,7 @@ def create_app(workspace=None, pin=None):
                 raise HTTPException(409,'Tài liệu đã thay đổi; hãy quét lại')
             records=catalogue_records()
             old=records.get(str(path.relative_to(root)),{})
-            if old.get('state')=='COMPLETED' and old.get('sha256')==digest and not body.confirm:
+            if old.get('state')=='COMPLETED' and old.get('sha256')==digest and not body.confirm and not body.resume:
                 raise HTTPException(409,'Bạn có muốn phân tích lại tài liệu này không?')
             with pymupdf.open(path) as document:
                 if document.needs_pass:
@@ -358,8 +371,19 @@ def create_app(workspace=None, pin=None):
                 raise HTTPException(422,'Khoảng trang vượt tài liệu hoặc không hợp lệ')
             if body.sku and not body.confirm:
                 raise HTTPException(409,'Cần xác nhận phân tích lại sản phẩm')
+            same = old.get('sha256') == digest
+            done = done_pages(old) if same else []
+            requested = list(range(body.start_page, end+1))
+            if not same and old and not body.confirm:
+                raise HTTPException(409, 'PDF đã thay đổi; xác nhận phân tích phiên bản mới')
+            if not body.resume and set(requested).intersection(done) and not body.confirm:
+                raise HTTPException(409, 'Phạm vi có trang đã xử lý; xác nhận phân tích lại hoặc chọn tiếp tục')
+            pending = [p for p in requested if p not in done] if body.resume else requested
             run=secrets.token_hex(16)
-            record=dict(sha256=digest,state='RUNNING',run=run,pages=pages,start_page=body.start_page,end_page=end,sku=body.sku,completed_pages=body.start_page-1,products=0)
+            record=dict(sha256=digest,state='RUNNING' if pending else old.get('state','PARTIAL'),run=run,pages=pages,
+                        start_page=body.start_page,end_page=end,sku=body.sku,done_pages=done,
+                        completed_pages=len(done),pending_pages=pending,run_done=0,run_total=len(pending),
+                        needs_review=old.get('needs_review',False) if same else False,products=0)
             records[str(path.relative_to(root))]=record
             atomic_json(catalogue_ledger,records)
             return record
@@ -381,7 +405,7 @@ def create_app(workspace=None, pin=None):
             record=records.get(key,{})
             if record.get('run')!=body.run or record.get('state')!='RUNNING':
                 raise HTTPException(409,'Lần phân tích không còn hiệu lực')
-            if body.page!=record.get('completed_pages',0)+1 or body.page>record.get('end_page',record['pages']):
+            if not record.get('pending_pages') or body.page != record['pending_pages'][0]:
                 raise HTTPException(409,'Thứ tự trang không hợp lệ')
             try:
                 if hashlib.sha256(path.read_bytes()).hexdigest()!=record['sha256']:
@@ -415,12 +439,15 @@ def create_app(workspace=None, pin=None):
                     target=drafts/(safe_name(row['sku'])+'.json')
                     if not target.exists():
                         atomic_json(target,row)
-                record['completed_pages']=body.page
+                if not record.get('sku'):
+                    record['done_pages']=sorted(set(record['done_pages']+[body.page]))
+                record['completed_pages']=len(record['done_pages'])
+                record['pending_pages'].pop(0)
+                record['run_done']+=1
                 record['products']+=len(rows)
-                if body.page==record.get('end_page',record['pages']):
-                    record['state']=('COMPLETED' if record.get('start_page',1)==1 and body.page==record['pages'] and not record.get('sku') else 'PARTIAL') if record['products'] else 'NEEDS_REVIEW'
-                if body.page==record.get('end_page',record['pages']) and record.get('needs_review'):
-                    record['state']='NEEDS_REVIEW'
+                if not record['pending_pages']:
+                    record['state']='COMPLETED' if len(record['done_pages'])==record['pages'] else 'PARTIAL'
+                    if record.get('needs_review') or not record['products']: record['state']='NEEDS_REVIEW'
                 atomic_json(catalogue_ledger,records)
                 return record
             except Exception as exc:

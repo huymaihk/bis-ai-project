@@ -24,6 +24,16 @@ class FallbackTests(unittest.TestCase):
                 generate_with_fallback(SimpleNamespace(models=SimpleNamespace(generate_content=call)),['main','backup'],contents=[],config=None,attempts=[])
             self.assertEqual(call.call_count,1)
 
+    def test_extractor_stops_after_one_quota_error(self):
+        from agent_technical import AgentTechnical
+        agent=AgentTechnical.__new__(AgentTechnical)
+        agent._build_prompt=lambda *a,**kw:'test'
+        call=Mock(side_effect=APIError(429))
+        agent.client=SimpleNamespace(models=SimpleNamespace(generate_content=call))
+        self.assertEqual(agent.extract_page(b'test',7,36),[])
+        self.assertEqual(call.call_count,1)
+        self.assertIn('429',agent.last_extraction_error)
+
     def test_exhaustion_is_bounded(self):
         call=Mock(side_effect=APIError(503))
         with self.assertRaises(APIError):

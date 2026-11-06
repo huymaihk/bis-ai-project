@@ -425,7 +425,7 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
 
             except Exception as e:
                 self.last_extraction_status = 'FAILED'
-                err_str = str(e)
+                err_str = str(e) + ' ' + str(getattr(e, 'code', ''))
                 self.last_extraction_error = (
                     'Hết hạn mức API hoặc giới hạn tốc độ (429)' if '429' in err_str or 'quota' in err_str.lower()
                     else 'Model không khả dụng hoặc quá tải (503)' if '503' in err_str
@@ -449,9 +449,9 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
                 if '401' in err_str or '403' in err_str:
                     return []
                 if "429" in err_str or "quota" in err_str.lower():
-                    wait = 3 * (attempt + 1)
-                    print(f"  ⚠ Quota limit on page {page_num} — waiting {wait}s…")
-                    time.sleep(wait)
+                    # Quota/rate errors are not fixed by immediately retrying the same model.
+                    # Preserve the failed page for an explicit later resume.
+                    return []
                 else:
                     print(f"  ⚠ Lỗi bóc tách trang {page_num} (lần {attempt+1}): {e}")
                     if attempt < max_retries - 1:
