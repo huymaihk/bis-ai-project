@@ -560,3 +560,7 @@ Codex documentation review: Accepted Antigravity's attributed Cloud observations
 - Live local page7 result: text-only PARSED, SKUs03026A/03026B/03017C. Second request cache hit, equal rows and no additional provider attempts. Temporary cache only; production drafts untouched during trial. No claim of full production prompt token savings percentage.
 - 104 full regression tests PASS, followed by added HTTP cache/force-refresh test and 34 API/cache tests PASS (105 cases now). TypeScript lint/build PASS. Protocol v2-22 reloads new module.
 - Owner-approved next step from CODEX012: lightweight PyMuPDF/cache adopted. Docling remains optional local research, not a Cloud dependency; LLMLingua/LiteLLM not installed into production. Live Cloud visual acceptance pending; cache is local filesystem and not verified durable across Cloud rebuilds. No Haravan calls or mutations.
+
+
+## 2026-11-06 Technical SKU selection retention
+- Fixed results reload resetting SKU to first03000A. Persist document and explicit user SKU choice in sessionStorage; restore only if SKU exists in current document. Ignore late response after document switch/unmount. Frontend lint/build PASS; live Cloud browser acceptance pending. No Haravan operations.

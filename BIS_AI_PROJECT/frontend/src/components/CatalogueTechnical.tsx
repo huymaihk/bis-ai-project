@@ -26,7 +26,7 @@ const states: Record<string, string> = {
 
 export default function CatalogueTechnical() {
   const [files, setFiles] = useState<Catalogue[]>([]);
-  const [selected, setSelected] = useState('');
+  const [selected, setSelected] = useState(() => {try{return sessionStorage.getItem('bis:technical:file')||'';}catch{return '';}});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [scanned, setScanned] = useState(false);
@@ -74,6 +74,8 @@ export default function CatalogueTechnical() {
   }, []);
 
   useEffect(() => {
+    let active=true;
+    try {sessionStorage.setItem("bis:technical:file",selected);} catch {}
     setResults([]);
     setResultSku('');
     setUnassignedPool([]);
@@ -81,13 +83,16 @@ export default function CatalogueTechnical() {
     if (selected) {
       request('catalogues/' + selected + '/results')
         .then(d => {
+          if (!active) return;
           setResults(d.products);
-          const firstSku = d.products[0]?.sku || '';
-          setResultSku(firstSku);
-          setAssignTargetSku(firstSku);
+          let saved='';
+          try {saved=sessionStorage.getItem('bis:technical:sku:'+selected)||'';} catch {}
+          setResultSku(old => d.products.some((r:any)=>r.sku===old) ? old : d.products.some((r:any)=>r.sku===saved) ? saved : d.products[0]?.sku||'');
+          setAssignTargetSku(old => d.products.some((r:any)=>r.sku===old) ? old : d.products[0]?.sku||'');
         })
-        .catch(e => setError(e.message));
+        .catch(e => {if(active)setError(e.message);});
     }
+    return () => {active=false;};
   }, [selected, resultVersion]);
 
   async function analyse(again = false, product?: any, resume = false) {
@@ -470,7 +475,7 @@ export default function CatalogueTechnical() {
                 disabled={busy}
                 value={resultSku}
                 onChange={e => {
-                  setResultSku(e.target.value);
+                  setResultSku(e.target.value); try {sessionStorage.setItem('bis:technical:sku:'+selected,e.target.value);} catch {}
                   setConfirm(false);
       setResultVersion(v => v + 1);
                 }}
