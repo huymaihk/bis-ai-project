@@ -16,7 +16,7 @@ from persistent_memory import MemoryStore, atomic_json
 from product_quality import fingerprint, render_product
 from quality_jobs import JobRunner
 
-API_PROTOCOL = 'workflow-v2-21'
+API_PROTOCOL = 'workflow-v2-22'
 
 class RawImagesSave(BaseModel):
     candidate_ids: List[str] = Field(min_length=1, max_length=50)
@@ -347,6 +347,7 @@ def create_app(workspace=None, pin=None):
         end_page: int | None = Field(default=None,ge=1)
         sku: str = Field(default='',max_length=100)
         resume: bool = False
+        force_refresh: bool = False
 
     @app.post('/api/catalogues/{ident}/start')
     def start_catalogue(ident: str, body: CatalogueRun):
@@ -383,7 +384,7 @@ def create_app(workspace=None, pin=None):
             record=dict(sha256=digest,state='RUNNING' if pending else old.get('state','PARTIAL'),run=run,pages=pages,
                         start_page=body.start_page,end_page=end,sku=body.sku,done_pages=done,
                         completed_pages=len(done),pending_pages=pending,run_done=0,run_total=len(pending),
-                        needs_review=old.get('needs_review',False) if same else False,products=0)
+                        needs_review=old.get('needs_review',False) if same else False,products=0,force_refresh=body.force_refresh)
             records[str(path.relative_to(root))]=record
             atomic_json(catalogue_ledger,records)
             return record
@@ -413,12 +414,19 @@ def create_app(workspace=None, pin=None):
                 if not hasattr(app.state,'catalogue_agent'):
                     from agent_technical import AgentTechnical
                     app.state.catalogue_agent=AgentTechnical(root)
+                from pdf_analysis_cache import page_input, cached_extract, parser_version
                 with pymupdf.open(path) as document:
-                    page_obj=document[body.page-1]
-                    image=page_obj.get_pixmap(matrix=pymupdf.Matrix(1.5,1.5)).tobytes('jpeg')
-                    page_text=page_obj.get_text()
-                rows=JobRunner(root).run('catalogue_page',{'file':key,'page':body.page,'sha256':record['sha256']},
-                    lambda:app.state.catalogue_agent.extract_page(image,body.page,record['pages'],'AATCC',page_text))
+                    page_text,image,input_reason=page_input(document[body.page-1])
+                def render_image():
+                    with pymupdf.open(path) as document:
+                        return document[body.page-1].get_pixmap(matrix=pymupdf.Matrix(1.5,1.5)).tobytes('jpeg')
+                rows,cache_hit=JobRunner(root).run('catalogue_page',{'file':key,'page':body.page,'sha256':record['sha256']},
+                    lambda: cached_extract(memory.root/'pdf_page_cache',record['sha256'],body.page,parser_version(),
+                                           app.state.catalogue_agent,image,record['pages'],page_text,
+                                           force=record.get('force_refresh',False), image_fallback=render_image))
+                record['last_input_mode']='TEXT' if image is None and not getattr(app.state.catalogue_agent,'last_input_fallback',False) else 'IMAGE_TEXT'
+                record['last_input_reason']=input_reason
+                record['cache_hit']=cache_hit
                 if not isinstance(rows,list) or (not rows and getattr(app.state.catalogue_agent,'last_extraction_status','')!='EMPTY_VALID'):
                     reason=getattr(app.state.catalogue_agent,'last_extraction_error','') or 'Chưa xác định được trang không có sản phẩm hay lỗi AI'
                     raise ValueError(reason)

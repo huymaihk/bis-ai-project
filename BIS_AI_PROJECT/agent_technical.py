@@ -358,7 +358,7 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
                     attempts=self.last_model_attempts,
                     contents=[
                         prompt,
-                        types.Part.from_bytes(data=img_bytes, mime_type="image/jpeg"),
+                        *([types.Part.from_bytes(data=img_bytes, mime_type="image/jpeg")] if img_bytes else []),
                     ],
                     config=types.GenerateContentConfig(
                         temperature=0.1,

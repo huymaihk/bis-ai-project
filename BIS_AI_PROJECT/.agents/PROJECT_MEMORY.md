@@ -478,3 +478,16 @@ Codex documentation review: Accepted Antigravity's attributed Cloud observations
 - 98 full tests PASS, then added 36-page/first-six-preservation regression; all 28 API tests PASS (99 total test cases). Frontend lint/build PASS. Cloud live acceptance pending.
 - Antigravity scratch JSON files cited in report were unavailable in deployment checkout and G:/scratch, so their original output was not independently inspected. Earlier report daily-reset/28-day causal assertions are superseded: daily reset follows Pacific midnight; actual RPD evidence obtained only in Codex live trial.
 - No Haravan calls, publication or mutations. No quota/billing changes. Persistent memory sync remains local-only.
+
+
+## 2026-11-06 CODEX012 isolated token trials
+- Ran PyMuPDF4LLM2.1, Docling2.148, LLMLingua0.2.2 and LiteLLM1.108.1 on four actual catalogue pages in isolated Python3.12 lab. Proxy reductions:3.23% / -6.4% /41.53–58.28% /0%. LLMLingua lost standards/annual replacement facts; rejected whole-page compression. Real page7 text-only Gemini trial preserved3 SKU identities but Markdown returned Item# prefixes.
+- Detailed measurements/limits in CODEX_012_TOKEN_BENCHMARK.md; no production integration/deploy. Cloud quality, scanned OCR and multimodal savings pending. No Haravan.
+
+
+## 2026-11-06 CODEX013 text-first and page cache deployment
+- Implemented pdf_analysis_cache.py using existing PyMuPDF; no new production dependencies. Sorted original page text retained, no lossy SKU/spec compression. Basic text/encoding/multi-column gate chooses text-only or image+text. Text-first missing Item SKUs attempts image recovery, except quota/auth errors; gate is heuristic, not certified for every PDF/table.
+- Exact page cache bound to PDF SHA256, page, parser/source-code/PyMuPDF version, prompt+source context hash and input mode. Valid successful/EMPTY_VALID/NEEDS_REVIEW entries only; checksum mismatch recomputes. Cache does not confer product approval or overwrite drafts. Explicit force-refresh UI and SKU reanalysis bypass cache.
+- Live local page7 result: text-only PARSED, SKUs03026A/03026B/03017C. Second request cache hit, equal rows and no additional provider attempts. Temporary cache only; production drafts untouched during trial. No claim of full production prompt token savings percentage.
+- 104 full regression tests PASS, followed by added HTTP cache/force-refresh test and 34 API/cache tests PASS (105 cases now). TypeScript lint/build PASS. Protocol v2-22 reloads new module.
+- Owner-approved next step from CODEX012: lightweight PyMuPDF/cache adopted. Docling remains optional local research, not a Cloud dependency; LLMLingua/LiteLLM not installed into production. Live Cloud visual acceptance pending; cache is local filesystem and not verified durable across Cloud rebuilds. No Haravan calls or mutations.

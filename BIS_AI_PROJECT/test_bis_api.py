@@ -401,6 +401,25 @@ class BridgeTests(unittest.TestCase):
         result=self.client.post(base+'/page',json={'run':run['run'],'page':7}).json()
         self.assertEqual(result['done_pages'],list(range(1,8)))
 
+    def test_catalogue_cache_reuse_and_explicit_refresh(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        import shutil
+        folder=self.root/'Google_Drive_Storage/1_Catalogues';folder.mkdir(parents=True)
+        shutil.copyfile(self.root/'catalogue_sample.pdf',folder/'cache.pdf')
+        self.login();file=self.client.get('/api/catalogues').json()['files'][0]
+        agent=SimpleNamespace(extract_page=Mock(return_value=[dict(self.row)]),last_extraction_status='PARSED')
+        self.client.app.state.catalogue_agent=agent
+        base='/api/catalogues/'+file['id']
+        def run(force=False):
+            job=self.client.post(base+'/start',json={'sha256':file['sha256'],'confirm':True,'force_refresh':force}).json()
+            response=self.client.post(base+'/page',json={'run':job['run'],'page':1})
+            self.assertEqual(response.status_code,200)
+            return response.json()
+        self.assertFalse(run()['cache_hit']);self.assertTrue(run()['cache_hit'])
+        self.assertEqual(agent.extract_page.call_count,1)
+        self.assertFalse(run(True)['cache_hit']);self.assertEqual(agent.extract_page.call_count,2)
+
     def test_login_required_and_logout(self):
         for route in ['state','assets','memory','knowledge/search']:
             self.assertEqual(self.client.get('/api/'+route).status_code,401)

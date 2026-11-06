@@ -112,13 +112,13 @@ Item #28360C
         from unittest.mock import patch
         import workspace_loader as loader
         modules={name:SimpleNamespace(name=name) for name in
-                 ('bis_api','streamlit_react_host','config','gemini_fallback','agent_technical','technical_names','marketing_content','product_quality','media_quality','studio_ai','studio_api','completed_images','raw_image_store','production_workspace')}
+                 ('bis_api','streamlit_react_host','config','gemini_fallback','agent_technical','technical_names','marketing_content','product_quality','media_quality','studio_ai','studio_api','completed_images','raw_image_store','pdf_analysis_cache','production_workspace')}
         modules['production_workspace'].render_workspace=lambda active_step=None:None
         modules['streamlit_react_host'].render_react_workspace=Mock()
         with patch.object(loader.importlib,'import_module',side_effect=lambda name:modules[name]), patch.object(loader.importlib,'reload',side_effect=lambda module:module) as reload:
             loader.render_current_workspace('root',())
         self.assertEqual([call.args[0].name for call in reload.call_args_list],
-                         ['config','gemini_fallback','agent_technical','technical_names','marketing_content','product_quality','media_quality','studio_ai','studio_api','completed_images','raw_image_store','bis_api','streamlit_react_host','production_workspace'])
+                         ['config','gemini_fallback','agent_technical','technical_names','marketing_content','product_quality','media_quality','studio_ai','studio_api','completed_images','raw_image_store','pdf_analysis_cache','bis_api','streamlit_react_host','production_workspace'])
 
     def test_stale_technical_instance_and_module_are_repaired(self):
         from unittest.mock import patch

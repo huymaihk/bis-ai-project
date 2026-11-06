@@ -36,6 +36,7 @@ export default function CatalogueTechnical() {
   const [runProgress,setRunProgress]=useState<{done:number;total:number}|null>(null);
   const [detail, setDetail] = useState('');
 
+  const [forceRefresh,setForceRefresh]=useState(false);
   const [mode, setMode] = useState('full');
   const [from, setFrom] = useState(1);
   const [to, setTo] = useState(1);
@@ -104,6 +105,7 @@ export default function CatalogueTechnical() {
         sha256: file.sha256,
         confirm: again,
         resume,
+        force_refresh: forceRefresh || !!product,
         start_page: product ? Number(product.source_page) : mode === 'full' ? 1 : from,
         end_page: product ? Number(product.source_page) : mode === 'full' ? null : mode === 'single' ? from : to,
         sku: product?.sku || ''
@@ -116,6 +118,7 @@ export default function CatalogueTechnical() {
         setProgress(`Đang phân tích trang ${page}/${run.pages} · ${file.name}`);
         const pageResult = await request(`catalogues/${file.id}/page`, {run: run.run, page});
         setRunProgress({done:pageResult.run_done,total:run.run_total});
+        setProgress(`Đã xử lý trang ${page} · ${pageResult.cache_hit ? 'Dùng kết quả đã lưu, không gọi AI' : pageResult.last_input_mode==='TEXT' ? 'Phân tích từ văn bản PDF' : 'Phân tích ảnh và văn bản PDF'}`);
         if (page === pending[pending.length-1]) {
           setProgress(
             ['COMPLETED', 'PARTIAL'].includes(pageResult.state)
@@ -347,6 +350,8 @@ export default function CatalogueTechnical() {
           <button disabled={busy} onClick={() => analyse(false, undefined, true)}>Tiếp tục trang chưa phân tích trong phạm vi đã chọn</button>
         </div>}
         {runProgress && <div role="status">Lượt hiện tại: {runProgress.done}/{runProgress.total} trang · {runProgress.total ? Math.round(runProgress.done/runProgress.total*100) : 100}%<progress style={{width:'100%'}} max={runProgress.total || 1} value={runProgress.done}/></div>}
+        <label><input type="checkbox" style={{width:'auto'}} checked={forceRefresh} disabled={busy} onChange={e=>setForceRefresh(e.target.checked)}/> Phân tích mới bằng AI, bỏ qua kết quả đã lưu (dùng thêm hạn mức)</label>
+        <p><small>PDF có chữ rõ được ưu tiên xử lý bằng văn bản; trang scan hoặc nhiều cột dùng thêm ảnh. Kết quả lưu vẫn cần đối chiếu nguồn.</small></p>
         {progress && <p role="status">{progress}</p>}
         {error && <p role="alert" className="catalogue-error">{error}</p>}
       </section>
