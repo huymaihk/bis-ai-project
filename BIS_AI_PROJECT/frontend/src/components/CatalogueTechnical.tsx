@@ -112,6 +112,7 @@ export default function CatalogueTechnical() {
       setRunProgress({done:0,total:pending.length});
       if(!pending.length)setProgress('Phạm vi này không còn trang chưa phân tích.');
       for (const page of pending) {
+        if(page !== pending[0]) {setProgress("Chờ 4 giây giữa các trang…"); await new Promise(resolve => setTimeout(resolve,4000));}
         setProgress(`Đang phân tích trang ${page}/${run.pages} · ${file.name}`);
         const pageResult = await request(`catalogues/${file.id}/page`, {run: run.run, page});
         setRunProgress({done:pageResult.run_done,total:run.run_total});

@@ -459,3 +459,22 @@ Codex documentation review: Accepted Antigravity's attributed Cloud observations
 - Persist unique successful page numbers per PDF SHA256; show count/percent and current-run progress; resume only missing pages in selected range. Legacy page-number counters migrated using original start/end. Changed PDFs require confirmation; repeated processed ranges require confirm. SKU-only extraction does not mark a whole page complete.
 - Stop immediately on Gemini 429 instead of retrying the same model twice. Does not restore provider quota or claim live API success. Completed drafts preserved.
 - 96 tests PASS including failure/resume/changed PDF and single-call 429; frontend lint/build PASS. Protocol v2-20. Live Cloud UI and provider recovery pending; local progress is not verified durable Drive/Cloud sync. No Haravan operations.
+
+## 2026-11-06 AGY_011 Gemini quota diagnostics and fallback testing
+- Identified root cause of 429 stopping at catalogue_sample.pdf page 7: gemini-3.6-flash Free tier limit is only 20 RPD (Requests Per Day) and 5 RPM, which mathematically cannot process a 36-page catalogue in one day; gemini_fallback.py only catches 503/504 and raises on 429 without falling back.
+- Verified backup model IDs via Google GenAI SDK: models/gemini-3.5-flash-lite and models/gemini-3.1-flash-lite offer 500 RPD (25x higher) and 15 RPM on Free tier.
+- Conducted controlled single-shot trials on page 7: gemini-3.5-flash-lite returned HTTP 200 in 3.976s (3 products); gemini-3.1-flash-lite returned HTTP 200 in 3.850s (3 products).
+- Visual/text cross-check: Format separation, English names, and Vietnamese descriptions PASS; however, Flash Lite models normalized literal Item #03026A/B into AATCC-TM-2026-A/B despite citing Item #03026A in evidence_quote. HTTP 200 does not equal full quality pass.
+- Recommended Codex integrate 429 fallback into gemini_fallback.py with bounded retry on RPM delay, fallback chain (3.6-flash -> 3.5-flash-lite -> 3.1-flash-lite), prompt rule enforcing literal SKU extraction, heuristic SKU recovery from evidence_quote, and 4s pacing.
+- AGY_011_QUOTA_FALLBACK.md status READY_FOR_REVIEW. No code modified in config/agent/api/frontend; no Haravan calls.
+
+
+## 2026-11-06 Codex AGY_011 integration verification
+- Ownership accepted IN_PROGRESS, integrated Technical chain 3.6-flash -> 3.5-flash-lite -> 3.1-flash-lite without editing credential-bearing config.py.
+- 429 classified from provider details: RATE waits at least 4s, at most 15s, retries once; RPD moves to next model; unknown quota bounded fallback with UNKNOWN label; explicit spending/credit failures stop. Long rate retry hints stop, do not bypass. 503/504 fallback retained.
+- Literal Item # SKU recovered only when unambiguous; if PDF text is supplied, evidence SKU must exist there. Multiple ambiguous codes rejected. Prompt prohibits synthetic AATCC-TM SKU. This does not certify every quote/description as accurate.
+- Frontend waits 4.0 seconds between batch pages. This alone cannot guarantee 5 RPM on primary model or limit traffic across simultaneous sessions.
+- Independent live local trial after fixes: page7/36 primary 429 classified RPD, backup gemini-3.5-flash-lite SUCCESS, 3 SKUs 03026A/03026B/03017C. No result written to real drafts. Earlier trial exposed overstrict whole-quote matching, corrected before final live PASS.
+- 98 full tests PASS, then added 36-page/first-six-preservation regression; all 28 API tests PASS (99 total test cases). Frontend lint/build PASS. Cloud live acceptance pending.
+- Antigravity scratch JSON files cited in report were unavailable in deployment checkout and G:/scratch, so their original output was not independently inspected. Earlier report daily-reset/28-day causal assertions are superseded: daily reset follows Pacific midnight; actual RPD evidence obtained only in Codex live trial.
+- No Haravan calls, publication or mutations. No quota/billing changes. Persistent memory sync remains local-only.

@@ -22,6 +22,20 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, List, Dict
 
+def verify_source_sku(item, page_text):
+    quote = str(item.get('evidence_quote') or '')
+    codes = set(re.findall(r'Item\s*#\s*([0-9]{4,6}[A-Za-z]?)(?![A-Za-z0-9])', quote, re.I))
+    source = str(page_text or '')
+    if source and any(not re.search(r'Item\s*#\s*'+re.escape(code)+r'(?![A-Za-z0-9])',source,re.I) for code in codes):
+        raise ValueError('Evidence SKU does not match PDF source')
+    if len(codes) == 1:
+        item = dict(item, sku=next(iter(codes)))
+    elif len(codes) > 1 and str(item.get('sku','')) not in codes:
+        raise ValueError('Ambiguous SKU in evidence')
+    if source and not re.search(r'(?<![A-Za-z0-9])'+re.escape(str(item.get('sku') or ''))+r'(?![A-Za-z0-9])', source, re.I):
+        raise ValueError('SKU absent from PDF source')
+    return item
+
 from pydantic import BaseModel, Field
 import pymupdf
 from google import genai
@@ -333,13 +347,14 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
         prompt = self._build_prompt(page_num, total_pages, brand=brand)
         if page_text and str(page_text).strip():
             prompt += f"\n\nVĂN BẢN GỐC TỪ TRANG {page_num} CỦA TÀI LIỆU (DÙNG ĐỂ ĐỐI CHIẾU VÀ TRÍCH XUẤT CHÍNH XÁC):\n{str(page_text).strip()}\n"
+        prompt += "\nSKU: giữ nguyên mã Item # trong PDF; Item #03026A phải là 03026A. Không đổi thành AATCC-TM hoặc mã tiêu chuẩn. evidence_quote phải chứa mã và định dạng sản phẩm."
         max_retries = 2
 
         for attempt in range(max_retries):
             try:
-                from gemini_fallback import generate_with_fallback
+                from gemini_fallback import generate_with_fallback, TECHNICAL_MODELS
                 response, self.last_model_used = generate_with_fallback(
-                    self.client, PRIORITY_MODELS,
+                    self.client, TECHNICAL_MODELS,
                     attempts=self.last_model_attempts,
                     contents=[
                         prompt,
@@ -366,6 +381,8 @@ Nếu không có sản phẩm thương mại nào trên trang này, trả về [
                 now = datetime.utcnow().isoformat() + "Z"
 
                 for item in raw_list:
+                    if not isinstance(item, dict): raise ValueError('Invalid product row')
+                    item = verify_source_sku(item, page_text)
                     # Validate through Pydantic
                     try:
                         fact = ExtractedProductFact(**item)

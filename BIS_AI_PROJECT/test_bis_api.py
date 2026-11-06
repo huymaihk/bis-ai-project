@@ -383,6 +383,24 @@ class BridgeTests(unittest.TestCase):
         self.assertTrue(changed['changed']);self.assertEqual(changed['completed_pages'],0)
         self.assertEqual(self.client.post(base+'/start',json={'sha256':changed['sha256'],'resume':True}).status_code,409)
 
+    def test_resume_page_seven_preserves_first_six(self):
+        from types import SimpleNamespace
+        from persistent_memory import MemoryStore, atomic_json
+        folder=self.root/'Google_Drive_Storage/1_Catalogues';folder.mkdir(parents=True)
+        path=folder/'resume36.pdf'
+        with pymupdf.open() as doc:
+            for _ in range(36): doc.new_page().insert_text((40,40),'03026A Manual')
+            doc.save(path)
+        self.login(); row=self.client.get('/api/catalogues').json()['files'][0]
+        store=MemoryStore(self.root)
+        atomic_json(store.root/'catalogue_analysis.json',{str(path.relative_to(self.root)):{'sha256':row['sha256'],'state':'FAILED','done_pages':list(range(1,7)),'pages':36}})
+        self.client.app.state.catalogue_agent=SimpleNamespace(extract_page=lambda *a:[dict(self.row)])
+        base='/api/catalogues/'+row['id']
+        run=self.client.post(base+'/start',json={'sha256':row['sha256'],'resume':True}).json()
+        self.assertEqual(run['pending_pages'],list(range(7,37)))
+        result=self.client.post(base+'/page',json={'run':run['run'],'page':7}).json()
+        self.assertEqual(result['done_pages'],list(range(1,8)))
+
     def test_login_required_and_logout(self):
         for route in ['state','assets','memory','knowledge/search']:
             self.assertEqual(self.client.get('/api/'+route).status_code,401)

@@ -2,7 +2,7 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import Mock
 from gemini_fallback import generate_with_fallback
-from config import PRIORITY_MODELS
+from gemini_fallback import TECHNICAL_MODELS as PRIORITY_MODELS
 
 class APIError(Exception):
     def __init__(self,code): self.code=code
@@ -18,7 +18,7 @@ class FallbackTests(unittest.TestCase):
             self.assertEqual(attempts[0]['code'],code)
 
     def test_auth_quota_and_other_errors_do_not_fallback(self):
-        for code in (401,403,429,400,404):
+        for code in (401,403,400,404):
             call=Mock(side_effect=APIError(code))
             with self.assertRaises(APIError):
                 generate_with_fallback(SimpleNamespace(models=SimpleNamespace(generate_content=call)),['main','backup'],contents=[],config=None,attempts=[])
@@ -31,8 +31,29 @@ class FallbackTests(unittest.TestCase):
         call=Mock(side_effect=APIError(429))
         agent.client=SimpleNamespace(models=SimpleNamespace(generate_content=call))
         self.assertEqual(agent.extract_page(b'test',7,36),[])
-        self.assertEqual(call.call_count,1)
+        self.assertEqual(call.call_count,3)
         self.assertIn('429',agent.last_extraction_error)
+
+    def test_literal_sku_recovery_and_ambiguous_rejection(self):
+        from agent_technical import verify_source_sku
+        for code in ('03026A','03026B','03017C'):
+            quote='Item #'+code+' Hardbound Book'
+            self.assertEqual(verify_source_sku({'sku':'AATCC-TM-2026','evidence_quote':quote},quote)['sku'],code)
+        with self.assertRaises(ValueError):
+            verify_source_sku({'sku':'invented','evidence_quote':'Item #03026A Item #03026B'},'Item #03026A Item #03026B')
+        with self.assertRaises(ValueError):
+            verify_source_sku({'sku':'03026A','evidence_quote':'Item #03026A'},'Item #03026B')
+
+    def test_rate_retry_daily_fallback_and_billing_stop(self):
+        from unittest.mock import patch
+        for message, expected, sleeps in [('requests per minute retry in 4s',2,1),('requests per day',2,0),('billing spend cap',1,0),('requests per minute retry in 60s',1,0)]:
+            error=APIError(429);error.args=(message,)
+            call=Mock(side_effect=[error,SimpleNamespace(text='[]')])
+            with patch('gemini_fallback.time.sleep') as sleep:
+                try: generate_with_fallback(SimpleNamespace(models=SimpleNamespace(generate_content=call)),['main','backup'],contents=[],config=None,attempts=[])
+                except APIError: pass
+                self.assertEqual(call.call_count,expected)
+                self.assertEqual(sleep.call_count,sleeps)
 
     def test_exhaustion_is_bounded(self):
         call=Mock(side_effect=APIError(503))
